@@ -34,7 +34,7 @@ BEGIN
     -- Si se encuentra una cita que se solapa (contador > 0), se lanza un error
     IF existing_appointments > 0 THEN
         SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'El horario seleccionado se solapa con otra cita existente. Por favor, elija otro horario.';
+        SET MESSAGE_TEXT = 'El horario seleccionado se cruza con otra cita existente. Por favor, elija otro horario.';
     ELSE
         -- Si no hay conflictos, se procede con la inserción de la nueva cita
         INSERT INTO citas (
