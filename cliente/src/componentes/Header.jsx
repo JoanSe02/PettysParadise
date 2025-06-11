@@ -63,7 +63,7 @@ const Header = () => {
               <Link to="/#contacto" className={`nav-link1 ${isActive('/#contacto') ? 'active' : ''}`}>
                 Contacto
               </Link>
-              <Link to="/login" className="btn btn-primary">
+              <Link to="/login" className="btn btn-primary1">
                 <FaUser /> Inicio de Sesión
               </Link>
             </nav>

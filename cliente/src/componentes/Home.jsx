@@ -145,7 +145,7 @@ const Home = () => {
                   compañeros.
                 </p>
                 <div className="button-group">
-                  <Link to="/login" className="btn btn-primary btn-lg">
+                  <Link to="/login" className="btn btn-primary1 btn-lg">
                     Agendar una cita <FaChevronRight className="flecha" />
                   </Link>
                   <button className="btn btn-outline btn-lg">Nuestros servicios</button>
@@ -165,18 +165,18 @@ const Home = () => {
           </div>
 
           {/* Stats Bar */}
-          <div className="stats-bar" ref={specialistsCounterRef}>
+          <div className="stats-bar1" ref={specialistsCounterRef}>
             <div className="container">
-              <div className="stats-grid">
-                <div className="stat-item">
-                  <div className="stat-icon">
+              <div className="stats-grid1">
+                <div className="stat-item1">
+                  <div className="stat-icon2">
                     <FaUser />
                   </div>
                   <div className="stat-number1">+{counters.specialists}</div>
                   <p>Especialistas</p>
                 </div>
-                <div className="stat-item">
-                  <div className="stat-icon">
+                <div className="stat-item1">
+                  <div className="stat-icon2">
                     <FaClock />
                   </div>
                   <div className="stat-number1">
@@ -184,15 +184,15 @@ const Home = () => {
                   </div>
                   <p>Atención en clínica</p>
                 </div>
-                <div className="stat-item">
-                  <div className="stat-icon">
+                <div className="stat-item1">
+                  <div className="stat-icon2">
                     <FaPaw />
                   </div>
                   <div className="stat-number1">+{counters.patients}</div>
                   <p>Pacientes atendidos</p>
                 </div>
-                <div className="stat-item">
-                  <div className="stat-icon">
+                <div className="stat-item1">
+                  <div className="stat-icon2">
                     <FaStethoscope />
                   </div>
                   <div className="stat-number1">+{counters.services}</div>

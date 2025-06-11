@@ -354,18 +354,7 @@ export default function Login() {
                 {showPassword ? <FaEye /> : <FaEyeSlash />}
               </span>
             </div>
-            {passwordFocus && !errors.contrasena && (
-              <div className="password-requirements">
-                <p>La contraseña debe contener:</p>
-                <ul>
-                  <li>Mínimo 8 caracteres</li>
-                  <li>Al menos una mayúscula</li>
-                  <li>Al menos una minúscula</li>
-                  <li>Al menos un número</li>
-                  <li>Al menos un carácter especial</li>
-                </ul>
-              </div>
-            )}
+           
             {errors.contrasena && <p className="error-message1">{errors.contrasena.message}</p>}
           </label>
 

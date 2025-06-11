@@ -115,6 +115,7 @@ export default function GestionCitas() {
         fech_cit: citaData.fecha,
         hora: citaData.hora,
         notas: citaData.notas || "",
+        id_pro: userId 
       }
 
       await apiService.post("/api/citas", backendData)

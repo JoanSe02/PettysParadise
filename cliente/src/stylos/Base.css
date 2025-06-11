@@ -98,12 +98,12 @@
     border: none;
   }
   
-  .btn-primary {
+  .btn-primary1 {
     background-color: #0a5c8d;
     color: #ffffff;
   }
   
-  .btn-primary svg {
+  .btn-primary1 svg {
     margin-right: 0.75rem;
     font-size: 1.2rem;
     display: inline-block;
@@ -114,14 +114,14 @@
     transition: transform 0.3s ease;
   }
   
-  .btn-primary:hover .flecha {
+  .btn-primary1:hover .flecha {
     transform: translateX(5px);
   }
   
-  .btn-primary:active .flecha {
+  .btn-primary1:active .flecha {
     transform: translateX(10px);
   }
-  .btn-primary:hover {
+  .btn-primary1:hover {
     background-color: #084c75;
   }
   

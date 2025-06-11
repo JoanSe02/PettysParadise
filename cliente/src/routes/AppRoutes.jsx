@@ -27,6 +27,7 @@ import MisPacientes from "../pages/vet/GestionMascotas.jsx"
 import HistorialesMedicos from "../pages/vet/HistorialesMedicos.jsx"
 import HistorialMedicoPage from "../pages/Historial.jsx"
 import PerfilUsuarioPage from "../pages/Perfil.jsx"
+import HeaderSir from "../propietario/HeaderSir.jsx"
 
 const Home = lazy(() => import("../componentes/Home"))
 

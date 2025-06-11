@@ -82,7 +82,7 @@ main {
 }
 
 /* Stats Bar - Mejorado con animaciones y estilos */
-.stats-bar {
+.stats-bar1 {
   background-color: #ffffff;
   padding: 2.5rem 0;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
@@ -93,13 +93,13 @@ main {
   border-bottom: 4px solid rgba(10, 92, 141, 0.1);
 }
 
-.stats-grid {
+.stats-grid1 {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 2.5rem;
 }
 
-.stat-item {
+.stat-item1 {
   text-align: center;
   display: flex;
   flex-direction: column;
@@ -109,11 +109,11 @@ main {
   transition: transform 0.3s ease;
 }
 
-.stat-item:hover {
+.stat-item1:hover {
   transform: translateY(-5px);
 }
 
-.stat-icon {
+.stat-icon2 {
   width: 3.5rem;
   height: 3.5rem;
   border-radius: 50%;
@@ -127,7 +127,7 @@ main {
   transition: all 0.3s ease;
 }
 
-.stat-item:hover .stat-icon {
+.stat-item1:hover .stat-icon2 {
   background-color: #0a5c8d;
   color: rgb(255, 253, 253);
   transform: scale(1.1);
@@ -148,14 +148,14 @@ main {
   margin-bottom: 0.5rem;
 }
 
-.stat-item p {
+.stat-item1 p {
   color: #6b7280;
   font-size: 1.1rem;
   font-weight: 500;
 }
 
 @media (min-width: 768px) {
-  .stats-grid {
+  .stats-grid1 {
     grid-template-columns: repeat(4, 1fr);
   }
 }
