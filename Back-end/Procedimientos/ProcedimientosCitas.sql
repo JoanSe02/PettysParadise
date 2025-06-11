@@ -1,7 +1,7 @@
 USE mascotas_db;
 
 DELIMITER $$
--- Procedimiento corregido para insertar cita
+-- Procedimiento corregido para insertar cita con validación de solapamiento
 DROP PROCEDURE IF EXISTS InsertarCita$$
 CREATE PROCEDURE InsertarCita (
     IN p_fech_cit DATE,
@@ -10,22 +10,45 @@ CREATE PROCEDURE InsertarCita (
     IN p_id_vet INT,
     IN p_cod_mas INT,
     IN p_id_pro INT,
-    IN p_notas TEXT, -- Parámetro de notas añadido
-    OUT new_cita_id INT -- Parámetro de salida renombrado
+    IN p_notas TEXT,
+    OUT new_cita_id INT
 )
 BEGIN
-    INSERT INTO citas (
-        fech_cit, hora, cod_ser, id_vet, cod_mas, id_pro, estado, notas
-    )
-    VALUES (
-        p_fech_cit, p_hora, p_cod_ser, p_id_vet, p_cod_mas, p_id_pro, 'PENDIENTE', p_notas
-    );
-    
-    SET new_cita_id = LAST_INSERT_ID();
+    -- Declarar variables
+    DECLARE existing_appointments INT;
+    -- Define la duración estándar de una cita. AJUSTA ESTE VALOR SI ES NECESARIO.
+    DECLARE appointment_duration INT DEFAULT 45; -- Duración en minutos
+
+    -- Verificar si el veterinario tiene una cita que se solape en el tiempo
+    SELECT COUNT(*) INTO existing_appointments
+    FROM citas
+    WHERE id_vet = p_id_vet
+      AND fech_cit = p_fech_cit
+      AND estado != 'CANCELADA'
+      -- Lógica de solapamiento:
+      -- La nueva cita (p_hora) no puede empezar antes de que termine una existente.
+      -- Y una cita existente no puede empezar antes de que termine la nueva.
+      AND p_hora < ADDTIME(hora, MAKETIME(0, appointment_duration, 0))
+      AND ADDTIME(p_hora, MAKETIME(0, appointment_duration, 0)) > hora;
+
+    -- Si se encuentra una cita que se solapa (contador > 0), se lanza un error
+    IF existing_appointments > 0 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'El horario seleccionado se cruza con otra cita existente. Por favor, elija otro horario.';
+    ELSE
+        -- Si no hay conflictos, se procede con la inserción de la nueva cita
+        INSERT INTO citas (
+            fech_cit, hora, cod_ser, id_vet, cod_mas, id_pro, estado, notas
+        )
+        VALUES (
+            p_fech_cit, p_hora, p_cod_ser, p_id_vet, p_cod_mas, p_id_pro, 'PENDIENTE', p_notas
+        );
+        
+        SET new_cita_id = LAST_INSERT_ID();
+    END IF;
 END$$
 
 DELIMITER ;
-
 
 
 
