@@ -25,6 +25,8 @@ import GestionServicios from "../pages/admin/GestionServicios"
 import GestionCitas from "../pages/vet/GestionCitas.jsx"
 import MisPacientes from "../pages/vet/GestionMascotas.jsx"
 import HistorialesMedicos from "../pages/vet/HistorialesMedicos.jsx"
+import HistorialMedicoPage from "../pages/Historial.jsx"
+import PerfilUsuarioPage from "../pages/Perfil.jsx"
 
 const Home = lazy(() => import("../componentes/Home"))
 
@@ -74,6 +76,8 @@ const AppRoutes = () => {
           <Route path="/propietario/infomas" element={<InfoMas />} />
           <Route path="/propietario/mascotas" element={<Mascotas />} />
           <Route path="/propietario/citas" element={<Citas />} />
+          <Route path="/propietario/historial" element={<HistorialMedicoPage />} />
+          <Route path="/propietario/perfil" element={<PerfilUsuarioPage />} />
         </Route>
 
         {/* RUTAS PRIVADAS PARA ADMINISTRADORES */}
