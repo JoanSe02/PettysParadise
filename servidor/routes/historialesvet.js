@@ -22,9 +22,18 @@ router.get("/", authenticateToken, async (req, res) => {
 router.post("/", authenticateToken, async (req, res) => {
   let connection;
   try {
-      const { cod_mas, fecha, descripcion, tratamiento } = req.body;
+      const id_usuario_modificador = req.user.id_usuario; 
+      const { 
+        cod_mas, id_vet, fecha, descripcion, tratamiento, motivo_consulta,
+        peso_kg, temperatura_c, proximo_seguimiento, costo_consulta 
+      } = req.body;
+
       connection = await pool.getConnection();
-      await connection.query("CALL CrearHistorial(?, ?, ?, ?)", [cod_mas, fecha, descripcion, tratamiento]);
+      await connection.query("CALL CrearHistorial(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [
+        cod_mas, id_vet, fecha, descripcion, tratamiento, motivo_consulta,
+        peso_kg, temperatura_c, proximo_seguimiento, costo_consulta,
+        id_usuario_modificador
+      ]);
       res.status(201).json({ success: true, message: "Historial creado exitosamente" });
   } catch (error) {
       console.error("Error al crear historial:", error);
@@ -34,14 +43,24 @@ router.post("/", authenticateToken, async (req, res) => {
   }
 });
 
+
 // ACTUALIZAR HISTORIAL 
 router.put("/:cod_his", authenticateToken, async (req, res) => {
   let connection;
   try {
       const { cod_his } = req.params;
-      const { fecha, descripcion, tratamiento } = req.body;
+      const id_usuario_modificador = req.user.id_usuario;
+      const { 
+          id_vet, fecha, descripcion, tratamiento, motivo_consulta,
+          peso_kg, temperatura_c, proximo_seguimiento, costo_consulta 
+      } = req.body;
+
       connection = await pool.getConnection();
-      await connection.query("CALL ActualizarHistorial(?, ?, ?, ?)", [cod_his, fecha, descripcion, tratamiento]);
+      await connection.query("CALL ActualizarHistorial(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [
+          cod_his, id_vet, fecha, descripcion, tratamiento, motivo_consulta,
+          peso_kg, temperatura_c, proximo_seguimiento, costo_consulta,
+          id_usuario_modificador
+      ]);
       res.json({ success: true, message: "Historial actualizado exitosamente" });
   } catch (error) {
       console.error("Error al actualizar historial:", error);
@@ -124,11 +143,12 @@ router.delete("/:cod_his", authenticateToken, async (req, res) => {
   let connection;
   try {
       const { cod_his } = req.params;
+      const id_usuario_eliminador = req.user.id_usuario; 
       connection = await pool.getConnection();
-      await connection.query("CALL EliminarHistorial(?)", [cod_his]);
+      await connection.query("CALL EliminarHistorial(?, ?)", [cod_his, id_usuario_eliminador]);
       res.json({ success: true, message: "Historial eliminado exitosamente" });
   } catch (error) {
-      console.error("Error al eliminar historial:", error);
+      console.error("Error al eliminar lógicamente el historial:", error);
       res.status(500).json({ success: false, message: error.sqlMessage || "Error del servidor" });
   } finally {
       if (connection) connection.release();
@@ -169,6 +189,36 @@ router.get("/obtener/completos", authenticateToken, async (req, res) => {
     });
   } finally {
     if (connection) connection.release();
+  }
+});
+
+// ******* NUEVA RUTA PARA VISUALIZAR EL LOG *******
+router.get("/:cod_his/log", authenticateToken, async (req, res) => {
+  let connection;
+  try {
+      const { cod_his } = req.params;
+      connection = await pool.getConnection();
+
+      const [logs] = await connection.query(`
+          SELECT 
+              l.accion,
+              l.fecha_modificacion,
+              l.descripcion_anterior,
+              l.tratamiento_anterior,
+              CONCAT(u.nombre, ' ', u.apellido) AS nombre_modificador
+          FROM historiales_log l
+          JOIN usuarios u ON l.id_usuario_modificador = u.id_usuario
+          WHERE l.cod_his_fk = ?
+          ORDER BY l.fecha_modificacion DESC
+      `, [cod_his]);
+      
+      res.json({ success: true, data: logs });
+
+  } catch (error) {
+      console.error("Error al obtener el log del historial:", error);
+      res.status(500).json({ success: false, message: "Error del servidor" });
+  } finally {
+      if (connection) connection.release();
   }
 });
 
