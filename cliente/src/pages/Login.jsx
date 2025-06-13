@@ -59,41 +59,42 @@ export default function Login() {
 
   // Función mejorada que usa SOLO los datos del servidor
   const verificarDesbloqueoAutomatico = async (email) => {
-    if (!email) return
-
+    if (!email) return;
+  
     try {
-      const response = await axios.get(`http://localhost:5000/api/auth/verificar-desbloqueo/${email}`)
-
+      const response = await axios.get(`http://localhost:5000/api/auth/verificar-desbloqueo/${email}`);
+  
       if (response.data?.success) {
-        if (!response.data.cuenta_bloqueada) {
-          // Cuenta desbloqueada
-          setCuentaBloqueada(false)
-          setTiempoRestante(null)
-          setHoraDesbloqueo("")
-
+        if (response.data.auto_desbloqueada || !response.data.cuenta_bloqueada) {
+          // Resetear estado local
+          setCuentaBloqueada(false);
+          setTiempoRestante(null);
+          setHoraDesbloqueo("");
+  
           if (intervalRef.current) {
-            clearInterval(intervalRef.current)
-            intervalRef.current = null
+            clearInterval(intervalRef.current);
+            intervalRef.current = null;
           }
-
-          // Mostrar notificación de desbloqueo
-          Swal.fire({
-            icon: "success",
-            title: "🔓 Cuenta Desbloqueada",
-            text: "Tu cuenta ha sido desbloqueada automáticamente. Ya puedes intentar iniciar sesión.",
-            confirmButtonColor: "#28a745",
-            timer: 3000,
-          })
+  
+          // Mostrar notificación solo si fue auto-desbloqueada
+          if (response.data.auto_desbloqueada) {
+            Swal.fire({
+              icon: "success",
+              title: "🔓 Cuenta Desbloqueada",
+              text: "Tu cuenta ha sido desbloqueada automáticamente. Ya puedes iniciar sesión.",
+              confirmButtonColor: "#28a745",
+            });
+          }
         } else {
-          // Actualizar con datos del servidor (NO calcular en frontend)
-          setTiempoRestante(response.data.tiempo_restante)
-          setHoraDesbloqueo(response.data.hora_desbloqueo)
+          // Actualizar datos de bloqueo
+          setTiempoRestante(response.data.tiempo_restante);
+          setHoraDesbloqueo(response.data.hora_desbloqueo);
         }
       }
     } catch (error) {
-      console.error("Error verificando desbloqueo:", error)
+      console.error("Error verificando desbloqueo:", error);
     }
-  }
+  };
 
   // useEffect con verificación cada 10 segundos para mayor precisión
   useEffect(() => {
@@ -145,7 +146,7 @@ export default function Login() {
       if (estadoCuenta?.data?.cuenta_bloqueada) {
         // Usar SOLO los datos del servidor, no calcular en frontend
         const tiempoServidor = estadoCuenta.data.tiempo_restante_detallado ||
-          estadoCuenta.data.tiempo_restante || { texto: "30 minutos" }
+          estadoCuenta.data.tiempo_restante || { texto: "5 minutos" }
 
         setCuentaBloqueada(true)
         setTiempoRestante(tiempoServidor)
@@ -230,8 +231,9 @@ export default function Login() {
         })
       } else if (error.response?.status === 403 && error.response.data?.cuenta_bloqueada) {
         // Usar SOLO datos del servidor
+        // En el onSubmit, dentro del catch para error 403
         const tiempoServidor = error.response.data?.tiempo_restante_detallado ||
-          error.response.data?.tiempo_restante || { texto: "30 minutos" }
+        error.response.data?.tiempo_restante || { texto: "5 minutos" } // Cambiado de 30 a 5 minutos
 
         setCuentaBloqueada(true)
         setTiempoRestante(tiempoServidor)
@@ -242,16 +244,12 @@ export default function Login() {
           title: "🚫 Cuenta Bloqueada",
           html: `
             <div style="text-align: left; margin: 20px 0;">
-              <p><strong>Tu cuenta ha sido bloqueada por demasiados intentos fallidos.</strong></p>
+              <p><strong>Tu cuenta ha sido bloqueada temporalmente por 5 minutos.</strong></p>
               <br>
               <div style="background-color: #f8d7da; padding: 15px; border-radius: 8px; border-left: 4px solid #dc3545;">
                 <p><strong>🕐 Se desbloqueará automáticamente:</strong></p>
                 <p style="font-size: 18px; color: #721c24; font-weight: bold;">${error.response.data?.hora_desbloqueo}</p>
-                <p><strong>⏱️ Tiempo de bloqueo:</strong> ${tiempoServidor.texto}</p>
-              </div>
-              <br>
-              <div style="background-color: #d1ecf1; padding: 10px; border-radius: 8px;">
-                <p style="color: #0c5460; margin: 0;"><strong>💡 La página verificará automáticamente cada 10 segundos.</strong></p>
+                <p><strong>⏱️ Tiempo restante:</strong> ${tiempoServidor.texto}</p>
               </div>
             </div>
           `,

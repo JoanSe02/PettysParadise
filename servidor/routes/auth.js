@@ -7,16 +7,15 @@ const router = express.Router();
 
 const JWT_SECRET = process.env.JWT_SECRET || "tu_clave_secreta";
 const JWT_EXPIRES_IN = "2h";
-const HORAS_BLOQUEO = 2;
+const MINUTOS_BLOQUEO = 5; // Cambiado de HORAS_BLOQUEO a MINUTOS_BLOQUEO
 const MAX_INTENTOS_FALLIDOS = 3;
 
 // Función para formatear la hora de desbloqueo
 // En auth.js, modifica la función calcularHoraDesbloqueo
 const calcularHoraDesbloqueo = (fechaBloqueo) => {
   const fechaDesbloqueo = new Date(fechaBloqueo);
-  fechaDesbloqueo.setHours(fechaDesbloqueo.getHours() + HORAS_BLOQUEO);
+  fechaDesbloqueo.setMinutes(fechaDesbloqueo.getMinutes() + MINUTOS_BLOQUEO); // Cambiado setHours a setMinutes
   
-  // Asegurarse de usar UTC para evitar problemas de zona horaria
   return fechaDesbloqueo.toLocaleString('es-ES', {
     timeZone: 'UTC',
     year: 'numeric',
@@ -31,7 +30,7 @@ const calcularHoraDesbloqueo = (fechaBloqueo) => {
 const calcularTiempoRestante = (fechaBloqueo) => {
   const ahora = new Date();
   const fechaDesbloqueo = new Date(fechaBloqueo);
-  fechaDesbloqueo.setHours(fechaDesbloqueo.getHours() + HORAS_BLOQUEO);
+  fechaDesbloqueo.setMinutes(fechaDesbloqueo.getMinutes() + MINUTOS_BLOQUEO); // Cambiado setHours a setMinutes
   
   const diferencia = fechaDesbloqueo - ahora;
   
@@ -39,22 +38,21 @@ const calcularTiempoRestante = (fechaBloqueo) => {
     return { horas: 0, minutos: 0, texto: "Ya puede desbloquearse" };
   }
   
-  const horas = Math.floor(diferencia / (1000 * 60 * 60));
-  const minutos = Math.floor((diferencia % (1000 * 60 * 60)) / (1000 * 60));
+  const minutos = Math.floor(diferencia / (1000 * 60));
+  const segundos = Math.floor((diferencia % (1000 * 60)) / 1000);
   
   let texto = "";
-  if (horas > 0) {
-    texto = `${horas} hora${horas > 1 ? 's' : ''}`;
-    if (minutos > 0) {
-      texto += ` y ${minutos} minuto${minutos > 1 ? 's' : ''}`;
+  if (minutos > 0) {
+    texto = `${minutos} minuto${minutos > 1 ? 's' : ''}`;
+    if (segundos > 0) {
+      texto += ` y ${segundos} segundo${segundos > 1 ? 's' : ''}`;
     }
   } else {
-    texto = `${minutos} minuto${minutos > 1 ? 's' : ''}`;
+    texto = `${segundos} segundo${segundos > 1 ? 's' : ''}`;
   }
   
-  return { horas, minutos, texto };
+  return { minutos, segundos, texto };
 };
-
 // Nuevo endpoint para verificar desbloqueo// En auth.js, asegúrate de que el endpoint verifica correctamente
 router.get("/verificar-desbloqueo/:email", async (req, res) => {
   let connection;
@@ -78,10 +76,11 @@ router.get("/verificar-desbloqueo/:email", async (req, res) => {
     }
     
     const fechaBloqueo = new Date(user.fecha_bloqueo);
-    const fechaDesbloqueo = new Date(fechaBloqueo.getTime() + (HORAS_BLOQUEO * 60 * 60 * 1000)); // Usar getTime() para precisión
+    const fechaDesbloqueo = new Date(fechaBloqueo.getTime() + (MINUTOS_BLOQUEO * 60 * 1000)); // 5 minutos en milisegundos
     const ahora = new Date();
     
     if (ahora >= fechaDesbloqueo) {
+      // IMPORTANTE: Asegúrate de que esta consulta se ejecute
       await connection.query(
         `UPDATE usuarios SET 
          intentos_fallidos = 0, 
@@ -91,7 +90,11 @@ router.get("/verificar-desbloqueo/:email", async (req, res) => {
          WHERE email = ?`,
         [email]
       );
-      return res.json({ success: true, cuenta_bloqueada: false, auto_desbloqueada: true });
+      return res.json({ 
+        success: true, 
+        cuenta_bloqueada: false, 
+        auto_desbloqueada: true // Añade este flag
+      });
     } else {
       const tiempoRestante = calcularTiempoRestante(user.fecha_bloqueo);
       return res.json({ 
@@ -139,7 +142,7 @@ router.post("/login", async (req, res) => {
     if (user.cuenta_bloqueada) {
       const fechaBloqueo = new Date(user.fecha_bloqueo);
       const fechaDesbloqueo = new Date(fechaBloqueo);
-      fechaDesbloqueo.setHours(fechaDesbloqueo.getHours() + HORAS_BLOQUEO);
+      fechaDesbloqueo.setHours(fechaDesbloqueo.getHours() + MINUTOS_BLOQUEO);
       const ahora = new Date();
 
       // Verificar si ya pasó el tiempo de bloqueo
