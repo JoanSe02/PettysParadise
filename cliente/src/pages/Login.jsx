@@ -222,7 +222,7 @@ export default function Login() {
               <div style="background-color: #fff3cd; padding: 15px; border-radius: 8px; border-left: 4px solid #ffc107;">
                 <p><strong>⚠️ Intentos restantes:</strong></p>
                 <p style="font-size: 24px; color: #856404; font-weight: bold;">${intentosRestantes}</p>
-                ${intentosRestantes === 1 ? '<p style="color: #dc3545;"><strong>¡Cuidado! Si fallas una vez más, tu cuenta será bloqueada por 30 minutos.</strong></p>' : ""}
+                ${intentosRestantes === 1 ? '<p style="color: #dc3545;"><strong>¡Cuidado! Si fallas una vez más, tu cuenta será bloqueada por 5 minutos.</strong></p>' : ""}
               </div>
             </div>
           `,

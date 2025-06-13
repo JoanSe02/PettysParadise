@@ -17,7 +17,7 @@ const calcularHoraDesbloqueo = (fechaBloqueo) => {
   fechaDesbloqueo.setMinutes(fechaDesbloqueo.getMinutes() + MINUTOS_BLOQUEO); // Cambiado setHours a setMinutes
   
   return fechaDesbloqueo.toLocaleString('es-ES', {
-    timeZone: 'UTC',
+    timeZone: 'America/Bogota',
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
