@@ -272,7 +272,7 @@ const PropietarioDashboard = () => {
           {/* Stats grid mejorado */}
           <div className="stats-grid-enhanced">
             <div className="stat-card primary">
-              <div className="stat-icon">
+              <div className="stat-icon1">
                 <FaPaw />
               </div>
               <div className="stat-info">
@@ -286,7 +286,7 @@ const PropietarioDashboard = () => {
             </div>
 
             <div className="stat-card success">
-              <div className="stat-icon">
+              <div className="stat-icon1">
                 <FaCalendarCheck />
               </div>
               <div className="stat-info">
@@ -300,7 +300,7 @@ const PropietarioDashboard = () => {
             </div>
 
             <div className="stat-card warning">
-              <div className="stat-icon">
+              <div className="stat-icon1">
                 <FaBell />
               </div>
               <div className="stat-info">

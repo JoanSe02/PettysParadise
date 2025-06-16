@@ -1,11 +1,12 @@
 const mysql = require("mysql2/promise");
 
+// Las variables ahora se leen desde process.env
 const pool = mysql.createPool({
-  host: "localhost",
-  user: "root",
-  password: "",
-  database: "mascotas_db",
-  port: "3306",
+  host: process.env.DB_HOST || 'localhost',
+  user: process.env.DB_USER || 'root',
+  password: process.env.DB_PASSWORD || '',
+  database: process.env.DB_DATABASE,
+  port: process.env.DB_PORT || 3306,
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
@@ -20,8 +21,7 @@ pool
     connection.release();
   })
   .catch((err) => {
-    console.error("❌ Error conectando a MySQL:", err.message);
+    console.error("❌ Error conectando a MySQL:", err.stack); // err.stack da más detalles
   });
 
 module.exports = pool;
-

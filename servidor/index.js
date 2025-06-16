@@ -1,7 +1,11 @@
 const express = require("express");
 const cors = require("cors");
+require('dotenv').config();
 const app = express();
 const encriptarContrasenas = require('./encrypt'); // Importamos el script
+const JWT_SECRET = process.env.JWT_SECRET;
+// Si la variable JWT_SECRET no está definida, detiene la aplicación.
+if (!JWT_SECRET) {  console.error("FATAL ERROR: La variable de entorno JWT_SECRET no está definida.");  process.exit(1); }
 
 // Middlewares
 app.use(cors({
