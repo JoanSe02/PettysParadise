@@ -1,12 +1,14 @@
 "use client"
 import { useForm } from "react-hook-form"
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react" 
 import Axios from "axios"
 import Swal from "sweetalert2"
 import { PawPrint, User, AtSign, Lock, Phone, Calendar, FileText, Building, Home, Eye, EyeOff } from "lucide-react"
 import { Link } from "react-router-dom"
 import { useNavigate } from "react-router-dom"
+import emailjs from '@emailjs/browser';
 import "../stylos/Registrar.css"
+import "../stylos/ResetPass.css" 
 import "bootstrap-icons/font/bootstrap-icons.css"
 
 export default function Registrar() {
@@ -30,9 +32,45 @@ export default function Registrar() {
   const [step, setStep] = useState(1)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [showPassword, setShowPassword] = useState(false) // Estado para mostrar/ocultar contraseña
+  const [loading, setLoading] = useState(false)
+  const [verificationCode, setVerificationCode] = useState("")
+  const [otpValues, setOtpValues] = useState(["", "", "", "", "", ""])
+  const [resendCooldown, setResendCooldown] = useState(0)
+  const otpRefs = useRef([])
   const password = watch("contrasena")
   const email = watch("email")
 
+  useEffect(() => {
+    let interval
+    if (resendCooldown > 0) {
+      interval = setInterval(() => {
+        setResendCooldown((prev) => prev - 1)
+      }, 1000)
+    }
+    return () => clearInterval(interval)
+  }, [resendCooldown])
+
+  // Genera un código de verificación aleatorio
+  const generateVerificationCode = () => {
+    const length = 6
+    const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+    let code = ""
+    for (let i = 0; i < length; i++) {
+      code += characters.charAt(Math.floor(Math.random() * characters.length))
+    }
+    return code
+  }
+
+  // Envía el correo de verificación usando EmailJS
+  const sendVerificationEmail = (userEmail, code) => {
+    // REEMPLAZA CON TUS CREDENCIALES DE EMAILJS
+    return emailjs.send(
+      "service_ay01elm", // Tu Service ID
+      "template_g8zoojs", // Tu Template ID para el correo de registro
+      { email: userEmail, passcode: code },
+      "Sp1XkzSo6_MvtBfUl" // Tu Public Key
+    )
+  }
   const onSubmit = (data) => {
     addUsuario(data)
     reset()
@@ -79,6 +117,53 @@ export default function Registrar() {
         })
       })
   }
+
+  const handleSendCodeAndProceed = async () => {
+    const isValid = await trigger(["email", "contrasena", "confirmarContrasena", "terms"])
+    if (!isValid) {
+      Swal.fire("Campos incompletos", "Por favor, completa todos los campos requeridos en este paso.", "warning")
+      return
+    }
+
+    setLoading(true)
+    const userEmail = getValues("email")
+
+    try {
+      const checkResponse = await Axios.post("http://localhost:5000/api/password/check-email", { email: userEmail })
+      if (checkResponse.data.exists) {
+        Swal.fire("Error", "El correo electrónico ya está registrado.", "error")
+        setLoading(false)
+        return
+      }
+
+      const code = generateVerificationCode()
+      setVerificationCode(code)
+      await sendVerificationEmail(userEmail, code)
+
+      Swal.fire("Código Enviado", `Hemos enviado un código de verificación a <strong>${userEmail}</strong>.`, "success")
+      setStep(4)
+      setResendCooldown(60)
+    } catch (error) {
+      console.error("Error en el proceso de verificación:", error)
+      Swal.fire("Error", "No se pudo enviar el código de verificación. Inténtalo de nuevo.", "error")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Verifica el código OTP y llama a la función de registro
+  const handleVerifyAndRegister = () => {
+    const enteredCode = otpValues.join("")
+    if (enteredCode !== verificationCode) {
+      Swal.fire("Error", "El código de verificación es incorrecto.", "error")
+      setOtpValues(["", "", "", "", "", ""])
+      otpRefs.current[0]?.focus()
+      return
+    }
+    const data = getValues()
+    addUsuario(data)
+  }
+
   const nextStep = async () => {
     let isValid = false
 
@@ -109,6 +194,53 @@ export default function Registrar() {
 
   const tiposVia = ["Carrera", "Calle", "Avenida", "Diagonal", "Transversal", "Circular", "Autopista", "Kilometro"]
 
+  const handleOtpChange = (index, value) => {
+    const sanitizedValue = value.replace(/[^a-zA-Z0-9]/g, "").toUpperCase()
+    if (sanitizedValue.length <= 1) {
+      const newOtpValues = [...otpValues]
+      newOtpValues[index] = sanitizedValue
+      setOtpValues(newOtpValues)
+      if (sanitizedValue && index < 5) {
+        otpRefs.current[index + 1]?.focus()
+      }
+    }
+  }
+
+  const handleOtpKeyDown = (index, e) => {
+    if (e.key === "Backspace" && !otpValues[index] && index > 0) {
+      otpRefs.current[index - 1]?.focus()
+    }
+  }
+  
+  const handleOtpPaste = (e) => {
+    e.preventDefault()
+    const pastedData = e.clipboardData.getData("text").replace(/[^a-zA-Z0-9]/g, "").toUpperCase()
+    if (pastedData.length === 6) {
+      setOtpValues(pastedData.split(""))
+      otpRefs.current[5]?.focus()
+    }
+  }
+  
+  const handleResendCode = async () => {
+    if (resendCooldown > 0) return;
+    setLoading(true);
+    const userEmail = getValues("email");
+    try {
+      const code = generateVerificationCode();
+      setVerificationCode(code);
+      await sendVerificationEmail(userEmail, code);
+      Swal.fire("Código Reenviado", "Se ha reenviado un nuevo código a tu correo.", "success");
+      setResendCooldown(60);
+      setOtpValues(["", "", "", "", "", ""]);
+      if (otpRefs.current[0]) {
+        otpRefs.current[0].focus();
+      }
+    } catch (error) {
+      Swal.fire("Error", "No se pudo reenviar el código.", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
   // Función para validar tipo de vía en onChange
   const onChangeTipoVia = async (e) => {
     const value = e.target.value
@@ -990,25 +1122,72 @@ export default function Registrar() {
                     </div>
                   </>
                 )}
-              </form>
+            
+              {/* Paso 4: Verificación de Correo (OTP) */}
+              {step === 4 && (
+                   <div className="otp-verification-container">
+                      <p className="form-subtitle" style={{textAlign: 'center', marginBottom: '20px'}}>
+                          Ingresa el código de 6 dígitos enviado a <strong>{getValues("email")}</strong>.
+                      </p>
+                        <div className="otp-container">
+                            <div className="otp-inputs">
+                                {otpValues.map((value, index) => (
+                                              <input
+                                                  key={index}
+                                                  ref={(el) => (otpRefs.current[index] = el)}
+                                                  type="text"
+                                                  value={value}
+                                                  onChange={(e) => handleOtpChange(index, e.target.value)}
+                                                  onKeyDown={(e) => handleOtpKeyDown(index, e)}
+                                                  onPaste={handleOtpPaste}
+                                                  className="otp-input"
+                                                  maxLength={1}
+                                                  autoComplete="off"
+                                              />
+                                    ))}
+                              </div>
+                            </div>
+                            <div className="resend-container">
+                                <button
+                                          type="button"
+                                          className={`resend-button ${resendCooldown > 0 ? "disabled" : ""}`}
+                                          onClick={handleResendCode}
+                                          disabled={resendCooldown > 0 || loading}
+                                >
+                                  {resendCooldown > 0 ? `Reenviar en ${resendCooldown}s` : "Reenviar código"}
+                                 </button>
+                              </div>
+                            </div>
+                            )}
+                </form>
             </div>
+
 
             <div className="form-footer">
               <div className="button-container">
-                {step > 1 && (
-                  <button type="button" onClick={() => setStep(step - 1)} className="button button-prev">
+              {step > 1 && (
+                  <button type="button" onClick={() => setStep(step - 1)} className="button button-prev1" disabled={loading}>
                     Anterior
                   </button>
-                )}
-                {step < 3 ? (
-                  <button type="button" onClick={nextStep} className="button button-next">
-                    Siguiente
+                  )}
+
+              {step < 3 && (
+                  <button type="button" onClick={nextStep} className="button button-next1" disabled={loading}>
+                      Siguiente
                   </button>
-                ) : (
-                  <button type="submit" form="signup-form" className="button button-submit">
-                    Crear cuenta
+                  )}
+                            
+              {step === 3 && (
+                  <button type="button" onClick={handleSendCodeAndProceed} className="button button-next1" disabled={loading}>
+                      Verificar Email
                   </button>
-                )}
+                    )}
+
+              {step === 4 && (
+                  <button type="button" onClick={handleVerifyAndRegister} className="button button-submit" disabled={loading}>
+                      Crear cuenta
+                  </button>
+                    )}
               </div>
               <p className="login-link">
                 ¿Ya tienes una cuenta? <Link to="/login">Inicia sesión</Link>

@@ -59,6 +59,8 @@ const VeterinarioDashboard = () => {
           setDashboardData({
             nombre: storedUser.nombre,
             apellido: storedUser.apellido,
+            email: storedUser.email,
+            especialidad: storedUser.especialidad,
             ...response.stats,
           });
         } else {
@@ -125,7 +127,7 @@ const VeterinarioDashboard = () => {
             { dashboardData.apellido.charAt(0).toUpperCase()}
           </div>
           <div className="vet-user-details">
-            <h3 className="user-name">
+            <h3 className="user-name_vet">
               Dr. { dashboardData.nombre} { dashboardData.apellido}
             </h3>
             <p className="vet-user-email">

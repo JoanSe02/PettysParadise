@@ -7,6 +7,7 @@ import { apiService } from "../../services/api-service";
 import jsPDF from "jspdf";
 import "../../stylos/vet/HistorialesMedicos.css";
 import "../../stylos/vet/loadingvet.css";
+import logoUrl from '../../img/logo.png';
 
 // =================================================================================
 // COMPONENTE PRINCIPAL
@@ -38,7 +39,7 @@ export default function HistorialesMedicos() {
     setLoading(true);
     setError(null);
     try {
-      const response = await apiService.get("/api/historiales");
+      const response = await apiService.get("/api/historiales/");
       setHistoriales(response || []);
     } catch (err) {
       setError("Error al cargar los historiales médicos.");
@@ -109,81 +110,95 @@ export default function HistorialesMedicos() {
     try {
       const doc = new jsPDF();
       const userData = JSON.parse(localStorage.getItem("user") || "{}");
+      let currentY = 20; // Variable para controlar la posición vertical del texto
+      const margin = 20;
+      const pageWidth = doc.internal.pageSize.getWidth();
 
-      doc.setFont("helvetica", "bold");
+      // --- ENCABEZADO ---
+      doc.addImage(logoUrl, 'PNG', margin, 15, 35, 35);
       doc.setFontSize(22);
-      doc.setTextColor(44, 62, 80);
-      doc.text("HISTORIAL MÉDICO VETERINARIO", 105, 30, { align: "center" });
-
+      doc.setFont("helvetica", "bold");
+      doc.text("Petty's Paradise", pageWidth - margin, 30, { align: 'right' });
+      doc.setFontSize(12);
       doc.setFont("helvetica", "normal");
-      doc.setFontSize(11);
-      doc.setTextColor(127, 140, 141);
-      doc.text("Petty's Paradise - Cuidado Profesional", 105, 40, { align: "center" });
-      doc.text(`Emitido por: Dr(a). ${historial.nombre_veterinario || `${userData.nombre} ${userData.apellido}`}`, 105, 47, { align: "center" });
-      doc.text(`Fecha de emisión: ${new Date().toLocaleDateString('es-CO')}`, 105, 54, { align: "center" });
+      doc.text("Historial Clínico Veterinario", pageWidth - margin, 40, { align: 'right' });
+      doc.setLineWidth(0.5);
+      doc.line(margin, 55, pageWidth - margin, 55);
+      currentY = 70;
 
-      doc.setDrawColor(220, 220, 220);
-      doc.line(20, 65, 190, 65);
-
+      // --- INFORMACIÓN DEL PACIENTE ---
       doc.setFontSize(14);
-      doc.setTextColor(44, 62, 80);
-      doc.text("INFORMACIÓN DEL PACIENTE", 20, 80);
-
+      doc.setFont("helvetica", "bold");
+      doc.text("Información del Paciente", margin, currentY);
+      currentY += 10;
       doc.setFontSize(11);
-      doc.setTextColor(52, 73, 94);
-      doc.text(`Nombre: ${historial.nombre_mascota || "N/A"}`, 25, 90);
-      doc.text(`Propietario: ${historial.nombre_propietario || "N/A"}`, 25, 97);
-      
+      doc.setFont("helvetica", "normal");
+      doc.text(`Nombre de la Mascota: ${historial.nombre_mascota || 'N/A'}`, margin, currentY);
+      doc.text(`Propietario: ${historial.nombre_propietario || 'N/A'}`, pageWidth / 2, currentY);
+      currentY += 8;
+      doc.text(`Especie: ${historial.especie || 'N/A'}`, margin, currentY);
+      doc.text(`Raza: ${historial.raza || 'N/A'}`, pageWidth / 2, currentY);
+      currentY += 12;
+
+      // --- DETALLES DE LA CONSULTA ---
       doc.setFontSize(14);
-      doc.setTextColor(44, 62, 80);
-      doc.text("DETALLES DE LA CONSULTA", 20, 112);
-
+      doc.setFont("helvetica", "bold");
+      doc.text("Detalles de la Consulta", margin, currentY);
+      doc.setLineWidth(0.2);
+      doc.line(margin, currentY + 2, pageWidth - margin, currentY + 2);
+      currentY += 12;
       doc.setFontSize(11);
-      doc.setTextColor(52, 73, 94);
-      doc.text(`Fecha: ${new Date(historial.fecha).toLocaleDateString('es-CO')}`, 25, 122);
-      doc.text(`Peso: ${historial.peso_kg || "N/A"} kg`, 25, 129);
-      doc.text(`Temperatura: ${historial.temperatura_c || "N/A"} °C`, 90, 129);
-      
-      const motivoLines = doc.splitTextToSize(`Motivo de la consulta: ${historial.motivo_consulta || ""}`, 170);
-      doc.text(motivoLines, 25, 138);
-      let currentY = 138 + (motivoLines.length * 7);
+      doc.setFont("helvetica", "normal");
+      doc.text(`Fecha de la consulta: ${new Date(historial.fecha).toLocaleDateString('es-CO')}`, margin, currentY);
+      currentY += 8;
+      doc.text(`Peso: ${historial.peso_kg || 'N/A'} kg`, margin, currentY);
+      doc.text(`Temperatura: ${historial.temperatura_c || 'N/A'} °C`, pageWidth / 2, currentY);
+      currentY += 12;
 
-      doc.setFontSize(12);
-      doc.setTextColor(44, 62, 80);
-      doc.text("Descripción / Diagnóstico:", 20, currentY + 10);
-      doc.setFontSize(11);
-      doc.setTextColor(52, 73, 94);
-      const descripcionLines = doc.splitTextToSize(historial.descripcion || "", 170);
-      doc.text(descripcionLines, 25, currentY + 17);
-      currentY += 17 + (descripcionLines.length * 7);
+      // --- MOTIVO DE LA CONSULTA (con manejo de texto largo) ---
+      doc.setFont("helvetica", "bold");
+      doc.text("Motivo de la Consulta:", margin, currentY);
+      currentY += 7;
+      doc.setFont("helvetica", "normal");
+      const motivoLines = doc.splitTextToSize(historial.motivo_consulta || 'No especificado.', pageWidth - margin * 2);
+      doc.text(motivoLines, margin, currentY);
+      currentY += motivoLines.length * 5 + 5; // Ajustar el espacio según las líneas
 
-      doc.setFontSize(12);
-      doc.setTextColor(44, 62, 80);
-      doc.text("Tratamiento Aplicado:", 20, currentY + 10);
-      doc.setFontSize(11);
-      doc.setTextColor(52, 73, 94);
-      const tratamientoLines = doc.splitTextToSize(historial.tratamiento || "", 170);
-      doc.text(tratamientoLines, 25, currentY + 17);
-      currentY += 17 + (tratamientoLines.length * 7);
+      // --- DESCRIPCIÓN Y DIAGNÓSTICO ---
+      doc.setFont("helvetica", "bold");
+      doc.text("Descripción / Diagnóstico:", margin, currentY);
+      currentY += 7;
+      doc.setFont("helvetica", "normal");
+      const descLines = doc.splitTextToSize(historial.descripcion || 'No especificado.', pageWidth - margin * 2);
+      doc.text(descLines, margin, currentY);
+      currentY += descLines.length * 5 + 5;
 
-      doc.setFontSize(12);
-      doc.setTextColor(44, 62, 80);
-      doc.text("Próximo Seguimiento:", 20, currentY + 10);
-      doc.setFontSize(11);
-      doc.setTextColor(52, 73, 94);
-      doc.text(historial.proximo_seguimiento ? new Date(historial.proximo_seguimiento).toLocaleDateString('es-CO') : "No especificado", 25, currentY + 17);
+      // --- TRATAMIENTO APLICADO ---
+      doc.setFont("helvetica", "bold");
+      doc.text("Tratamiento Aplicado:", margin, currentY);
+      currentY += 7;
+      doc.setFont("helvetica", "normal");
+      const tratLines = doc.splitTextToSize(historial.tratamiento || 'No especificado.', pageWidth - margin * 2);
+      doc.text(tratLines, margin, currentY);
+      currentY += tratLines.length * 5 + 10;
 
-      currentY += 17;
-      if (currentY > 250) doc.addPage();
+      // --- PRÓXIMO SEGUIMIENTO Y COSTO ---
+      doc.setFont("helvetica", "normal");
+      doc.text(`Próximo Seguimiento: ${historial.proximo_seguimiento ? new Date(historial.proximo_seguimiento).toLocaleDateString('es-CO') : "No especificado"}`, margin, currentY);
+      const costoTexto = `Costo: ${historial.costo_consulta ? new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(historial.costo_consulta) : "N/A"}`;
+      doc.text(costoTexto, pageWidth - margin, currentY, { align: 'right' });
 
-      const yFirma = Math.max(currentY + 20, 250);
-      doc.setDrawColor(127, 140, 141);
-      doc.line(110, yFirma, 190, yFirma);
-      doc.text(`Firma: Dr(a). ${historial.nombre_veterinario || 'N/A'}`, 110, yFirma + 7);
-      doc.text("Médico Veterinario", 110, yFirma + 14);
+      // --- SECCIÓN DEL VETERINARIO ---
+      const yFirma = Math.max(currentY + 40, 250); // Posición final
+      doc.line(pageWidth / 2 - 30, yFirma, pageWidth / 2 + 30, yFirma);
+      doc.setFontSize(10);
+      doc.text("Veterinario a Cargo", pageWidth / 2, yFirma + 7, { align: 'center' });
+      doc.text(historial.nombre_veterinario || `${userData.nombre} ${userData.apellido}`, pageWidth / 2, yFirma + 12, { align: 'center' });
 
+      // Guardar el PDF
       doc.save(`Historial_${historial.nombre_mascota || "Paciente"}_${historial.fecha}.pdf`);
       showNotification("PDF generado exitosamente");
+
     } catch (error) {
       console.error("Error al generar PDF:", error);
       showNotification("Error al generar el PDF", "error");
