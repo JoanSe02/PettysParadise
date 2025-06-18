@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const pool = require("../db/conexion");
+const connection = require("../db/conexion");
 const authenticateToken = require("../middlewares/authenticateToken");
 
 // OBTENER TODOS LOS HISTORIALES (Ruta principal para el veterinario)
@@ -20,26 +21,19 @@ router.get("/", authenticateToken, async (req, res) => {
 
 // CREAR NUEVO HISTORIAL
 router.post("/", authenticateToken, async (req, res) => {
-  let connection;
-  try {
-      const id_usuario_modificador = req.user.id_usuario; 
-      const { 
-        cod_mas, id_vet, fecha, descripcion, tratamiento, motivo_consulta,
-        peso_kg, temperatura_c, proximo_seguimiento, costo_consulta 
-      } = req.body;
+  const { cod_mas, fecha, descripcion, tratamiento, motivo_consulta, peso_kg, temperatura_c, proximo_seguimiento, costo_consulta } = req.body;
+  const id_vet_autenticado = req.user.id_usuario; 
+  const creado_por = req.user.id_usuario;
 
-      connection = await pool.getConnection();
-      await connection.query("CALL CrearHistorial(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [
-        cod_mas, id_vet, fecha, descripcion, tratamiento, motivo_consulta,
-        peso_kg, temperatura_c, proximo_seguimiento, costo_consulta,
-        id_usuario_modificador
-      ]);
-      res.status(201).json({ success: true, message: "Historial creado exitosamente" });
+  try {
+    await connection.query(
+      "CALL CrearHistorial(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      [cod_mas, id_vet_autenticado, fecha, descripcion, tratamiento, motivo_consulta, peso_kg, temperatura_c, proximo_seguimiento, costo_consulta, creado_por]
+    );
+    res.status(201).json({ message: "Historial médico registrado exitosamente." });
   } catch (error) {
-      console.error("Error al crear historial:", error);
-      res.status(500).json({ success: false, message: error.sqlMessage || "Error del servidor" });
-  } finally {
-      if (connection) connection.release();
+    console.error("Error al registrar historial médico:", error);
+    res.status(500).json({ message: "Error en el servidor", error: error.message });
   }
 });
 

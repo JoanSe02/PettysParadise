@@ -46,37 +46,49 @@ const VeterinarioDashboard = () => {
 
   // useEffect para cargar los datos del dashboard
   useEffect(() => {
-    const fetchDashboardData = async () => {
-      setLoading(true);
-      try {
-        // Obtenemos los datos del usuario desde localStorage
-        const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
-        
-        // Llamamos a la nueva ruta de estadísticas
-        const response = await apiService.get("/api/citas/veterinario/stats");
+    try {
+      const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
+      // Establecemos la información básica del usuario que no cambiará al navegar
+      setDashboardData(prevData => ({
+        ...prevData,
+        nombre: storedUser.nombre || 'Dr.',
+        apellido: storedUser.apellido || 'Veterinario',
+        email: storedUser.email || 'email@example.com',
+        especialidad: storedUser.especialidad || 'Especialidad General'
+      }));
+    } catch (err) {
+      console.error("Error al cargar datos del usuario desde localStorage", err);
+      setError("No se pudieron cargar los datos del usuario.");
+    }
+  }, []); // El array vacío [] asegura que se ejecute solo una vez al montar.
 
-        if (response.success) {
-          setDashboardData({
-            nombre: storedUser.nombre,
-            apellido: storedUser.apellido,
-            email: storedUser.email,
-            especialidad: storedUser.especialidad,
-            ...response.stats,
-          });
-        } else {
-          throw new Error("No se pudieron cargar las estadísticas.");
+
+  useEffect(() => {
+    const fetchDashboardStats = async () => {
+      if (isMainDashboard) {
+        setLoading(true);
+        setError(null);
+        try {
+          const response = await apiService.get("/api/citas/veterinario/stats");
+          if (response.success) {
+            setDashboardData(prevData => ({
+              ...prevData, 
+              ...response.stats, 
+            }));
+          } else {
+            throw new Error("No se pudieron cargar las estadísticas.");
+          }
+        } catch (err) {
+          setError(err.message || "Error al cargar las estadísticas.");
+        } finally {
+          setLoading(false);
         }
-      } catch (err) {
-        setError(err.message || "Error al cargar los datos del dashboard.");
-      } finally {
+      } else {
         setLoading(false);
       }
     };
 
-    // Solo cargamos los datos si estamos en la vista principal del dashboard
-    if (isMainDashboard) {
-      fetchDashboardData();
-    }
+    fetchDashboardStats();
   }, [isMainDashboard]);
 
   const handleLogout = () => {

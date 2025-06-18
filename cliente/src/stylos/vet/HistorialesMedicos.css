@@ -156,6 +156,14 @@
   line-height: 1.4;
 }
 
+.historiales-medicos-card-photo {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 15px;
+}
+
 .historiales-medicos-card-body strong {
   color: #4b5563;
   font-weight: 600;

@@ -34,7 +34,8 @@ BEGIN
     SELECT 
         h.cod_his,
         h.fech_his AS fecha,
-        h.descrip_his AS descripcion,
+        -- AJUSTE 1: Se añade el alias "descripcion" que faltaba
+        h.descrip_his AS descripcion, 
         h.tratamiento,
         h.motivo_consulta,
         h.peso_kg,
@@ -43,6 +44,10 @@ BEGIN
         h.costo_consulta,
         h.cod_mas,
         m.nom_mas AS nombre_mascota,
+        m.especie,
+        m.raza,
+        -- AJUSTE 2: Se añade el campo "foto" de la mascota que faltaba
+        m.foto,
         CONCAT(u_pro.nombre, ' ', u_pro.apellido) AS nombre_propietario,
         CONCAT(u_vet.nombre, ' ', u_vet.apellido) AS nombre_veterinario
     FROM historiales_medicos h
@@ -51,10 +56,9 @@ BEGIN
     JOIN usuarios u_pro ON p.id_pro = u_pro.id_usuario
     LEFT JOIN veterinarios v ON h.id_vet = v.id_vet
     LEFT JOIN usuarios u_vet ON v.id_vet = u_vet.id_usuario
-    WHERE h.activo = 1 -- ¡IMPORTANTE! Solo trae los registros activos
+    WHERE h.activo = 1
     ORDER BY h.fech_his DESC;
 END$$
-
 
 -- Obtener historiales médicos por mascota
 DROP PROCEDURE IF EXISTS ObtenerHistorialesPorMascota$$

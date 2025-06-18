@@ -4,6 +4,7 @@ require('dotenv').config();
 const app = express();
 const encriptarContrasenas = require('./encrypt'); // Importamos el script
 const JWT_SECRET = process.env.JWT_SECRET;
+const path = require('path');
 // Si la variable JWT_SECRET no está definida, detiene la aplicación.
 if (!JWT_SECRET) {  console.error("FATAL ERROR: La variable de entorno JWT_SECRET no está definida.");  process.exit(1); }
 
@@ -49,6 +50,8 @@ app.use('/api/upload', uploadRoutes);
 app.use("/api/historiales", historialesRoutes);
 app.use('/api/historial', historialRoutes);
 app.use("/api/perfil", perfilRoutes);
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 
 
 app.get('/api/health', (req, res) => {

@@ -21,7 +21,6 @@ export default function HistorialesMedicos() {
   const [isEditing, setIsEditing] = useState(false);
   const [selectedHistorial, setSelectedHistorial] = useState(null);
   
-  // Estados para el modal de logs
   const [showLogModal, setShowLogModal] = useState(false);
   const [logData, setLogData] = useState([]);
   const [loadingLogs, setLoadingLogs] = useState(false);
@@ -110,11 +109,10 @@ export default function HistorialesMedicos() {
     try {
       const doc = new jsPDF();
       const userData = JSON.parse(localStorage.getItem("user") || "{}");
-      let currentY = 20; // Variable para controlar la posición vertical del texto
+      let currentY = 20;
       const margin = 20;
       const pageWidth = doc.internal.pageSize.getWidth();
 
-      // --- ENCABEZADO ---
       doc.addImage(logoUrl, 'PNG', margin, 15, 35, 35);
       doc.setFontSize(22);
       doc.setFont("helvetica", "bold");
@@ -126,7 +124,6 @@ export default function HistorialesMedicos() {
       doc.line(margin, 55, pageWidth - margin, 55);
       currentY = 70;
 
-      // --- INFORMACIÓN DEL PACIENTE ---
       doc.setFontSize(14);
       doc.setFont("helvetica", "bold");
       doc.text("Información del Paciente", margin, currentY);
@@ -140,7 +137,6 @@ export default function HistorialesMedicos() {
       doc.text(`Raza: ${historial.raza || 'N/A'}`, pageWidth / 2, currentY);
       currentY += 12;
 
-      // --- DETALLES DE LA CONSULTA ---
       doc.setFontSize(14);
       doc.setFont("helvetica", "bold");
       doc.text("Detalles de la Consulta", margin, currentY);
@@ -155,16 +151,14 @@ export default function HistorialesMedicos() {
       doc.text(`Temperatura: ${historial.temperatura_c || 'N/A'} °C`, pageWidth / 2, currentY);
       currentY += 12;
 
-      // --- MOTIVO DE LA CONSULTA (con manejo de texto largo) ---
       doc.setFont("helvetica", "bold");
       doc.text("Motivo de la Consulta:", margin, currentY);
       currentY += 7;
       doc.setFont("helvetica", "normal");
       const motivoLines = doc.splitTextToSize(historial.motivo_consulta || 'No especificado.', pageWidth - margin * 2);
       doc.text(motivoLines, margin, currentY);
-      currentY += motivoLines.length * 5 + 5; // Ajustar el espacio según las líneas
+      currentY += motivoLines.length * 5 + 5;
 
-      // --- DESCRIPCIÓN Y DIAGNÓSTICO ---
       doc.setFont("helvetica", "bold");
       doc.text("Descripción / Diagnóstico:", margin, currentY);
       currentY += 7;
@@ -173,7 +167,6 @@ export default function HistorialesMedicos() {
       doc.text(descLines, margin, currentY);
       currentY += descLines.length * 5 + 5;
 
-      // --- TRATAMIENTO APLICADO ---
       doc.setFont("helvetica", "bold");
       doc.text("Tratamiento Aplicado:", margin, currentY);
       currentY += 7;
@@ -182,21 +175,18 @@ export default function HistorialesMedicos() {
       doc.text(tratLines, margin, currentY);
       currentY += tratLines.length * 5 + 10;
 
-      // --- PRÓXIMO SEGUIMIENTO Y COSTO ---
       doc.setFont("helvetica", "normal");
       doc.text(`Próximo Seguimiento: ${historial.proximo_seguimiento ? new Date(historial.proximo_seguimiento).toLocaleDateString('es-CO') : "No especificado"}`, margin, currentY);
       const costoTexto = `Costo: ${historial.costo_consulta ? new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(historial.costo_consulta) : "N/A"}`;
       doc.text(costoTexto, pageWidth - margin, currentY, { align: 'right' });
 
-      // --- SECCIÓN DEL VETERINARIO ---
-      const yFirma = Math.max(currentY + 40, 250); // Posición final
+      const yFirma = Math.max(currentY + 40, 250);
       doc.line(pageWidth / 2 - 30, yFirma, pageWidth / 2 + 30, yFirma);
       doc.setFontSize(10);
       doc.text("Veterinario a Cargo", pageWidth / 2, yFirma + 7, { align: 'center' });
       doc.text(historial.nombre_veterinario || `${userData.nombre} ${userData.apellido}`, pageWidth / 2, yFirma + 12, { align: 'center' });
 
-      // Guardar el PDF
-      doc.save(`Historial_${historial.nombre_mascota || "Paciente"}_${historial.fecha}.pdf`);
+      doc.save(`Historial_${historial.nombre_mascota || "Paciente"}_${new Date(historial.fecha).toLocaleDateString('es-CO')}.pdf`);
       showNotification("PDF generado exitosamente");
 
     } catch (error) {
@@ -271,6 +261,7 @@ export default function HistorialesMedicos() {
           onSubmit={handleSave}
           isEditing={isEditing}
           historial={selectedHistorial}
+          historialesExistentes={historiales}
         />
       )}
       
@@ -290,10 +281,18 @@ export default function HistorialesMedicos() {
 // =================================================================================
 
 function HistorialCard({ historial, onEdit, onDelete, onDownload, onViewLog }) {
+  // AJUSTE CLAVE: Usamos la URL completa de Cloudinary directamente desde historial.foto
+  const imageUrl = historial.foto;
+
   return (
     <div className="historiales-medicos-card">
       <div className="historiales-medicos-card-header">
-        <Stethoscope />
+        {/* Se muestra la foto si existe, si no, el icono por defecto */}
+        {imageUrl ? (
+          <img src={imageUrl} alt={historial.nombre_mascota} className="historiales-medicos-card-photo" />
+        ) : (
+          <Stethoscope />
+        )}
         <div>
           <h4>{historial.nombre_mascota}</h4>
           <p>Propietario: {historial.nombre_propietario} | Atendió: Dr(a). {historial.nombre_veterinario || "N/A"}</p>
@@ -315,11 +314,14 @@ function HistorialCard({ historial, onEdit, onDelete, onDownload, onViewLog }) {
   );
 }
 
-function HistorialModal({ onClose, onSubmit, isEditing, historial }) {
+// EL RESTO DEL ARCHIVO NO NECESITA CAMBIOS
+function HistorialModal({ onClose, onSubmit, isEditing, historial, historialesExistentes }) {
+  const loggedInUser = JSON.parse(localStorage.getItem("user") || "{}");
+
   const [formData, setFormData] = useState({
     cod_mas: historial?.cod_mas || "",
-    id_vet: historial?.id_vet || "",
-    fecha: historial ? new Date(historial.fecha).toISOString().split("T")[0] : new Date().toISOString().split("T")[0],
+    id_vet: loggedInUser.id_usuario,
+    fecha: new Date().toISOString().split("T")[0],
     descripcion: historial?.descripcion || "",
     tratamiento: historial?.tratamiento || "",
     motivo_consulta: historial?.motivo_consulta || "",
@@ -332,24 +334,21 @@ function HistorialModal({ onClose, onSubmit, isEditing, historial }) {
 
   const [propietarios, setPropietarios] = useState([]);
   const [mascotas, setMascotas] = useState([]);
-  const [veterinarios, setVeterinarios] = useState([]);
   const [selectedPropietario, setSelectedPropietario] = useState(historial ? historial.id_pro : "");
   const [loadingMascotas, setLoadingMascotas] = useState(false);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchPropietarios = async () => {
       try {
-        const [propietariosRes, veterinariosRes] = await Promise.all([
-          apiService.get("/api/roles/propietarios"),
-          apiService.get("/api/servicios/veterinarios")
-        ]);
-        if (propietariosRes.success) setPropietarios(propietariosRes.propietarios || []);
-        setVeterinarios(veterinariosRes || []);
+        const propietariosRes = await apiService.get("/api/roles/propietarios");
+        if (propietariosRes.success) {
+          setPropietarios(propietariosRes.propietarios || []);
+        }
       } catch (error) {
-        console.error("Error fetching data for modal", error);
+        console.error("Error fetching propietarios for modal", error);
       }
     };
-    fetchData();
+    fetchPropietarios();
   }, []);
 
   useEffect(() => {
@@ -384,12 +383,42 @@ function HistorialModal({ onClose, onSubmit, isEditing, historial }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    if (!isEditing) {
+      const mascotaYaTieneHistorial = historialesExistentes.some(h => h.cod_mas === parseInt(formData.cod_mas));
+      if (mascotaYaTieneHistorial) {
+        Swal.fire({ icon: 'error', title: 'Operación no permitida', text: 'Esta mascota ya tiene un historial médico registrado. Por favor, edite el existente.' });
+        return;
+      }
+    }
+
     if (!formData.cod_mas && !isEditing) {
       Swal.fire({ icon: "error", title: "Error de validación", text: "Debes seleccionar un propietario y una mascota." });
       return;
     }
+
+    const peso = parseFloat(formData.peso_kg);
+    if (peso && (peso > 70 || peso < 0.1)) {
+        Swal.fire({ icon: 'error', title: 'Peso no válido', text: 'El peso debe estar entre 0.1 kg y 70 kg.' });
+        return;
+    }
+
+    const costo = parseFloat(formData.costo_consulta);
+    if (costo && (costo > 3000000 || costo < 0)) {
+        Swal.fire({ icon: 'error', title: 'Costo no válido', text: 'El costo no puede ser negativo ni superar los $3,000,000 COP.' });
+        return;
+    }
+    
     onSubmit(formData);
   };
+
+  const today = new Date();
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const maxDate = new Date(today);
+  maxDate.setMonth(maxDate.getMonth() + 1);
+  const minDateStr = tomorrow.toISOString().split('T')[0];
+  const maxDateStr = maxDate.toISOString().split('T')[0];
 
   return (
     <div className="historiales-medicos-modal-overlay" onClick={onClose}>
@@ -425,29 +454,23 @@ function HistorialModal({ onClose, onSubmit, isEditing, historial }) {
               <input type="text" value={`${historial.nombre_mascota} (Propietario: ${historial.nombre_propietario})`} disabled />
             </div>
           )}
-          <div className="historiales-medicos-form-group">
-            <label><Stethoscope size={16} /> Veterinario</label>
-            <select name="id_vet" value={formData.id_vet} onChange={handleChange} required>
-              <option value="">-- Seleccionar Veterinario --</option>
-              {veterinarios.map((vet) => (<option key={vet.id_usuario} value={vet.id_usuario}>Dr. {vet.nombre} {vet.apellido}</option>))}
-            </select>
-          </div>
+          
           <div className="historiales-medicos-form-group">
             <label><FilePlus size={16} /> Motivo de Consulta</label>
             <input type="text" name="motivo_consulta" value={formData.motivo_consulta} onChange={handleChange} required />
           </div>
           <div className="historiales-medicos-form-group">
-            <label><Calendar size={16} /> Fecha</label>
-            <input type="date" name="fecha" value={formData.fecha} onChange={handleChange} required />
+            <label><Calendar size={16} /> Fecha de la Consulta</label>
+            <input type="date" name="fecha" value={formData.fecha} readOnly disabled />
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
             <div className="historiales-medicos-form-group">
               <label><Weight size={16} /> Peso (kg)</label>
-              <input type="number" step="0.1" name="peso_kg" value={formData.peso_kg} onChange={handleChange} />
+              <input type="number" step="0.1" name="peso_kg" value={formData.peso_kg} onChange={handleChange} placeholder="Ej: 5.4"/>
             </div>
             <div className="historiales-medicos-form-group">
               <label><Thermometer size={16} /> Temp (°C)</label>
-              <input type="number" step="0.1" name="temperatura_c" value={formData.temperatura_c} onChange={handleChange} />
+              <input type="number" step="0.1" name="temperatura_c" value={formData.temperatura_c} onChange={handleChange} placeholder="Ej: 38.5"/>
             </div>
           </div>
           <div className="historiales-medicos-form-group">
@@ -460,11 +483,12 @@ function HistorialModal({ onClose, onSubmit, isEditing, historial }) {
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
             <div className="historiales-medicos-form-group">
-              <label><Calendar size={16} /> Próximo Seguimiento</label>
-              <input type="date" name="proximo_seguimiento" value={formData.proximo_seguimiento} onChange={handleChange} />
+              <label><Calendar size={16} /> Próximo Seguimiento Sugerido</label>
+              <input type="date" name="proximo_seguimiento" value={formData.proximo_seguimiento} onChange={handleChange} min={minDateStr} max={maxDateStr} />
+              <small className="form-helper-text">Solo se puede agendar hasta un mes a futuro.</small>
             </div>
             <div className="historiales-medicos-form-group">
-              <label><i className="fas fa-dollar-sign"></i> Costo (COP)</label>
+              <label>Costo Consulta (COP)</label>
               <input type="number" step="1000" name="costo_consulta" value={formData.costo_consulta} onChange={handleChange} />
             </div>
           </div>

@@ -147,6 +147,16 @@ CREATE TABLE citas (
     FOREIGN KEY (cod_mas) REFERENCES mascotas(cod_mas)
 );
 
+CREATE TABLE IF NOT EXISTS logs_citas (
+id_log INT NOT NULL AUTO_INCREMENT,
+  id_cita_afectada INT NULL,
+  accion VARCHAR(10) NULL COMMENT 'INSERT, UPDATE, DELETE',
+  descripcion TEXT NULL COMMENT 'Descripción legible de lo que ocurrió',
+  fecha_hora_accion TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  usuario_db VARCHAR(255) NOT NULL COMMENT 'El usuario de la BD que realizó la acción',
+  PRIMARY KEY (id_log)
+);
+
 -- ========= INSERCIÓN DE DATOS =========
 
 -- Insertar tipos de persona
