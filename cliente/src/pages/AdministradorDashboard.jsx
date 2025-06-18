@@ -150,7 +150,7 @@ const AdministradorDashboard = () => {
             {userData.apellido.charAt(0).toUpperCase()}
           </div>
           <div className="admin-user-details">
-            <h3 className="user-name">
+            <h3 className="user-name-admin">
               {userData.nombre} {userData.apellido}
             </h3>
             <p className="admin-user-email">

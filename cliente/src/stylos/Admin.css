@@ -111,11 +111,11 @@
   text-align: center;
 }
 
-.user-name {
+.user-name-admin {
   margin: 0 0 8px 0;
   font-size: 18px;
   font-weight: 600;
-  color: var(--admin-sidebar-text-active);
+  color: #ffffff;
 }
 
 .admin-user-email {

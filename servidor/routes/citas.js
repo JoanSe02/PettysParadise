@@ -3,22 +3,7 @@ const router = express.Router();
 const pool = require("../db/conexion");
 const authenticateToken = require("../middlewares/authenticateToken");
 
-/* // Obtener citas del propietario (usando procedimiento)
-router.get("/", authenticateToken, async (req, res) => {
-  let connection;
-  try {
-    const id_pro = req.user.id_usuario;
-    connection = await pool.getConnection();
-    const [rows] = await connection.query(`CALL MostrarCitasPorPropietario(?)`, [id_pro]);
 
-    res.json(rows[0]); // El resultado está en rows[0]
-  } catch (error) {
-    console.error("Error al obtener citas:", error);
-    res.status(500).json({ success: false, message: "Error al obtener citas", error: error.message });
-  } finally {
-    if (connection) connection.release();
-  }
-}); */
 
 // OBTENER CITAS (MODIFICADO PARA MANEJAR ROLES)
 router.get("/", authenticateToken, async (req, res) => {
@@ -68,43 +53,49 @@ router.get("/", authenticateToken, async (req, res) => {
   }
 });
 
-// Crear cita (MODIFICADO para tomar id_pro del body)
+// Crear cita 
 router.post("/", authenticateToken, async (req, res) => {
+  const { id_pro, id_vet, cod_mas, cod_ser, fech_cit, hora, estado, notas } = req.body;
   let connection;
-  try {
-    // Obtenemos todos los datos necesarios desde el cuerpo de la petición.
-    // Esto funciona tanto si crea la cita un propietario para sí mismo
-    // como si la crea un veterinario para un propietario.
-    const { cod_mas, cod_ser, id_vet, fech_cit, hora, notas, id_pro } = req.body;
-    
-    // Validación crucial: nos aseguramos que el id_pro venga en la petición
-    if (!id_pro) {
-      return res.status(400).json({ success: false, message: "Falta el ID del propietario." });
-    }
 
+  try {
     connection = await pool.getConnection();
 
-    // Llamamos al procedimiento almacenado corregido, pasando todos los parámetros.
-    const [result] = await connection.query(
+    await connection.query(
       `CALL InsertarCita(?, ?, ?, ?, ?, ?, ?, @new_cita_id)`, 
-      [
-        fech_cit,
-        hora,
-        cod_ser,
-        id_vet,
-        cod_mas,
-        id_pro, // Usamos el id_pro del formulario
-        notas || ''
-      ]
+      [ fech_cit, hora, cod_ser, id_vet, cod_mas, id_pro, notas || '' ]
     );
-
+      
     const [[{ new_cita_id }]] = await connection.query(`SELECT @new_cita_id AS new_cita_id`);
 
-    res.status(201).json({ success: true, message: "Cita creada exitosamente", citaId: new_cita_id });
+    const [details] = await connection.query(`
+      SELECT 
+        u.email AS owner_email,
+        u.nombre AS owner_name,
+        m.nom_mas AS pet_name,
+        s.nom_ser AS service_name,
+        s.precio AS service_cost,
+        CONCAT(v_u.nombre, ' ', v_u.apellido) AS vet_name
+      FROM citas c
+      JOIN usuarios u ON c.id_pro = u.id_usuario
+      JOIN mascotas m ON c.cod_mas = m.cod_mas
+      JOIN servicios s ON c.cod_ser = s.cod_ser
+      JOIN usuarios v_u ON c.id_vet = v_u.id_usuario
+      WHERE c.cod_cit = ?
+    `, [new_cita_id]);
+
+    res.status(201).json({
+      success: true,
+      message: "Cita creada exitosamente",
+      emailDetails: details[0]
+    });
+
   } catch (error) {
-    console.error("Error al crear cita:", error);
-    // Devuelve el mensaje de error de la base de datos si existe, es más informativo.
-    res.status(500).json({ success: false, message: error.sqlMessage || "Error al crear la cita", error: error.message });
+    console.error("Error al crear la cita:", error);
+    res.status(500).json({ 
+        success: false, 
+        message: error.sqlMessage || "Error en el servidor al crear la cita",
+    });
   } finally {
     if (connection) connection.release();
   }
