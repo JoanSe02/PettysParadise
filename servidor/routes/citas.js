@@ -33,7 +33,7 @@ router.get("/", authenticateToken, async (req, res) => {
         LEFT JOIN propietarios pro ON c.id_pro = pro.id_pro
         LEFT JOIN usuarios u_pro ON pro.id_pro = u_pro.id_usuario
         LEFT JOIN veterinarios v ON c.id_vet = v.id_vet
-        LEFT JOIN usuarios u_vet ON v.id_vet = u_vet.id_usuario
+        LEFT JOIN usuarios u_vet ON v.id_usuario = u_vet.id_usuario
         LEFT JOIN servicios s ON c.cod_ser = s.cod_ser
         ORDER BY c.fech_cit DESC, c.hora DESC
       `;
@@ -41,15 +41,49 @@ router.get("/", authenticateToken, async (req, res) => {
     }
 
     const [rows] = await connection.query(query, params);
-
-    // Si la consulta es una llamada a un procedimiento, el resultado está en rows[0]
     res.json(rows[0] || rows);
 
   } catch (error) {
-    console.error("Error al obtener citas:", error);
     res.status(500).json({ success: false, message: "Error al obtener citas", error: error.message });
   } finally {
     if (connection) connection.release();
+  }
+});
+
+
+// Obtener TODAS las citas (para el Administrador) - VERSIÓN CORREGIDA
+router.get("/admin/todas", authenticateToken, async (req, res) => {
+  let connection;
+  try {
+    if (req.user.id_rol !== 1) { 
+      return res.status(403).json({ success: false, message: 'Acceso denegado. Se requiere rol de Administrador.' });
+    }
+    
+    connection = await pool.getConnection();
+    const [citas] = await connection.query(`
+      SELECT 
+        c.cod_cit, c.fech_cit, c.hora, c.estado, c.notas,
+        m.nom_mas as mascota,
+        CONCAT(p_u.nombre, ' ', p_u.apellido) as propietario,
+        CONCAT(u_vet.nombre, ' ', u_vet.apellido) as veterinario,
+        s.nom_ser as servicio
+      FROM citas c
+      LEFT JOIN mascotas m ON c.cod_mas = m.cod_mas
+      LEFT JOIN propietarios p ON c.id_pro = p.id_pro
+      LEFT JOIN usuarios p_u ON p.id_pro = p_u.id_usuario
+      LEFT JOIN veterinarios v ON c.id_vet = v.id_vet
+      LEFT JOIN usuarios u_vet ON v.id_vet = u_vet.id_usuario
+      LEFT JOIN servicios s ON c.cod_ser = s.cod_ser
+      ORDER BY c.fech_cit DESC, c.hora DESC
+    `);
+    
+    res.json(citas);
+
+  } catch (err) {
+    console.error("Error al obtener todas las citas para admin:", err);
+    res.status(500).json({ success: false, message: "Error del servidor" });
+  } finally {
+    if (connection) connection.release(); 
   }
 });
 

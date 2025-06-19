@@ -27,7 +27,7 @@ import MisPacientes from "../pages/vet/GestionMascotas.jsx"
 import HistorialesMedicos from "../pages/vet/HistorialesMedicos.jsx"
 import HistorialMedicoPage from "../pages/Historial.jsx"
 import PerfilUsuarioPage from "../pages/Perfil.jsx"
-import HeaderSir from "../propietario/HeaderSir.jsx"
+import GestionCitasAdmin from "../pages/admin/GestionCitasAdmin.jsx"
 
 const Home = lazy(() => import("../componentes/Home"))
 
@@ -88,6 +88,7 @@ const AppRoutes = () => {
             <Route path="usuarios" element={<GestionUsuarios />} />
             <Route path="roles" element={<GestionRoles />} />
             <Route path="servicios" element={<GestionServicios />} />
+            <Route path="citas" element={<GestionCitasAdmin />} />
           </Route>
         </Route>
 

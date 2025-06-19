@@ -13,6 +13,7 @@ import {
   MdSupervisorAccount as IconSupervisor,
   MdMenu as IconMenu,
   MdClose as IconClose,
+  MdCalendarMonth as IconCalendar,
 } from "react-icons/md"
 import "../stylos/Admin.css"
 import axios from "axios"
@@ -180,6 +181,11 @@ const AdministradorDashboard = () => {
             <li className={location.pathname.includes("/administrador/servicios") ? "active" : ""}>
               <Link to="/administrador/servicios" onClick={() => setSidebarOpen(false)}>
                 <IconAssignment /> Gestión de Servicios
+              </Link>
+            </li>
+            <li className={location.pathname.includes("/administrador/citas") ? "active" : ""}>
+              <Link to="/administrador/citas" onClick={() => setSidebarOpen(false)}>
+                <IconCalendar /> Gestión de Citas
               </Link>
             </li>
           </ul>

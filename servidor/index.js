@@ -35,6 +35,7 @@ const uploadRoutes = require('./routes/upload');
 const historialesRoutes = require("./routes/historialesvet");
 const perfilRoutes = require("./routes/perfil");
 const historialRoutes = require('./routes/historial');
+const logsRoutes = require('./routes/logs');
 
 
 
@@ -50,6 +51,7 @@ app.use('/api/upload', uploadRoutes);
 app.use("/api/historiales", historialesRoutes);
 app.use('/api/historial', historialRoutes);
 app.use("/api/perfil", perfilRoutes);
+app.use('/api/logs', logsRoutes);
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 

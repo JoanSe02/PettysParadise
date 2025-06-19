@@ -9,6 +9,9 @@ import { apiService } from "../services/api-service"
 import Logout from "../pages/Logout"
 import HeaderSir from "../propietario/HeaderSir"
 import Dashbord from "../propietario/Dashbord"
+import Swal from "sweetalert2"; 
+import emailjs from '@emailjs/browser'; 
+
 export default function GestionCitas() {
   const [showModal, setShowModal] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -42,6 +45,18 @@ export default function GestionCitas() {
     fetchServicios()
     fetchVeterinarios()
   }, [])
+  
+  // <-- AÑADIDO: Función de notificación consistente
+  const showNotification = (message, type = "success") => {
+    Swal.fire({
+      icon: type,
+      title: message,
+      timer: 3000,
+      showConfirmButton: false,
+      toast: true,
+      position: 'top-end',
+    });
+  };
 
   // Función para obtener citas
   const fetchCitas = async () => {
@@ -105,7 +120,7 @@ export default function GestionCitas() {
     }
   }
 
-  // Función para crear una nueva cita
+  //Función para crear una nueva cita CON envío de correo
   const crearCita = async (citaData) => {
     try {
       const backendData = {
@@ -116,16 +131,53 @@ export default function GestionCitas() {
         hora: citaData.hora,
         notas: citaData.notas || "",
         id_pro: userId 
-      }
+      };
 
-      await apiService.post("/api/citas", backendData)
-      await fetchCitas()
-      setShowModal(false)
+      // Capturamos la respuesta del backend
+      const response = await apiService.post("/api/citas", backendData);
+
+      // Verificamos si la respuesta contiene los detalles para el email
+      if (response && response.emailDetails) {
+        const details = response.emailDetails;
+        const templateParams = {
+          email: details.owner_email,     
+          to_name: details.owner_name,     
+          pet_name: details.pet_name,
+          service_name: details.service_name,
+          costo_servicio: parseFloat(details.service_cost).toFixed(2),
+          vet_name: details.vet_name,
+          appointment_date: new Date(citaData.fech_cit).toLocaleDateString('es-ES', { timeZone: 'UTC' }),
+          appointment_time: citaData.hora,
+        };
+
+        // Lógica de envío de correo
+        emailjs.send(
+          'service_ay01elm',      
+          'template_77182qs',      
+          templateParams,
+          'Sp1XkzSo6_MvtBfUl'  
+        ).then((result) => {
+            console.log('✅ ¡Correo de confirmación enviado!', result.text);
+        }, (error) => {
+            console.error('❌ Falló el envío del correo:', error.text);
+            Swal.fire({
+              icon: 'warning',
+              title: 'Cita Creada, pero...',
+              text: 'La cita se agendó, pero no se pudo enviar el correo de confirmación.',
+            });
+        });
+      }
+      
+      showNotification("Cita creada y confirmación enviada.", "success");
+      await fetchCitas();
+      setShowModal(false);
+
     } catch (err) {
-      console.error("Error al crear cita:", err)
-      alert("Error al crear la cita: " + (err.message || "Error desconocido"))
+      console.error("Error al crear cita:", err);
+      showNotification(err.message || "Error al crear la cita", "error");
     }
-  }
+  };
+
 
   // Función para actualizar una cita
   const actualizarCita = async (citaData) => {
@@ -1061,4 +1113,3 @@ function EditarCitaModal({ cita, onClose, onSubmit, mascotas, servicios, veterin
     </div>
   )
 }
-

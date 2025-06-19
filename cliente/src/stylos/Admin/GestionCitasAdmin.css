@@ -1,0 +1,107 @@
+/* RUTA: cliente/src/stylos/Admin/GestionCitasAdmin.css */
+
+/* Estilos para el contenedor principal de la página de contenido */
+.admin-page-content {
+    width: 100%;
+}
+
+.admin-page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    background-color: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.admin-page-header .header-title {
+    font-size: 1.5rem;
+    color: #111827;
+    font-weight: 700;
+}
+
+.admin-page-body {
+    padding: 2rem;
+}
+
+/* Contenedor de los botones para cambiar de vista */
+.view-toggle {
+    display: flex;
+    gap: 0.5rem;
+    background-color: #e5e7eb;
+    padding: 0.25rem;
+    border-radius: 0.75rem;
+}
+
+.toggle-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border: none;
+    background-color: transparent;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    color: #4b5563;
+    font-size: 0.875rem;
+}
+
+.toggle-btn.active {
+    background-color: #ffffff;
+    color: #1f2937;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.table-container {
+    background-color: #fff;
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    overflow-x: auto;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 900px;
+}
+
+.data-table th, .data-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #e5e7eb;
+    white-space: nowrap;
+}
+
+.data-table th {
+    background-color: #f9fafb;
+    font-weight: 600;
+    font-size: 0.8rem;
+    color: #6b7280;
+    text-transform: uppercase;
+}
+
+.data-table td {
+    font-size: 0.875rem;
+    color: #374151;
+}
+
+.actions-cell { display: flex; gap: 8px; }
+.btn-icon { background: none; border: none; cursor: pointer; padding: 5px; color: #6b7280; transition: color 0.2s; }
+.btn-icon:hover { color: #1f2937; }
+.btn-icon.btn-icon-danger:hover { color: #ef4444; }
+
+.status-badge { padding: 4px 10px; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; color: white; }
+.status-badge.confirmada { background-color: #22c55e; }
+.status-badge.pendiente { background-color: #f59e0b; }
+.status-badge.realizada { background-color: #3b82f6; }
+.status-badge.cancelada { background-color: #ef4444; }
+.status-badge.no_asistida { background-color: #6b7280; }
+
+.logs-table .details-cell pre { white-space: pre-wrap; word-break: break-all; max-width: 250px; font-size: 0.8rem; background-color: #f3f4f6; padding: 5px; border-radius: 4px; font-family: monospace; }
+.action-badge { padding: 4px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 500; text-transform: uppercase; }
+.action-badge.update { background-color: #dbeafe; color: #1e40af; }
+.action-badge.insert { background-color: #dcfce7; color: #166534; }
+.action-badge.delete { background-color: #fee2e2; color: #991b1b; }

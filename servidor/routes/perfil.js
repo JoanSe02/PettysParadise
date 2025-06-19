@@ -43,25 +43,6 @@ router.put("/actualizar/:id", async (req, res) => {
   }
 });
 
-// Desactivar cuenta
-router.patch("/desactivar/:id", async (req, res) => {
-  const { id } = req.params;
 
-  try {
-    const [result] = await pool.query(
-      "UPDATE usuarios SET activo = 0 WHERE id_usuario = ?",
-      [id]
-    );
-
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ message: "Usuario no encontrado" });
-    }
-
-    res.json({ success: true, message: "Cuenta desactivada correctamente" });
-  } catch (error) {
-    console.error("Error al desactivar cuenta:", error);
-    res.status(500).json({ success: false, message: "Error al desactivar cuenta" });
-  }
-});
 
 module.exports = router;

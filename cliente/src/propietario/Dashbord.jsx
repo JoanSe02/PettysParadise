@@ -25,13 +25,13 @@ const RecorvetSidebar = ({ isOpen }) => {
     {
       path: "/propietario/citas",
       icon: FaCalendarAlt,
-      label: "Citas",
+      label: "Agendar cita",
       color: "#f59e0b",
     },
     {
       path: "/propietario/historial",
       icon: FaFileAlt,
-      label: "Historial",
+      label: "Historial médico",
       color: "#8b5cf6",
     },
        {
