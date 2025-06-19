@@ -51,4 +51,41 @@ router.get('/citas', authenticateToken, async (req, res) => {
     }
 });
 
+router.get('/citas/:cod_cit', authenticateToken, async (req, res) => {
+    if (req.user.id_rol !== 1) {
+        return res.status(403).json({ success: false, message: "Acceso denegado" });
+    }
+
+    const { cod_cit } = req.params;
+    let connection;
+
+    try {
+        connection = await pool.getConnection();
+        
+        // --- AQUÍ ESTÁ LA CORRECCIÓN: Se usa "id_cita_afectada" ---
+        const [logs] = await connection.query(
+            "SELECT * FROM logs_citas WHERE id_cita_afectada = ? ORDER BY fecha_hora_accion DESC", 
+            [cod_cit]
+        );
+        
+        // El resto de la lógica para formatear la respuesta
+        const formattedLogs = logs.map(log => ({
+            id_log: log.id_log,
+            accion: log.accion,
+            usuario_id: log.usuario_db, 
+            fecha_hora: log.fecha_hora_accion,
+            valor_anterior: log.descripcion,
+            valor_nuevo: ''
+        }));
+
+        res.json({ success: true, data: formattedLogs });
+    } catch (error) {
+        console.error('Error al obtener logs por cita:', error);
+        res.status(500).json({ success: false, message: "Error en el servidor al obtener los logs." });
+    } finally {
+        if (connection) connection.release();
+    }
+});
+
+
 module.exports = router;

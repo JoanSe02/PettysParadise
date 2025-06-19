@@ -213,3 +213,6 @@ INSERT INTO servicios (nom_ser, descrip_ser, precio) VALUES
 INSERT INTO citas (fech_cit, hora, cod_ser, id_vet, cod_mas, id_pro, estado) VALUES
 ('2025-05-10', '10:00:00', 1, 102, 2, 103, 'CONFIRMADA'),
 ('2025-05-12', '14:30:00', 2, 102, 2, 103, 'PENDIENTE');
+
+ALTER TABLE `logs_citas` 
+ADD COLUMN `id_usuario_accion` INT NULL AFTER `descripcion`;

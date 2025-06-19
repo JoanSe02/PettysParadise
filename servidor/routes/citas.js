@@ -53,39 +53,39 @@ router.get("/", authenticateToken, async (req, res) => {
 
 // Obtener TODAS las citas (para el Administrador) - VERSIÓN CORREGIDA
 router.get("/admin/todas", authenticateToken, async (req, res) => {
+  if (req.user.id_rol !== 1) {
+      return res.status(403).json({ success: false, message: 'Acceso denegado.' });
+  }
   let connection;
   try {
-    if (req.user.id_rol !== 1) { 
-      return res.status(403).json({ success: false, message: 'Acceso denegado. Se requiere rol de Administrador.' });
-    }
-    
-    connection = await pool.getConnection();
-    const [citas] = await connection.query(`
-      SELECT 
-        c.cod_cit, c.fech_cit, c.hora, c.estado, c.notas,
-        m.nom_mas as mascota,
-        CONCAT(p_u.nombre, ' ', p_u.apellido) as propietario,
-        CONCAT(u_vet.nombre, ' ', u_vet.apellido) as veterinario,
-        s.nom_ser as servicio
-      FROM citas c
-      LEFT JOIN mascotas m ON c.cod_mas = m.cod_mas
-      LEFT JOIN propietarios p ON c.id_pro = p.id_pro
-      LEFT JOIN usuarios p_u ON p.id_pro = p_u.id_usuario
-      LEFT JOIN veterinarios v ON c.id_vet = v.id_vet
-      LEFT JOIN usuarios u_vet ON v.id_vet = u_vet.id_usuario
-      LEFT JOIN servicios s ON c.cod_ser = s.cod_ser
-      ORDER BY c.fech_cit DESC, c.hora DESC
-    `);
-    
-    res.json(citas);
-
+      connection = await pool.getConnection();
+      // ESTA CONSULTA SQL HA SIDO REESTRUCTURADA PARA SER MÁS ROBUSTA Y EVITAR ERRORES DE JOIN
+      const [citas] = await connection.query(`
+          SELECT 
+              c.*, 
+              m.nom_mas as mascota,
+              s.nom_ser as servicio,
+              CONCAT(u_pro.nombre, ' ', u_pro.apellido) as propietario,
+              CONCAT(u_vet.nombre, ' ', u_vet.apellido) as veterinario
+          FROM citas c
+          LEFT JOIN mascotas m ON c.cod_mas = m.cod_mas
+          LEFT JOIN servicios s ON c.cod_ser = s.cod_ser
+          LEFT JOIN propietarios p ON c.id_pro = p.id_pro
+          LEFT JOIN usuarios u_pro ON p.id_pro = u_pro.id_usuario
+          LEFT JOIN veterinarios v ON c.id_vet = v.id_vet
+          LEFT JOIN usuarios u_vet ON v.id_vet = u_vet.id_usuario
+          ORDER BY c.fech_cit DESC, c.hora DESC
+      `);
+      res.json(citas);
   } catch (err) {
-    console.error("Error al obtener todas las citas para admin:", err);
-    res.status(500).json({ success: false, message: "Error del servidor" });
+      console.error("Error en GET /api/citas/admin/todas:", err);
+      res.status(500).json({ success: false, message: "Error del servidor al obtener las citas de administrador." });
   } finally {
-    if (connection) connection.release(); 
+      if (connection) connection.release();
   }
 });
+
+
 
 // Crear cita 
 router.post("/", authenticateToken, async (req, res) => {
@@ -243,6 +243,34 @@ router.get("/veterinario/stats", authenticateToken, async (req, res) => {
     res.status(500).json({ success: false, message: "Error del servidor" });
   } finally {
     if (connection) connection.release();
+  }
+});
+
+// Endpoint para obtener datos para los formularios de admin (propietarios, mascotas, vets, servicios)
+router.get("/admin/form-data", authenticateToken, async (req, res) => {
+  if (req.user.id_rol !== 1) {
+      return res.status(403).json({ success: false, message: "Acceso denegado" });
+  }
+  let connection;
+  try {
+      connection = await pool.getConnection();
+      const [propietarios] = await connection.query("SELECT id_usuario, nombre, apellido FROM usuarios WHERE id_rol = 3 ORDER BY nombre ASC");
+      const [mascotas] = await connection.query("SELECT cod_mas, nom_mas, id_pro FROM mascotas ORDER BY nom_mas ASC");
+      const [veterinarios] = await connection.query("SELECT u.id_usuario, u.nombre, u.apellido FROM usuarios u JOIN veterinarios v ON u.id_usuario = v.id_vet ORDER BY u.nombre ASC");
+      const [servicios] = await connection.query("SELECT cod_ser, nom_ser FROM servicios ORDER BY nom_ser ASC");
+
+      res.json({
+          success: true,
+          propietarios,
+          mascotas,
+          veterinarios,
+          servicios
+      });
+  } catch (error) {
+      console.error("Error al cargar datos para formularios de citas:", error);
+      res.status(500).json({ success: false, message: 'Error al cargar datos para formularios' });
+  } finally {
+      if(connection) connection.release();
   }
 });
 
