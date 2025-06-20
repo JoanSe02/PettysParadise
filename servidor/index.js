@@ -41,6 +41,7 @@ const adminCitasRoutes = require('./routes/admin_citas');
 // Usar rutas con prefijos
 app.use("/api/auth", authRoutes);
 app.use("/api/mascota", mascotasRoutes);
+app.use('/api/admin/citas', adminCitasRoutes);
 app.use("/api/citas", citasRoutes);
 app.use("/api/password", passwordRoutes);
 app.use("/api/roles", rolesRoutes);
@@ -52,7 +53,7 @@ app.use('/api/historial', historialRoutes);
 app.use("/api/perfil", perfilRoutes);
 app.use('/api/logs', logsRoutes);
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-app.use('/api/admin/citas', adminCitasRoutes);
+
 
 
 
