@@ -37,6 +37,7 @@ const perfilRoutes = require("./routes/perfil");
 const historialRoutes = require('./routes/historial');
 const logsRoutes = require('./routes/logs');
 const adminCitasRoutes = require('./routes/admin_citas');
+const userRoutes = require('./routes/users');
 
 // Usar rutas con prefijos
 app.use("/api/auth", authRoutes);
@@ -52,7 +53,8 @@ app.use('/api/historial', historialRoutes);
 app.use("/api/perfil", perfilRoutes);
 app.use('/api/logs', logsRoutes);
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-app.use('/api/admin/citas', adminCitasRoutes);
+app.use('/api/citas/admin', adminCitasRoutes);
+app.use('/api/users', userRoutes); 
 
 
 

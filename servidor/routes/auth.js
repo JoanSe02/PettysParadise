@@ -271,7 +271,8 @@ router.get("/estado-cuenta/:email", async (req, res) => {
         intentos_fallidos, 
         cuenta_bloqueada, 
         fecha_bloqueo,
-        razon_bloqueo
+        razon_bloqueo,
+        estado
       FROM usuarios WHERE email = ?`,
       [email],
     )
@@ -290,6 +291,7 @@ router.get("/estado-cuenta/:email", async (req, res) => {
       cuenta_bloqueada: Boolean(user.cuenta_bloqueada),
       fecha_bloqueo: user.fecha_bloqueo,
       razon_bloqueo: user.razon_bloqueo,
+      estado: user.estado
     }
 
     if (user.cuenta_bloqueada && user.fecha_bloqueo) {

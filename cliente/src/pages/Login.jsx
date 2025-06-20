@@ -140,8 +140,21 @@ export default function Login() {
     setLoading(true)
 
     try {
+
       // Verificar estado de la cuenta antes del login
       const estadoCuenta = await verificarEstadoCuenta(data.email)
+      console.log("Respuesta del backend:", estadoCuenta); 
+       if (estadoCuenta?.data?.estado === 0) {
+        Swal.fire({
+          icon: "error",
+          title: "🚫 Cuenta Desactivada",
+          text: "Tu cuenta se encuentra desactivada. Por favor, contacta al administrador para más detalles.",
+          confirmButtonColor: "#dc3545",
+          confirmButtonText: "Entendido",
+        });
+        setLoading(false);
+        return; // Detiene la ejecución para no intentar el login
+      }
 
       if (estadoCuenta?.data?.cuenta_bloqueada) {
         // Usar SOLO los datos del servidor, no calcular en frontend

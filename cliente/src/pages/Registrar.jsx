@@ -206,6 +206,10 @@ export default function Registrar() {
     }
   }
 
+  const isOtpComplete = () => {
+  return otpValues.every(value => value.trim() !== '') && otpValues.length === 6;
+};
+
   const handleOtpKeyDown = (index, e) => {
     if (e.key === "Backspace" && !otpValues[index] && index > 0) {
       otpRefs.current[index - 1]?.focus()
@@ -584,8 +588,8 @@ export default function Registrar() {
               <div className="icon-container1">
                 <PawPrint className="icon-paw" />
               </div>
-              <h1>{step === 1 ? "Información Personal" : step === 2 ? "Información de Contacto" : "Credenciales"}</h1>
-              <p>Paso {step} de 3</p>
+              <h1>{step === 1 ? "Información Personal" : step === 2 ? "Información de Contacto" :step === 3 ? "Credenciales":"Verificación de Correo"}</h1>
+              <p>Paso {step} de 4</p>
             </div>
 
             <div className="form-body">
@@ -1123,42 +1127,107 @@ export default function Registrar() {
                   </>
                 )}
             
-              {/* Paso 4: Verificación de Correo (OTP) */}
-              {step === 4 && (
-                   <div className="otp-verification-container">
-                      <p className="form-subtitle" style={{textAlign: 'center', marginBottom: '20px'}}>
-                          Ingresa el código de 6 dígitos enviado a <strong>{getValues("email")}</strong>.
-                      </p>
-                        <div className="otp-container">
-                            <div className="otp-inputs">
-                                {otpValues.map((value, index) => (
-                                              <input
-                                                  key={index}
-                                                  ref={(el) => (otpRefs.current[index] = el)}
-                                                  type="text"
-                                                  value={value}
-                                                  onChange={(e) => handleOtpChange(index, e.target.value)}
-                                                  onKeyDown={(e) => handleOtpKeyDown(index, e)}
-                                                  onPaste={handleOtpPaste}
-                                                  className="otp-input"
-                                                  maxLength={1}
-                                                  autoComplete="off"
-                                              />
-                                    ))}
-                              </div>
-                            </div>
-                            <div className="resend-container">
-                                <button
-                                          type="button"
-                                          className={`resend-button ${resendCooldown > 0 ? "disabled" : ""}`}
-                                          onClick={handleResendCode}
-                                          disabled={resendCooldown > 0 || loading}
-                                >
-                                  {resendCooldown > 0 ? `Reenviar en ${resendCooldown}s` : "Reenviar código"}
-                                 </button>
-                              </div>
-                            </div>
-                            )}
+              {/* Paso 4: Verificación de Correo (OTP) - Versión compacta */}
+            {step === 4 && (
+                      <div className="otp-verification-container" style={{ padding: '5px 0' }}>
+                        <div className="otp-description" style={{ marginBottom: '10px' }}>
+                          <p style={{
+                            textAlign: 'center',
+                            margin: '0 0 15px 0', 
+                            fontSize: '14px',
+                            color: '#555',
+                            lineHeight: '1.3'
+                          }}>
+                            Ingresa el código de 6 dígitos enviado a <strong style={{ color: '#0a5483' }}>{getValues("email")}</strong>
+                          </p>
+                        </div>
+
+                        <div className="otp-container" style={{ margin: '5px 0' }}>
+                          <div className="otp-inputs" style={{
+                            display: 'flex',
+                            justifyContent: 'center',
+                            gap: '8px',
+                            margin: '0 auto',
+                            width: '100%',  // Cambiado de maxWidth: '300px'
+                            flexWrap: 'nowrap',  // Agregado para evitar que se envuelvan
+                            alignItems: 'center'  // Agregado para mejor alineación  
+                          }}>
+                            {otpValues.map((value, index) => (
+                              <input
+                                key={index}
+                                ref={(el) => (otpRefs.current[index] = el)}
+                                type="text"
+                                value={value}
+                                onChange={(e) => handleOtpChange(index, e.target.value)}
+                                onKeyDown={(e) => handleOtpKeyDown(index, e)}
+                                onPaste={index === 0 ? handleOtpPaste : undefined}
+                                className="otp-input"
+                                maxLength={1}
+                                autoComplete="off"
+                                inputMode="numeric"
+                                pattern="[0-9]*"
+                                style={{
+                                  width: '40px',
+                                  height: '40px',
+                                  textAlign: 'center',
+                                  fontSize: '16px',
+                                  fontWeight: '600',
+                                  border: `1px solid ${value ? '#43a047' : '#ddd'}`,
+                                  borderRadius: '6px',
+                                  backgroundColor: value ? 'rgba(67, 160, 71, 0.05)' : '#fff',
+                                  color: value ? '#0a5483' : '#333',
+                                  transition: 'all 0.2s ease',
+                                  outline: 'none',
+                                  boxSizing: 'border-box',
+                                  flexShrink: 0
+                                }}
+                                onFocus={(e) => {
+                                  e.target.style.borderColor = '#0a5483';
+                                  e.target.style.boxShadow = '0 0 0 1px rgba(10, 84, 131, 0.2)';
+                                }}
+                                onBlur={(e) => {
+                                  e.target.style.borderColor = value ? '#43a047' : '#ddd';
+                                  e.target.style.boxShadow = 'none';
+                                }}
+                              />
+                            ))}
+                    </div>
+                  </div>
+
+                  <div className="resend-container" style={{ textAlign: 'center', margin: '10px 0 5px 0' }}>
+                    <button
+                      type="button"
+                      className={`resend-button ${resendCooldown > 0 ? "disabled" : ""}`}
+                      onClick={handleResendCode}
+                      disabled={resendCooldown > 0 || loading}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: resendCooldown > 0 ? '#999' : '#0a5483',
+                        fontWeight: '500',
+                        fontSize: '12px',
+                        cursor: resendCooldown > 0 ? 'not-allowed' : 'pointer',
+                        transition: 'all 0.2s ease',
+                        padding: '4px 8px',
+                        borderRadius: '3px',
+                        textDecoration: 'none'
+                      }}
+                      onMouseEnter={(e) => {
+                        if (resendCooldown === 0 && !loading) {
+                          e.target.style.backgroundColor = 'rgba(10, 84, 131, 0.05)';
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.backgroundColor = 'transparent';
+                      }}
+                    >
+                      {loading ? 'Reenviando...' :
+                        resendCooldown > 0 ? `Reenviar en ${resendCooldown}s` :
+                          '¿No recibiste el código? Reenviar'}
+                    </button>
+                  </div>
+                </div>
+                )}
                 </form>
             </div>
 
@@ -1183,11 +1252,20 @@ export default function Registrar() {
                   </button>
                     )}
 
-              {step === 4 && (
-                  <button type="button" onClick={handleVerifyAndRegister} className="button button-submit" disabled={loading}>
-                      Crear cuenta
-                  </button>
-                    )}
+             {step === 4 && (
+                <button 
+                  type="button" 
+                  onClick={handleVerifyAndRegister} 
+                  className="button button-submit" 
+                  disabled={loading || !isOtpComplete()} // Agregada la condición del OTP
+                  style={{
+                    opacity: loading || !isOtpComplete() ? 0.6 : 1, // Efecto visual opcional
+                    cursor: loading || !isOtpComplete() ? 'not-allowed' : 'pointer'
+                  }}
+                >
+                  {loading ? 'Creando cuenta...' : 'Crear cuenta'}
+                </button>
+              )}
               </div>
               <p className="login-link">
                 ¿Ya tienes una cuenta? <Link to="/login">Inicia sesión</Link>

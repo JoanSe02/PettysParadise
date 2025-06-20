@@ -258,26 +258,8 @@ useEffect(() => {
                 </div>
               </div>
 
-              <div className="perfil-card danger-card">
-                <div className="card-header">
-                  <h2 className="danger-title">
-                    <FaExclamationTriangle className="danger-icon" /> Zona de Peligro
-                  </h2>
-                  <p className="card-description">Acciones irreversibles en tu cuenta</p>
-                </div>
-                <div className="card-content">
-                  <div className="alert-box">
-                    <FaExclamationTriangle className="alert-icon" />
-                    <p className="alert-text">
-                      Eliminar tu cuenta es una acción permanente y no se puede deshacer.
-                    </p>
-                  </div>
-
-                  <button onClick={() => setShowDeleteDialog(true)} className="delete-button">
-                    <FaTrash className="button-icon" /> Eliminar Cuenta
-                  </button>
-                </div>
-              </div>
+             
+              
             </div>
           </div>
         </div>

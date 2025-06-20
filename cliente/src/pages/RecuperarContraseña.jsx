@@ -331,11 +331,11 @@ function RecuperarContraseña() {
 
           {step === 2 && (
             <div>
-              <div className="otp-container">
+              <div className="otp-container1">
                 <label>
                   <strong>Código de Verificación</strong>
                 </label>
-                <div className="otp-inputs">
+                <div className="otp-inputs1">
                   {otpValues.map((value, index) => (
                     <input
                       key={index}
@@ -345,7 +345,7 @@ function RecuperarContraseña() {
                       onChange={(e) => handleOtpChange(index, e.target.value)}
                       onKeyDown={(e) => handleOtpKeyDown(index, e)}
                       onPaste={handleOtpPaste}
-                      className="otp-input"
+                      className="otp-input1"
                       maxLength={1}
                       autoComplete="off"
                     />

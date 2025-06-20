@@ -240,18 +240,18 @@ body {
 }
 
 /* ===== ESTILOS OTP - INTEGRADOS ===== */
-.recup-main .otp-container {
+.recup-main .otp-container1 {
   margin: 20px 0;
 }
 
-.recup-main .otp-inputs {
+.recup-main .otp-inputs1 {
   display: flex;
   gap: 12px;
   justify-content: center;
   margin: 20px 0;
 }
 
-.recup-main .otp-input {
+.recup-main .otp-input1 {
   width: 55px;
   height: 55px;
   text-align: center;
@@ -265,7 +265,7 @@ body {
   letter-spacing: 1px;
 }
 
-.recup-main .otp-input:focus {
+.recup-main .otp-input1:focus {
   outline: none;
   border-color: var(--primary-light);
   box-shadow: 0 0 0 3px rgba(25, 118, 178, 0.15);
@@ -273,13 +273,13 @@ body {
   transform: scale(1.05);
 }
 
-.recup-main .otp-input:not(:placeholder-shown) {
+.recup-main .otp-input1:not(:placeholder-shown) {
   border-color: var(--success-color);
   background-color: rgba(67, 160, 71, 0.05);
   color: var(--primary-color);
 }
 
-.recup-main .otp-input.error {
+.recup-main .otp-input1.error {
   border-color: var(--error-color);
   background-color: rgba(229, 57, 53, 0.05);
   animation: shakeOtp 0.5s ease-in-out;
@@ -532,11 +532,11 @@ body {
   }
 
   /* OTP responsive */
-  .recup-main .otp-inputs {
+  .recup-main .otp-inputs1 {
     gap: 8px;
   }
 
-  .recup-main .otp-input {
+  .recup-main .otp-input1 {
     width: 45px;
     height: 45px;
     font-size: 18px;
@@ -581,12 +581,12 @@ body {
   }
 
   /* OTP mobile */
-  .recup-main .otp-inputs {
+  .recup-main .otp-inputs1 {
     gap: 6px;
     margin: 15px 0;
   }
 
-  .recup-main .otp-input {
+  .recup-main .otp-input1 {
     width: 40px;
     height: 40px;
     font-size: 16px;
@@ -609,7 +609,7 @@ body {
 }
 
 /* Animaciones adicionales para mejor UX */
-.recup-main .otp-input:valid {
+.recup-main .otp-input1:valid {
   animation: successPulse 0.3s ease-in-out;
 }
 
@@ -620,13 +620,13 @@ body {
 }
 
 /* Estados de hover mejorados */
-.recup-main .otp-input:hover:not(:focus) {
+.recup-main .otp-input1:hover:not(:focus) {
   border-color: var(--primary-light);
   background-color: rgba(25, 118, 178, 0.02);
 }
 
 /* Indicador visual para código completo */
-.recup-main .otp-inputs.complete .otp-input {
+.recup-main .otp-inputs1.complete .otp-input {
   border-color: var(--success-color);
   background-color: rgba(67, 160, 71, 0.08);
 }

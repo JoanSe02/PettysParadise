@@ -174,8 +174,16 @@ const GestionUsuarios = () => {
       }
 
       const usuario = usuarios.find(u => u.id_usuario === userId);
-      const estadoActual = usuario.cuenta_bloqueada ? "inactivo" : "activo";
-      const nuevoEstadoAccion = usuario.cuenta_bloqueada ? "activar" : "desactivar";
+      if (!usuario) {
+            alert("Error: No se pudo encontrar al usuario.");
+            return;
+        }
+
+        // --- INICIO DE LA CORRECCIÓN ---
+        // La lógica ahora se basa en el campo 'estado' (1 para Activo, 0 para Inactivo)
+        const estadoActual = usuario.estado === 1 ? "Activo" : "Inactivo";
+        const nuevoEstadoAccion = usuario.estado === 1 ? "desactivar" : "activar";
+        // --- FIN DE LA CORRECCIÓN ---
       
       if (!window.confirm(`¿Estás seguro de que quieres ${nuevoEstadoAccion} al usuario ${usuario.nombre} ${usuario.apellido} (actualmente ${estadoActual})?`)) {
         return;
@@ -206,7 +214,7 @@ const GestionUsuarios = () => {
   };
 
   // Se comenta la función handleDelete para priorizar la desactivación
-  /*
+  
   const handleDelete = async (userId, userName) => {
     if (window.confirm(`¿Estás seguro de que quieres eliminar al usuario ${userName}? Esta acción es irreversible.`)) {
       try {
@@ -227,7 +235,7 @@ const GestionUsuarios = () => {
       }
     }
   };
-  */
+  
 
   const closeModal = () => {
     setShowModal(false);
@@ -364,9 +372,9 @@ const GestionUsuarios = () => {
                   </td>
                   <td>
                     <span
-                      className={`usuarios-badge ${usuario.cuenta_bloqueada ? "usuarios-badge-inactive" : "usuarios-badge-active"}`}
+                      className={`usuarios-badge ${usuario.estado === 1 ? "usuarios-badge-active" : "usuarios-badge-inactive"}`}
                     >
-                      {usuario.cuenta_bloqueada ? "Inactivo" : "Activo"}
+                      {usuario.estado === 1 ? "Activo" : "Inactivo"}
                     </span>
                   </td>
                   <td>
@@ -381,13 +389,14 @@ const GestionUsuarios = () => {
                       >
                         <FaEdit />
                       </button>
-                      <button
-                        className={`usuarios-btn-icon ${usuario.cuenta_bloqueada ? "toggle-status-inactive" : "toggle-status-active"}`}
+                     <button
+                        className={`usuarios-btn-icon ${usuario.estado === 1 ? "toggle-status-active" : "toggle-status-inactive"}`}
                         onClick={() => handleToggleStatus(usuario.id_usuario)}
-                        title={usuario.cuenta_bloqueada ? "Activar Usuario" : "Desactivar Usuario"}
-                      >
-                        {usuario.cuenta_bloqueada ? <FaToggleOn /> : <FaToggleOff />}
-                      </button>
+                        title={usuario.estado === 1 ? "Desactivar Usuario" : "Activar Usuario"}
+                    >
+                        {/* Si está activo (1), muestra el ícono para apagarlo (Off) */}
+                        {usuario.estado === 1 ? <FaToggleOff /> : <FaToggleOn />}
+                    </button>
                       {/* Se comenta el botón de eliminar
                       <button
                         className="usuarios-btn-icon delete"

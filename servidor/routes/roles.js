@@ -173,7 +173,8 @@ router.get("/usuarios", authenticateToken, verificarAdmin, async (req, res) => {
         u.direccion,
         u.fecha_nacimiento,
         u.cuenta_bloqueada,
-        u.fecha_registro, -- Tomar directamente de la BD
+        u.fecha_registro,
+        u.estado, -- Tomar directamente de la BD
         CASE 
           WHEN u.id_rol = 1 THEN 'Administrador'
           WHEN u.id_rol = 2 THEN 'Veterinario'
@@ -247,7 +248,7 @@ router.post("/usuarios", authenticateToken, verificarAdmin, async (req, res) => 
       INSERT INTO usuarios (
         id_usuario, tipo_doc, nombre, apellido, ciudad, direccion, telefono,
         fecha_nacimiento, email, contrasena, id_tipo, id_rol, 
-        activo, intentos_fallidos, cuenta_bloqueada 
+        estado, intentos_fallidos, cuenta_bloqueada 
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 0, 0)
     `
     const params = [
@@ -375,57 +376,48 @@ router.put("/usuarios/:id", authenticateToken, verificarAdmin, async (req, res) 
 /**
  * Cambiar estado de usuario (activar/desactivar)
  */
-router.patch("/usuarios/:id/toggle-status", authenticateToken, verificarAdmin, async (req, res) => {
-  let connection
-  try {
-    const userId = req.params.id
-    connection = await pool.getConnection()
-    const [userRows] = await connection.query("SELECT id_rol, cuenta_bloqueada, nombre, apellido FROM usuarios WHERE id_usuario = ?", [userId])
+router.patch('/usuarios/:id/toggle-status', authenticateToken, verificarAdmin, async (req, res) => {
+    const { id } = req.params;
+    let connection;
 
-    if (userRows.length === 0) {
-      return res.status(404).json({ success: false, message: "Usuario no encontrado" })
+    try {
+        connection = await pool.getConnection();
+
+        // 1. Obtener el estado actual del usuario (que será 1 o 0)
+        const [rows] = await connection.query("SELECT estado FROM usuarios WHERE id_usuario = ?", [id]);
+
+        if (rows.length === 0) {
+            return res.status(404).json({ success: false, message: 'Usuario no encontrado' });
+        }
+
+        // 2. Determinar el nuevo estado (invertir 1 a 0, o 0 a 1)
+        const estadoActual = rows[0].estado;
+        const nuevoEstado = estadoActual === 1 ? 0 : 1;
+
+        // 3. Actualizar el usuario con el nuevo estado numérico
+        await connection.query(
+            "UPDATE usuarios SET estado = ? WHERE id_usuario = ?",
+            [nuevoEstado, id]
+        );
+        
+        // 4. Preparar un texto amigable para la respuesta
+        const estadoTexto = nuevoEstado === 1 ? 'Activo' : 'Inactivo';
+
+        console.log(`✅ Estado del usuario ID ${id} cambiado a ${estadoTexto} (valor: ${nuevoEstado})`);
+        res.json({
+            success: true,
+            message: `El estado del usuario ha sido cambiado a ${estadoTexto}`
+        });
+
+    } catch (error) {
+        console.error("❌ Error al cambiar el estado del usuario:", error);
+        res.status(500).json({ success: false, message: 'Error del servidor al intentar cambiar el estado.' });
+    } finally {
+        if (connection) {
+            connection.release();
+        }
     }
-    const user = userRows[0]
-
-    if (user.id_rol === 1) {
-      return res.status(403).json({ success: false, message: "No se puede cambiar el estado de un administrador" })
-    }
-
-    const nuevoEstadoBloqueo = user.cuenta_bloqueada === 1 ? 0 : 1
-    let queryAdicional = "";
-    let razon = "";
-    if (nuevoEstadoBloqueo === 0) { // Desbloqueando
-        queryAdicional = ", intentos_fallidos = 0, fecha_bloqueo = NULL, razon_bloqueo = NULL";
-    } else { // Bloqueando
-        razon = 'Bloqueo manual por administrador';
-        queryAdicional = ", fecha_bloqueo = NOW(), razon_bloqueo = ?";
-    }
-    
-    const queryParams = [nuevoEstadoBloqueo];
-    if (razon) queryParams.push(razon);
-    queryParams.push(userId);
-
-    await connection.query(
-        `UPDATE usuarios SET cuenta_bloqueada = ? ${queryAdicional} WHERE id_usuario = ?`, 
-        queryParams
-    );
-
-    const estadoTexto = nuevoEstadoBloqueo === 0 ? "activado" : "desactivado"
-    const nombreCompleto = `${user.nombre} ${user.apellido}`
-
-    console.log(`✅ Usuario ${estadoTexto}: ${nombreCompleto} (ID: ${userId})`)
-    res.json({
-      success: true,
-      message: `Usuario ${nombreCompleto} ${estadoTexto} exitosamente`,
-      bloqueado: nuevoEstadoBloqueo === 1,
-    })
-  } catch (error) {
-    console.error("❌ Error al cambiar estado:", error)
-    res.status(500).json({ success: false, message: "Error del servidor: " + error.message })
-  } finally {
-    if (connection) connection.release()
-  }
-})
+});
 
 /**
  * Eliminar usuario

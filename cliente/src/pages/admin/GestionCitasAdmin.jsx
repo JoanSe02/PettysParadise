@@ -131,10 +131,10 @@ const GestionCitasAdmin = () => {
         setLoading(true);
         try {
             const [citasRes, usersRes, mascotasRes, serviciosRes] = await Promise.all([
-                apiService.get("/api/citas/admin/todas"),
+                apiService.get("/api/citas/admin/todas"), // <-- CAMBIO AQUÍ,
                 apiService.get('/api/users'),
-                apiService.get('/api/mascotas/todas'),
-                apiService.get('/api/servicios')
+                apiService.get('/api/mascota/todas'),
+                apiService.get('/api/servicios/servicios')
             ]);
             setCitas(citasRes);
             setPropietarios(usersRes.filter(u => u.id_rol === 3));

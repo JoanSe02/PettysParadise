@@ -25,7 +25,31 @@ const registrarLog = async (cod_cit, accion, descripcion, usuario_id) => {
 };
 
 // --- NUEVOS ENDPOINTS SEGUROS PARA ADMIN ---
-
+router.get('/todas', async (req, res) => {
+    try {
+        const [rows] = await pool.query(`
+            SELECT 
+                c.cod_cit, c.fech_cit, c.hora, c.estado, c.notas,
+                c.id_pro, c.cod_mas, c.cod_ser, c.id_vet,
+                CONCAT(u_pro.nombre, ' ', u_pro.apellido) AS propietario,
+                m.nom_mas AS mascota,
+                s.nom_ser AS servicio,
+                CONCAT(u_vet.nombre, ' ', u_vet.apellido) AS veterinario
+            FROM citas c
+            LEFT JOIN propietarios p ON c.id_pro = p.id_pro
+            LEFT JOIN usuarios u_pro ON p.id_pro = u_pro.id_usuario
+            LEFT JOIN mascotas m ON c.cod_mas = m.cod_mas
+            LEFT JOIN servicios s ON c.cod_ser = s.cod_ser
+            LEFT JOIN veterinarios v ON c.id_vet = v.id_vet
+            LEFT JOIN usuarios u_vet ON v.id_vet = u_vet.id_usuario
+            ORDER BY c.fech_cit DESC, c.hora DESC
+        `);
+        res.json(rows);
+    } catch (error) {
+        console.error("Error al obtener todas las citas para admin:", error);
+        res.status(500).json({ success: false, message: "Error interno del servidor al consultar las citas." });
+    }
+});
 // Crear Cita
 router.post('/', isAdmin, async (req, res) => {
     const { id_pro, id_vet, cod_mas, cod_ser, fech_cit, hora, notas } = req.body;
@@ -49,13 +73,19 @@ router.put('/:cod_cit', isAdmin, async (req, res) => {
 });
 
 // Cancelar Cita
+// Cancelar Cita
 router.put('/:cod_cit/cancelar', isAdmin, async (req, res) => {
     const { cod_cit } = req.params;
     try {
+        // ----> ¡EL ERROR OCURRE AQUÍ! <----
         await pool.query("CALL CancelarCita(?)", [cod_cit]);
+        
         await registrarLog(cod_cit, 'CANCEL', `Admin canceló la cita.`, req.user.id_usuario);
         res.json({ success: true, message: "Cita cancelada." });
-    } catch (error) { res.status(500).json({ success: false, message: "Error al cancelar la cita." }); }
+    } catch (error) { 
+        // El error en la base de datos activa este bloque y envía la respuesta 500
+        res.status(500).json({ success: false, message: "Error al cancelar la cita." }); 
+    }
 });
 
 // Obtener Logs con Nombre de Usuario

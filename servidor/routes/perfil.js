@@ -7,7 +7,7 @@ router.get("/:id", async (req, res) => {
   const { id } = req.params;
 
   try {
-    const [rows] = await pool.query("SELECT * FROM usuarios WHERE id_usuario = ? AND activo = 1", [id]);
+    const [rows] = await pool.query("SELECT * FROM usuarios WHERE id_usuario = ? AND estado = 1", [id]);
 
     if (rows.length === 0) {
       return res.status(404).json({ message: "Usuario no encontrado o inactivo" });
@@ -28,7 +28,7 @@ router.put("/actualizar/:id", async (req, res) => {
 
   try {
     const [result] = await pool.query(
-      "UPDATE usuarios SET email = ?, telefono = ? WHERE id_usuario = ? AND activo = 1",
+      "UPDATE usuarios SET email = ?, telefono = ? WHERE id_usuario = ? AND estado = 1",
       [email, telefono, id]
     );
 

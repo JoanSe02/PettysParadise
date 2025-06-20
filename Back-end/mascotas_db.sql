@@ -33,7 +33,7 @@ CREATE TABLE usuarios (
     fecha_bloqueo DATETIME DEFAULT NULL COMMENT 'Fecha y hora en que se bloqueó la cuenta',
     razon_bloqueo VARCHAR(255) DEFAULT NULL COMMENT 'Razón por la que se bloqueó la cuenta',
     fecha_registro DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha y hora de registro del usuario',
-    activo TINYINT(1) DEFAULT 1 COMMENT 'Estado activo (1) o inactivo (0) del usuario',
+    estado TINYINT(1) DEFAULT 1 COMMENT 'Estado activo (1) o inactivo (0) del usuario',
     FOREIGN KEY (id_rol) REFERENCES rol(id_rol),
     FOREIGN KEY (id_tipo) REFERENCES tipo_persona(id_tipo)
 );
