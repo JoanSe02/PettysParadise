@@ -1,22 +1,16 @@
-// RUTA: cliente/src/pages/admin/GestionCitasAdmin.jsx (VERSIÓN FINAL Y SIMPLIFICADA)
-
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { apiService } from '../../services/api-service';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import Swal from 'sweetalert2';
-import { FaHistory, FaEdit, FaTrash, FaPlus, FaArrowLeft, FaTimes } from 'react-icons/fa';
+import { apiService } from '../../services/api-service';
 import '../../stylos/Admin/GestionCitasAdmin.css';
+import { FaPlus, FaEdit, FaTrash, FaHistory, FaTimes, FaCalendarAlt, FaFilter, FaSearch } from 'react-icons/fa';
 
-// ====================================================================
-// --- Componente Local: Modal para Editar Citas ---
-// ====================================================================
+// --- Componente Local: Modal para Crear/Editar Citas ---
 const CitaModalAdmin = ({ isOpen, onClose, cita, onSave, propietarios, mascotas, veterinarios, servicios }) => {
-    const [formData, setFormData] = useState({});
-    const [mascotasFiltradas, setMascotasFiltradas] = useState([]);
+    const isEditing = !!cita;
 
-    // Este useEffect se activa solo cuando la cita a editar cambia.
-    useEffect(() => {
-        if (cita) {
-            setFormData({
+    const getInitialState = () => {
+        if (isEditing) {
+            return {
                 id_pro: cita.id_pro || '',
                 cod_mas: cita.cod_mas || '',
                 cod_ser: cita.cod_ser || '',
@@ -25,110 +19,329 @@ const CitaModalAdmin = ({ isOpen, onClose, cita, onSave, propietarios, mascotas,
                 hora: cita.hora || '',
                 estado: cita.estado || 'PENDIENTE',
                 notas: cita.notas || ''
-            });
-            // Filtramos las mascotas del propietario de la cita actual
-            setMascotasFiltradas(mascotas.filter(m => m.id_pro === cita.id_pro));
+            };
         }
-    }, [cita, mascotas]); // Dependencias estables para evitar bucles
+        return { 
+            id_pro: '', cod_mas: '', cod_ser: '', id_vet: '', fech_cit: '',
+            hora: '', estado: 'PENDIENTE', notas: ''
+        };
+    };
+    
+    const [formData, setFormData] = useState(getInitialState());
+    const [mascotasFiltradas, setMascotasFiltradas] = useState([]);
+
+    useEffect(() => {
+        setFormData(getInitialState());
+    }, [isOpen, cita]);
+
+    useEffect(() => {
+        if (formData.id_pro && Array.isArray(mascotas)) {
+            const mascotasDelPropietario = mascotas.filter(m => m.id_pro === parseInt(formData.id_pro));
+            setMascotasFiltradas(mascotasDelPropietario);
+        } else {
+            setMascotasFiltradas([]);
+        }
+    }, [formData.id_pro, mascotas]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        const newValue = (name === 'id_pro' || name === 'cod_mas' || name === 'cod_ser' || name === 'id_vet')
-            ? parseInt(value, 10) || ''
-            : value;
-        setFormData(prev => ({ ...prev, [name]: newValue }));
-
+        setFormData(prev => ({ ...prev, [name]: value }));
         if (name === 'id_pro') {
             setFormData(prev => ({ ...prev, cod_mas: '' }));
-            setMascotasFiltradas(mascotas.filter(m => m.id_pro === newValue));
         }
     };
+    
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        onSave(formData);
+    };
 
-    const handleSubmit = (e) => { e.preventDefault(); onSave(formData); };
     if (!isOpen) return null;
 
-    // El JSX del modal es el mismo
     return (
-        <div className="modal-overlay" onClick={onClose}>
-            <div className="modal-content" onClick={e => e.stopPropagation()}>
-                <div className="modal-header"><h3>{`Editar Cita #${cita.cod_cit}`}</h3><button onClick={onClose} className="modal-close-btn"><FaTimes /></button></div>
-                <form onSubmit={handleSubmit} className="modal-form">
-                    <div className="form-grid">
-                        <div className="form-group"><label>Propietario</label><select name="id_pro" value={formData.id_pro} onChange={handleChange} required><option value="">Seleccione</option>{propietarios.map(p => <option key={p.id_usuario} value={p.id_usuario}>{p.nombre} {p.apellido}</option>)}</select></div>
-                        <div className="form-group"><label>Mascota</label><select name="cod_mas" value={formData.cod_mas} onChange={handleChange} required disabled={!formData.id_pro}><option value="">Seleccione</option>{mascotasFiltradas.map(m => <option key={m.cod_mas} value={m.cod_mas}>{m.nom_mas}</option>)}</select></div>
-                        <div className="form-group"><label>Servicio</label><select name="cod_ser" value={formData.cod_ser} onChange={handleChange} required><option value="">Seleccione</option>{servicios.map(s => <option key={s.cod_ser} value={s.cod_ser}>{s.nom_ser}</option>)}</select></div>
-                        <div className="form-group"><label>Veterinario</label><select name="id_vet" value={formData.id_vet} onChange={handleChange} required><option value="">Seleccione</option>{veterinarios.map(v => <option key={v.id_usuario} value={v.id_usuario}>Dr. {v.nombre} {v.apellido}</option>)}</select></div>
-                        <div className="form-group"><label>Fecha</label><input type="date" name="fech_cit" value={formData.fech_cit} onChange={handleChange} required /></div>
-                        <div className="form-group"><label>Hora</label><input type="time" name="hora" value={formData.hora} onChange={handleChange} required /></div>
-                        <div className="form-group"><label>Estado</label><select name="estado" value={formData.estado} onChange={handleChange} required><option value="PENDIENTE">Pendiente</option><option value="CONFIRMADA">Confirmada</option><option value="REALIZADA">Realizada</option><option value="CANCELADA">Cancelada</option><option value="NO_ASISTIDA">No Asistida</option></select></div>
-                        <div className="form-group full-width"><label>Notas</label><textarea name="notas" value={formData.notas} onChange={handleChange} rows="3"></textarea></div>
+        <div className="citas-modal-overlay" onClick={onClose}>
+            <div className="citas-modal-content" onClick={e => e.stopPropagation()}>
+                <div className="citas-modal-header">
+                    <h3 className="citas-modal-title">
+                        {isEditing ? 'Editar Cita' : 'Crear Nueva Cita'}
+                    </h3>
+                    <button onClick={onClose} className="citas-modal-close">
+                        <FaTimes />
+                    </button>
+                </div>
+                
+                <form onSubmit={handleSubmit} className="citas-form">
+                    <div className="citas-form-grid">
+                        <div className="citas-form-group">
+                            <label className="citas-form-label">Propietario *</label>
+                            <select 
+                                name="id_pro" 
+                                value={formData.id_pro} 
+                                onChange={handleChange} 
+                                className="citas-form-select"
+                                required
+                            >
+                                <option value="">-- Seleccione Propietario --</option>
+                                {propietarios.map(p => (
+                                    <option key={`prop-${p.id_usuario}`} value={p.id_usuario}>
+                                        {p.nombre} {p.apellido}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                        
+                        <div className="citas-form-group">
+                            <label className="citas-form-label">Mascota *</label>
+                            <select 
+                                name="cod_mas" 
+                                value={formData.cod_mas} 
+                                onChange={handleChange} 
+                                className="citas-form-select"
+                                required 
+                                disabled={!formData.id_pro}
+                            >
+                                <option value="">-- Seleccione Mascota --</option>
+                                {mascotasFiltradas.map(m => (
+                                    <option key={`masc-${m.cod_mas}`} value={m.cod_mas}>
+                                        {m.nom_mas}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                        
+                        <div className="citas-form-group">
+                            <label className="citas-form-label">Fecha *</label>
+                            <input 
+                                type="date" 
+                                name="fech_cit" 
+                                value={formData.fech_cit} 
+                                onChange={handleChange} 
+                                className="citas-form-input"
+                                required 
+                            />
+                        </div>
+                        
+                        <div className="citas-form-group">
+                            <label className="citas-form-label">Hora *</label>
+                            <input 
+                                type="time" 
+                                name="hora" 
+                                value={formData.hora} 
+                                onChange={handleChange} 
+                                className="citas-form-input"
+                                required 
+                            />
+                        </div>
+                        
+                        <div className="citas-form-group">
+                            <label className="citas-form-label">Servicio *</label>
+                            <select 
+                                name="cod_ser" 
+                                value={formData.cod_ser} 
+                                onChange={handleChange} 
+                                className="citas-form-select"
+                                required
+                            >
+                                <option value="">-- Seleccione Servicio --</option>
+                                {servicios.map(s => (
+                                    <option key={`ser-${s.cod_ser}`} value={s.cod_ser}>
+                                        {s.nom_ser}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                        
+                        <div className="citas-form-group">
+                            <label className="citas-form-label">Veterinario *</label>
+                            <select 
+                                name="id_vet" 
+                                value={formData.id_vet} 
+                                onChange={handleChange} 
+                                className="citas-form-select"
+                                required
+                            >
+                                <option value="">-- Seleccione Veterinario --</option>
+                                {veterinarios.map(v => (
+                                    <option key={`vet-${v.id_usuario}`} value={v.id_usuario}>
+                                        Dr. {v.nombre} {v.apellido}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                        
+                        {isEditing && (
+                            <div className="citas-form-group">
+                                <label className="citas-form-label">Estado</label>
+                                <select 
+                                    name="estado" 
+                                    value={formData.estado} 
+                                    onChange={handleChange} 
+                                    className="citas-form-select"
+                                    required
+                                >
+                                    <option value="PENDIENTE">Pendiente</option>
+                                    <option value="CONFIRMADA">Confirmada</option>
+                                    <option value="CANCELADA">Cancelada</option>
+                                    <option value="COMPLETADA">Completada</option>
+                                </select>
+                            </div>
+                        )}
                     </div>
-                    <div className="modal-footer"><button type="button" onClick={onClose} className="btn-secondary">Cancelar</button><button type="submit" className="btn-primary">Guardar Cambios</button></div>
+                    
+                    <div className="citas-form-group citas-form-group-full">
+                        <label className="citas-form-label">Notas</label>
+                        <textarea 
+                            name="notas" 
+                            value={formData.notas} 
+                            onChange={handleChange}
+                            className="citas-form-textarea"
+                            rows="3"
+                            placeholder="Observaciones adicionales sobre la cita..."
+                        />
+                    </div>
+                    
+                    <div className="citas-form-actions">
+                        <button type="button" onClick={onClose} className="citas-btn-secondary">
+                            Cancelar
+                        </button>
+                        <button type="submit" className="citas-btn-primary">
+                            {isEditing ? 'Actualizar Cita' : 'Crear Cita'}
+                        </button>
+                    </div>
                 </form>
             </div>
         </div>
     );
 };
 
-// ====================================================================
-// --- Componente Local: Vista para el Historial de una Cita ---
-// ====================================================================
-const HistorialView = ({ citaId, onBack, citas }) => {
+// --- Componente Local: Modal de Historial ---
+const HistorialLogModal = ({ citaId, onClose, citas }) => {
     const [logs, setLogs] = useState([]);
     const [loading, setLoading] = useState(true);
     const citaInfo = useMemo(() => citas.find(c => c.cod_cit === citaId), [citas, citaId]);
 
     useEffect(() => {
+        if (!citaId) return;
         const fetchLogData = async () => {
             setLoading(true);
             try {
-                // Usamos la ruta que ya tienes para obtener TODOS los logs
-                const allLogs = await apiService.get(`/api/logs/citas`);
-                // Filtramos los logs para esta cita en el lado del cliente
-                setLogs(allLogs.filter(log => log.id_cita_afectada === citaId));
-            } catch (error) { Swal.fire('Error', 'No se pudo cargar el historial.', 'error');
-            } finally { setLoading(false); }
+                const response = await apiService.get(`/api/citas/admin/${citaId}/logs`);
+                setLogs(response || []);
+            } catch (error) { 
+                Swal.fire('Error', 'No se pudo cargar el historial de cambios.', 'error'); 
+            } finally { 
+                setLoading(false); 
+            }
         };
-        if (citaId) fetchLogData();
+        fetchLogData();
     }, [citaId]);
 
+    const formatDate = (dateString) => {
+        if (!dateString) return 'N/A';
+        return new Date(dateString).toLocaleString('es-CO', { 
+            year: 'numeric', month: 'long', day: 'numeric', 
+            hour: '2-digit', minute: '2-digit' 
+        });
+    };
+
     return (
-        <div className="admin-page-content">
-            <header className="historial-cita-header"><div><button onClick={onBack} className="back-link"><FaArrowLeft /> Volver a Citas</button><h1>Historial de Cita #{citaId}</h1>{citaInfo && <div className="cita-info-banner"><span><strong>Mascota:</strong> {citaInfo.mascota}</span><span><strong>Propietario:</strong> {citaInfo.propietario}</span></div>}</div></header>
-            <div className="historial-cita-body">
-                {loading ? <div className="loading-spinner">Cargando...</div> : (
-                    logs.length > 0 ? (
-                        <div className="table-container"><p className="log-note">Nota: "Realizado por" muestra el usuario de la base de datos (`root@localhost`) por la configuración actual de los Triggers.</p><table className="data-table"><thead><tr><th>ID Log</th><th>Acción</th><th>Realizado Por (BD)</th><th>Fecha y Hora</th><th>Descripción</th></tr></thead><tbody>{logs.map(log => (<tr key={log.log_id}><td>{log.log_id}</td><td><span className={`status-badge ${log.accion?.toLowerCase()}`}>{log.accion}</span></td><td>{log.id_usuario_modificador}</td><td>{new Date(log.fecha_modificacion).toLocaleString('es-CO')}</td><td><pre className="log-description">{log.descripcion}</pre></td></tr>))}</tbody></table></div>
-                    ) : <div className="no-logs-message"><p>No se encontraron registros de auditoría para esta cita.</p></div>
+        <div className="citas-modal-overlay" onClick={onClose}>
+            <div className="citas-modal-content citas-modal-large" onClick={e => e.stopPropagation()}>
+                <div className="citas-modal-header">
+                    <h3 className="citas-modal-title">
+                        <FaHistory /> Historial de Cita #{citaId}
+                    </h3>
+                    <button onClick={onClose} className="citas-modal-close">
+                        <FaTimes />
+                    </button>
+                </div>
+                
+                {citaInfo && (
+                    <div className="citas-info-banner">
+                        <div className="citas-info-item">
+                            <strong>Mascota:</strong> {citaInfo.mascota}
+                        </div>
+                        <div className="citas-info-item">
+                            <strong>Propietario:</strong> {citaInfo.propietario}
+                        </div>
+                    </div>
                 )}
+                
+                <div className="citas-modal-body">
+                    {loading ? (
+                        <div className="citas-loading-container">
+                            <div className="citas-loading-spinner"></div>
+                            <p className="citas-loading-text">Cargando historial...</p>
+                        </div>
+                    ) : logs.length > 0 ? (
+                        <div className="citas-table-container">
+                            <div className="citas-log-note">
+                                <strong>Nota:</strong> "Realizado por" muestra el usuario de la BD por la configuración del Trigger.
+                            </div>
+                            <table className="citas-table">
+                                <thead>
+                                    <tr>
+                                        <th>Fecha del Cambio</th>
+                                        <th>Acción</th>
+                                        <th>Realizado por</th>
+                                        <th>Descripción</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {logs.map(log => (
+                                        <tr key={log.id_log}>
+                                            <td>{formatDate(log.fecha_hora)}</td>
+                                            <td>
+                                                <span className="citas-badge citas-badge-action">
+                                                    {log.nivel}
+                                                </span>
+                                            </td>
+                                            <td>{log.usuario_modificador}</td>
+                                            <td className="citas-log-description">{log.mensaje}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    ) : (
+                        <div className="citas-no-data">
+                            <FaHistory size={48} />
+                            <h4>Sin registros de auditoría</h4>
+                            <p>No se encontraron registros de cambios para esta cita.</p>
+                        </div>
+                    )}
+                </div>
+                
+                <div className="citas-form-actions">
+                    <button type="button" onClick={onClose} className="citas-btn-secondary">
+                        Cerrar
+                    </button>
+                </div>
             </div>
         </div>
     );
 };
 
-// ====================================================================
-// --- Componente Principal: GestionCitasAdmin ---
-// ====================================================================
+// --- Componente Principal ---
 const GestionCitasAdmin = () => {
-    const [view, setView] = useState('list');
-    const [selectedCitaId, setSelectedCitaId] = useState(null);
     const [citas, setCitas] = useState([]);
+    const [propietarios, setPropietarios] = useState([]);
+    const [veterinarios, setVeterinarios] = useState([]);
+    const [mascotas, setMascotas] = useState([]);
+    const [servicios, setServicios] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [filtroEstado, setFiltroEstado] = useState('');
-    const [filtroFecha, setFiltroFecha] = useState('');
+    const [error, setError] = useState("");
     const [showModal, setShowModal] = useState(false);
     const [currentCita, setCurrentCita] = useState(null);
+    const [isEditing, setIsEditing] = useState(false);
+    const [showLogModal, setShowLogModal] = useState(false);
+    const [selectedCitaId, setSelectedCitaId] = useState(null);
+    const [filtroFecha, setFiltroFecha] = useState('');
+    const [filtroEstado, setFiltroEstado] = useState('');
 
-    // SOLUCIÓN AL BUCLE: Estados individuales para los datos de los formularios.
-    // Sus referencias son estables y no causan re-renders infinitos.
-    const [propietarios, setPropietarios] = useState([]);
-    const [mascotas, setMascotas] = useState([]);
-    const [veterinarios, setVeterinarios] = useState([]);
-    const [servicios, setServicios] = useState([]);
-
-    // Esta función ahora carga TODOS los datos necesarios de una sola vez.
     const fetchAllData = useCallback(async () => {
         setLoading(true);
+        setError("");
         try {
             const [citasRes, usersRes, mascotasRes, serviciosRes] = await Promise.all([
                 apiService.get("/api/citas/admin/todas"), // <-- CAMBIO AQUÍ,
@@ -136,96 +349,311 @@ const GestionCitasAdmin = () => {
                 apiService.get('/api/mascota/todas'),
                 apiService.get('/api/servicios/servicios')
             ]);
-            setCitas(citasRes);
-            setPropietarios(usersRes.filter(u => u.id_rol === 3));
-            setVeterinarios(usersRes.filter(u => u.id_rol === 2));
-            setMascotas(mascotasRes);
-            setServicios(serviciosRes);
+            
+            setCitas(citasRes || []);
+            setPropietarios(formDataRes.propietarios || []);
+            setVeterinarios(formDataRes.veterinarios || []);
+            setMascotas(formDataRes.mascotas || []);
+            setServicios(formDataRes.servicios || []);
+
         } catch (error) {
-            Swal.fire('Error Crítico de Conexión', 'No se pudieron cargar los datos iniciales. Asegúrate de que el servidor backend esté corriendo y las rutas como /api/citas/admin/todas y /api/users funcionen.', 'error');
+            setError(`Error al cargar los datos: ${error.message}`);
+            Swal.fire('Error Crítico', `No se pudieron cargar los datos: ${error.message}`, 'error');
         } finally {
             setLoading(false);
         }
     }, []);
 
-    useEffect(() => {
-        fetchAllData();
-    }, [fetchAllData]);
-
-    const handleOpenEditModal = (cita) => { setCurrentCita(cita); setShowModal(true); };
-    const handleViewLogs = (citaId) => { setSelectedCitaId(citaId); setView('history'); };
-    const handleReturnToList = () => { setView('list'); setSelectedCitaId(null); fetchAllData(); };
-
-    const handleSaveCita = async (formData) => {
-        try {
-            await apiService.put(`/api/citas/${currentCita.cod_cit}`, formData);
-            Swal.fire('Éxito', 'Cita actualizada.', 'success');
-            setShowModal(false);
-            fetchAllData(); // Recargamos la información
-        } catch (error) { Swal.fire('Error', `No se pudo guardar la cita: ${error.message}`, 'error'); }
+    useEffect(() => { fetchAllData(); }, [fetchAllData]);
+    
+    const handleOpenCreateModal = () => { 
+        setCurrentCita(null); 
+        setIsEditing(false); 
+        setShowModal(true); 
     };
     
-    const handleCancelCita = (cita) => {
+    const handleOpenEditModal = (cita) => { 
+        setCurrentCita(cita); 
+        setIsEditing(true); 
+        setShowModal(true); 
+    };
+    
+    const handleSaveCita = async (formData) => {
+        try {
+            if (isEditing) {
+                await apiService.put(`/api/citas/admin/${currentCita.cod_cit}`, formData);
+                Swal.fire('Éxito', 'Cita actualizada correctamente.', 'success');
+            } else {
+                await apiService.post('/api/citas/admin', formData);
+                Swal.fire('Éxito', 'Cita creada correctamente.', 'success');
+            }
+            setShowModal(false);
+            fetchAllData();
+        } catch (error) { 
+            const action = isEditing ? "actualizar" : "crear";
+            Swal.fire('Error', `No se pudo ${action} la cita. ${error.message || ''}`, 'error'); 
+        }
+    };
+
+    const handleDeleteCita = (cod_cit) => {
         Swal.fire({
-            title: '¿Estás seguro?', html: `Se cancelará la cita de <b>${cita.mascota}</b>.`, icon: 'warning', showCancelButton: true,
-            confirmButtonColor: '#d33', cancelButtonText: 'No', confirmButtonText: 'Sí, cancelar'
+            title: '¿Estás seguro?', 
+            text: "¡No podrás revertir esta acción!", 
+            icon: 'warning',
+            showCancelButton: true, 
+            confirmButtonColor: '#d33', 
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Sí, eliminar', 
+            cancelButtonText: 'Cancelar'
         }).then(async (result) => {
             if (result.isConfirmed) {
                 try {
-                    await apiService.put(`/api/citas/${cita.cod_cit}/cancelar`);
-                    Swal.fire('Cancelada', 'La cita se ha cancelado.', 'success');
-                    fetchAllData(); // Recargamos la información
-                } catch (error) { Swal.fire('Error', `No se pudo cancelar la cita.`, 'error'); }
+                    await apiService.delete(`/api/citas/admin/${cod_cit}`);
+                    Swal.fire('Eliminada', 'La cita ha sido eliminada.', 'success');
+                    fetchAllData();
+                } catch (error) {
+                    Swal.fire('Error', `No se pudo eliminar la cita: ${error.message}`, 'error');
+                }
             }
         });
     };
+    
+    const handleViewLogs = (citaId) => { 
+        setSelectedCitaId(citaId); 
+        setShowLogModal(true); 
+    };
 
     const citasFiltradas = useMemo(() => {
+        if (!Array.isArray(citas)) return [];
         return citas.filter(cita => {
-            const pasaEstado = filtroEstado ? cita.estado === filtroEstado : true;
-            const pasaFecha = filtroFecha ? new Date(cita.fech_cit).toISOString().split('T')[0] === filtroFecha : true;
-            return pasaEstado && pasaFecha;
+            const fechaCita = new Date(cita.fech_cit).toISOString().split('T')[0];
+            const matchFecha = !filtroFecha || fechaCita === filtroFecha;
+            const matchEstado = !filtroEstado || cita.estado === filtroEstado;
+            return matchFecha && matchEstado;
         });
-    }, [citas, filtroEstado, filtroFecha]);
+    }, [citas, filtroFecha, filtroEstado]);
 
-    if (view === 'history') {
-        return <HistorialView citaId={selectedCitaId} onBack={handleReturnToList} citas={citas} />;
+    const formatDate = (dateString) => {
+        if (!dateString) return 'N/A';
+        return new Date(dateString).toLocaleDateString('es-CO', { 
+            day: '2-digit', month: '2-digit', year: 'numeric' 
+        });
+    };
+
+    const getEstadoStats = () => {
+        const stats = {
+            total: citas.length,
+            pendientes: citas.filter(c => c.estado === 'PENDIENTE').length,
+            confirmadas: citas.filter(c => c.estado === 'CONFIRMADA').length,
+            completadas: citas.filter(c => c.estado === 'COMPLETADA').length,
+            canceladas: citas.filter(c => c.estado === 'CANCELADA').length
+        };
+        return stats;
+    };
+
+    const stats = getEstadoStats();
+
+    if (loading) { 
+        return (
+            <div className="gestion-citas-container">
+                <div className="citas-loading-container">
+                    <div className="citas-loading-spinner"></div>
+                    <p className="citas-loading-text">Cargando gestión de citas...</p>
+                </div>
+            </div>
+        ); 
     }
 
     return (
-        <div className="admin-page-content">
-            <header className="admin-page-header">
-                <h1 className="header-title">Gestión Global de Citas</h1>
-                <div className="header-actions">
-                    <button className="btn-primary-admin" disabled title="La creación de citas por admin no es posible con la API actual."><FaPlus /> Crear Cita (Deshabilitado)</button>
-                </div>
-            </header>
-            <div className="filters-container">
-                 <div className="filter-item"><label>Filtrar por Fecha:</label><input type="date" value={filtroFecha} onChange={e => setFiltroFecha(e.target.value)} /></div>
-                 <div className="filter-item"><label>Filtrar por Estado:</label><select value={filtroEstado} onChange={e => setFiltroEstado(e.target.value)}><option value="">Todos</option><option value="PENDIENTE">Pendiente</option><option value="CONFIRMADA">Confirmada</option><option value="REALIZADA">Realizada</option><option value="CANCELADA">Cancelada</option><option value="NO_ASISTIDA">No Asistida</option></select></div>
-                 <button onClick={() => {setFiltroEstado(''); setFiltroFecha('');}} className="btn-secondary">Limpiar</button>
-            </div>
-            <div className="admin-page-body">
-                {loading ? <div className="loading-spinner">Cargando...</div> : (
-                    <div className="table-container">
-                        <table className="data-table">
-                            <thead><tr><th>Fecha y Hora</th><th>Estado</th><th>Propietario</th><th>Mascota</th><th>Veterinario</th><th>Servicio</th><th>Acciones</th></tr></thead>
-                            <tbody>{citasFiltradas.map(cita => (
-                                <tr key={cita.cod_cit}>
-                                    <td>{new Date(cita.fech_cit).toLocaleDateString('es-CO')} {cita.hora}</td><td><span className={`status-badge ${cita.estado?.toLowerCase()}`}>{cita.estado}</span></td>
-                                    <td>{cita.propietario}</td><td>{cita.mascota}</td><td>{cita.veterinario}</td><td>{cita.servicio}</td>
-                                    <td><div className="actions-cell">
-                                        <button onClick={() => handleViewLogs(cita.cod_cit)} className="btn-icon btn-icon-info" title="Ver Historial"><FaHistory /></button>
-                                        <button onClick={() => handleOpenEditModal(cita)} className="btn-icon" title="Editar Cita"><FaEdit /></button>
-                                        <button onClick={() => handleCancelCita(cita)} className="btn-icon btn-icon-danger" title="Cancelar Cita"><FaTrash /></button>
-                                    </div></td>
-                                </tr>))}
-                            </tbody>
-                        </table>
+        <div className="gestion-citas-container">
+            {/* Header Principal */}
+            <div className="citas-page-header">
+                <div className="citas-header-content">
+                    <div className="citas-title-section">
+                        <h1>Gestión Global de Citas</h1>
+                        <p>Administra todas las citas del sistema veterinario</p>
                     </div>
-                )}
+                    <button className="citas-create-btn" onClick={handleOpenCreateModal}>
+                        <FaPlus /> Crear Cita
+                    </button>
+                </div>
             </div>
-            <CitaModalAdmin isOpen={showModal} onClose={() => setShowModal(false)} cita={currentCita} onSave={handleSaveCita} propietarios={propietarios} mascotas={mascotas} veterinarios={veterinarios} servicios={servicios}/>
+
+            {/* Mensaje de Error */}
+            {error && (
+                <div className="citas-error-message">
+                    <span>⚠️ {error}</span>
+                    <button onClick={fetchAllData} className="citas-btn-retry">
+                        Reintentar
+                    </button>
+                </div>
+            )}
+
+            {/* Estadísticas */}
+            <div className="citas-stats-grid">
+                <div className="citas-stat-card">
+                    <span className="citas-stat-number">{stats.total}</span>
+                    <span className="citas-stat-label">Total Citas</span>
+                </div>
+                <div className="citas-stat-card">
+                    <span className="citas-stat-number citas-stat-pendiente">{stats.pendientes}</span>
+                    <span className="citas-stat-label">Pendientes</span>
+                </div>
+                <div className="citas-stat-card">
+                    <span className="citas-stat-number citas-stat-confirmada">{stats.confirmadas}</span>
+                    <span className="citas-stat-label">Confirmadas</span>
+                </div>
+                <div className="citas-stat-card">
+                    <span className="citas-stat-number citas-stat-completada">{stats.completadas}</span>
+                    <span className="citas-stat-label">Completadas</span>
+                </div>
+            </div>
+
+            {/* Filtros */}
+            <div className="citas-filters-container">
+                <div className="citas-filters-content">
+                    <div className="citas-filter-group">
+                        <label className="citas-filter-label">
+                            <FaCalendarAlt /> Filtrar por Fecha:
+                        </label>
+                        <input 
+                            type="date" 
+                            value={filtroFecha} 
+                            onChange={e => setFiltroFecha(e.target.value)}
+                            className="citas-filter-input"
+                        />
+                    </div>
+                    <div className="citas-filter-group">
+                        <label className="citas-filter-label">
+                            <FaFilter /> Filtrar por Estado:
+                        </label>
+                        <select 
+                            value={filtroEstado} 
+                            onChange={e => setFiltroEstado(e.target.value)}
+                            className="citas-filter-select"
+                        >
+                            <option value="">Todos los Estados</option>
+                            <option value="PENDIENTE">Pendiente</option>
+                            <option value="CONFIRMADA">Confirmada</option>
+                            <option value="CANCELADA">Cancelada</option>
+                            <option value="COMPLETADA">Completada</option>
+                        </select>
+                    </div>
+                    <button 
+                        className="citas-clear-filters-btn" 
+                        onClick={() => { setFiltroFecha(''); setFiltroEstado(''); }}
+                    >
+                        Limpiar Filtros
+                    </button>
+                </div>
+            </div>
+
+            {/* Tabla de Citas */}
+            <div className="citas-table-container">
+                <table className="citas-table">
+                    <thead>
+                        <tr>
+                            <th>Fecha y Hora</th>
+                            <th>Estado</th>
+                            <th>Propietario</th>
+                            <th>Mascota</th>
+                            <th>Veterinario</th>
+                            <th>Servicio</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {citasFiltradas.length > 0 ? citasFiltradas.map(cita => (
+                            <tr key={cita.cod_cit}>
+                                <td>
+                                    <div className="citas-date-info">
+                                        <div className="citas-date">{formatDate(cita.fech_cit)}</div>
+                                        <div className="citas-time">{cita.hora}</div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span className={`citas-badge citas-badge-${cita.estado.toLowerCase()}`}>
+                                        {cita.estado}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div className="citas-person-info">
+                                        <div className="citas-person-name">{cita.propietario}</div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div className="citas-pet-info">
+                                        <div className="citas-pet-name">{cita.mascota}</div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div className="citas-vet-info">
+                                        <div className="citas-vet-name">{cita.veterinario}</div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div className="citas-service-info">
+                                        {cita.servicio}
+                                    </div>
+                                </td>
+                                <td>
+                                    <div className="citas-action-buttons">
+                                        <button 
+                                            onClick={() => handleOpenEditModal(cita)} 
+                                            className="citas-btn-icon citas-btn-edit" 
+                                            title="Editar Cita"
+                                        >
+                                            <FaEdit />
+                                        </button>
+                                        <button 
+                                            onClick={() => handleDeleteCita(cita.cod_cit)} 
+                                            className="citas-btn-icon citas-btn-delete" 
+                                            title="Eliminar Cita"
+                                        >
+                                            <FaTrash />
+                                        </button>
+                                        <button 
+                                            onClick={() => handleViewLogs(cita.cod_cit)} 
+                                            className="citas-btn-icon citas-btn-history" 
+                                            title="Ver Historial"
+                                        >
+                                            <FaHistory />
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        )) : (
+                            <tr>
+                                <td colSpan="7" className="citas-no-data">
+                                    <FaSearch size={48} />
+                                    <h4>No se encontraron citas</h4>
+                                    <p>No hay citas que coincidan con los filtros seleccionados.</p>
+                                </td>
+                            </tr>
+                        )}
+                    </tbody>
+                </table>
+            </div>
+
+            {/* Modales */}
+            <CitaModalAdmin 
+                isOpen={showModal} 
+                onClose={() => setShowModal(false)} 
+                cita={currentCita} 
+                onSave={handleSaveCita} 
+                propietarios={propietarios} 
+                mascotas={mascotas} 
+                veterinarios={veterinarios} 
+                servicios={servicios}
+            />
+
+            {showLogModal && (
+                <HistorialLogModal 
+                    citaId={selectedCitaId} 
+                    citas={citas} 
+                    onClose={() => setShowLogModal(false)} 
+                />
+            )}
         </div>
     );
 };

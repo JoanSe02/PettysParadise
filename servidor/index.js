@@ -42,6 +42,7 @@ const userRoutes = require('./routes/users');
 // Usar rutas con prefijos
 app.use("/api/auth", authRoutes);
 app.use("/api/mascota", mascotasRoutes);
+app.use('/api/admin/citas', adminCitasRoutes);
 app.use("/api/citas", citasRoutes);
 app.use("/api/password", passwordRoutes);
 app.use("/api/roles", rolesRoutes);
