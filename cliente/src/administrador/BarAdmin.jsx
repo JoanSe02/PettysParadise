@@ -151,9 +151,9 @@ const Sidebar = ({ userData, sidebarOpen, setSidebarOpen }) => {
         {/* Header del Sidebar */}
         <div className="sidebar-header-improved">
           <div className="sidebar-brand">
-            <div className="brand-logo-sidebar">
+            
               <img src="https://raw.githubusercontent.com/Vale250910/mascotas_app1/refs/heads/main/img/Logo1.png" alt="VetAdmin Logo" className="logo-dog-sidebar" />
-            </div>
+            
             <div className="brand-text">
               <h2>Petty's Paradise</h2>
               

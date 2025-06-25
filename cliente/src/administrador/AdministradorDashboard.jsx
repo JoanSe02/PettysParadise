@@ -8,6 +8,9 @@ import {
   MdPeople as IconPeople,
   MdAssignment as IconAssignment,
   MdSupervisorAccount as IconSupervisor,
+  MdTrendingUp as IconTrending,
+  MdDashboard as IconDashboard,
+  MdNotifications as IconNotifications,
 } from "react-icons/md"
 import axios from "axios"
 
@@ -28,7 +31,6 @@ const AdministradorDashboard = () => {
   })
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-  // Estado para controlar la visibilidad del sidebar en móvil
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   // Verificar si estamos en la página principal del dashboard
@@ -101,97 +103,167 @@ const AdministradorDashboard = () => {
 
   if (loading && isMainDashboard) {
     return (
-      <div className="admin-dashboard1">
-        <div className="loading-container1">
-          <div className="loading-spinner1"></div>
-          <p>Cargando panel de administración...</p>
+      <div className="admin-dashboard">
+        <div className="loading-container">
+          <div className="loading-spinner"></div>
+          <div className="loading-text">
+            <h3>Cargando Dashboard</h3>
+            <p>Preparando tu panel de administración...</p>
+          </div>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="admin-dashboard1">
+    <div className="admin-dashboard">
       {/* Sidebar Component */}
-      <Sidebar 
-        userData={userData}
-        sidebarOpen={sidebarOpen}
-        setSidebarOpen={setSidebarOpen}
-      />
+      <Sidebar userData={userData} sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
 
-      <div className="admin-main-content1">
+      <div className="admin-main-content">
         {/* Header Component */}
         <Header toggleSidebar={toggleSidebar} />
 
-        <main className="admin-content1">
+        <main className="admin-content">
           {/* Solo mostrar el contenido del dashboard principal si estamos en esa ruta */}
           {isMainDashboard ? (
-            <div className="dashboard-summary1">
-              <div className="welcome-section1">
-                <h2>Bienvenido, {userData.nombre}</h2>
-                <p className="welcome-message">
-                  Panel de control administrativo de Petty's Paradise. Gestiona usuarios, roles y servicios del sistema.
-                </p>
-              </div>
-
-              <div className="admin-stats-grid1">
-                <div className="admin-stat-card1 users1">
-                  <div className="admin-stat-icon1">
-                    <IconPeople size={32} />
+            <div className="dashboard-summary">
+              {/* Hero Section Mejorada */}
+              <div className="hero-section1">
+                <div className="hero-content1">
+                  <div className="hero-text1">
+                    <h1>
+                      <span className="greeting">¡Bienvenido de vuelta,</span>
+                      <span className="name">{userData.nombre}!</span>
+                    </h1>
+                    <p className="hero-description">
+                      Gestiona tu plataforma desde este panel de control. Supervisa usuarios, roles y servicios de
+                      manera eficiente.
+                    </p>
+                    
                   </div>
-                  <div className="admin-stat-content1">
-                    <h3>Total Usuarios</h3>
-                    <p className="admin-stat-value1">{userData.totalUsers}</p>
-                    <Link to="/administrador/usuarios" className="card-link">
-                      Gestionar usuarios <IconArrowRight />
-                    </Link>
-                  </div>
-                </div>
-
-                <div className="admin-stat-card1 roles1">
-                  <div className="admin-stat-icon1">
-                    <IconSupervisor size={32} />
-                  </div>
-                  <div className="admin-stat-content">
-                    <h3>Roles del Sistema</h3>
-                    <p className="admin-stat-value">{userData.totalRoles}</p>
-                    <Link to="/administrador/roles" className="card-link">
-                      Gestionar roles <IconArrowRight />
-                    </Link>
-                  </div>
-                </div>
-
-                <div className="admin-stat-card1 services1">
-                  <div className="admin-stat-icon1">
-                    <IconAssignment size={32} />
-                  </div>
-                  <div className="admin-stat-content1">
-                    <h3>Servicios Disponibles</h3>
-                    <p className="admin-stat-value1">{userData.totalServices}</p>
-                    <Link to="/administrador/servicios" className="card-link">
-                      Gestionar servicios <IconArrowRight />
-                    </Link>
-                  </div>
+                  
                 </div>
               </div>
 
-              <div className="quick-actions1">
-                <h3>Acciones Administrativas</h3>
-                <div className="action-buttons1">
-                  <Link to="/administrador/usuarios" className="admin-btn admin-btn-primary1">
-                    <IconPlus /> Crear nuevo usuario
+              {/* Grid de Estadísticas Mejorado */}
+              <div className="stats-section">
+                <div className="section-header">
+                  <h2>Resumen del Sistema</h2>
+                  <p>Estadísticas principales de tu plataforma</p>
+                </div>
+
+                <div className="stats-grid">
+                  <div className="stat-card users-card">
+                    <div className="stat-header">
+                      <div className="stat-icon">
+                        <IconPeople size={28} />
+                      </div>
+                     
+                    </div>
+                    <div className="stat-content">
+                      <h3>Total Usuarios</h3>
+                      <div className="stat-value">{userData.totalUsers}</div>
+                      <p className="stat-description">Usuarios registrados activos</p>
+                    </div>
+                    <Link to="/administrador/usuarios" className="stat-action">
+                      <span>Gestionar usuarios</span>
+                      <IconArrowRight size={16} />
+                    </Link>
+                  </div>
+
+                  <div className="stat-card roles-card">
+                    <div className="stat-header">
+                      <div className="stat-icon">
+                        <IconSupervisor size={28} />
+                      </div>
+                      
+                    </div>
+                    <div className="stat-content">
+                      <h3>Roles del Sistema</h3>
+                      <div className="stat-value">{userData.totalRoles}</div>
+                      <p className="stat-description">Roles de usuario configurados</p>
+                    </div>
+                    <Link to="/administrador/roles" className="stat-action">
+                      <span>Gestionar roles</span>
+                      <IconArrowRight size={16} />
+                    </Link>
+                  </div>
+
+                  <div className="stat-card services-card">
+                    <div className="stat-header">
+                      <div className="stat-icon">
+                        <IconAssignment size={28} />
+                      </div>
+                      
+                    </div>
+                    <div className="stat-content">
+                      <h3>Servicios Disponibles</h3>
+                      <div className="stat-value">{userData.totalServices}</div>
+                      <p className="stat-description">Servicios activos en la plataforma</p>
+                    </div>
+                    <Link to="/administrador/servicios" className="stat-action">
+                      <span>Gestionar servicios</span>
+                      <IconArrowRight size={16} />
+                    </Link>
+                  </div>
+                </div>
+              </div>
+
+              {/* Acciones Rápidas Mejoradas */}
+              <div className="actions-section">
+                <div className="section-header">
+                  <h2>Acciones Rápidas</h2>
+                  <p>Tareas administrativas más comunes</p>
+                </div>
+
+                <div className="actions-grid">
+                  <Link to="/administrador/usuarios" className="action-card primary">
+                    <div className="action-icon">
+                      <IconPlus size={24} />
+                    </div>
+                    <div className="action-content">
+                      <h3>Crear Usuario</h3>
+                      <p>Agregar nuevo usuario al sistema</p>
+                    </div>
+                    <div className="action-arrow">
+                      <IconArrowRight size={20} />
+                    </div>
                   </Link>
-                  <Link to="/administrador/roles" className="admin-btn admin-btn-secondary1">
-                    <IconSupervisor /> Gestionar roles
+
+                  <Link to="/administrador/roles" className="action-card secondary">
+                    <div className="action-icon">
+                      <IconSupervisor size={24} />
+                    </div>
+                    <div className="action-content">
+                      <h3>Gestionar Roles</h3>
+                      <p>Configurar permisos y roles</p>
+                    </div>
+                    <div className="action-arrow">
+                      <IconArrowRight size={20} />
+                    </div>
                   </Link>
-                  <Link to="/administrador/servicios" className="admin-btn admin-btn-secondar">
-                    <IconAssignment /> Registrar servicio
+
+                  <Link to="/administrador/servicios" className="action-card tertiary">
+                    <div className="action-icon">
+                      <IconAssignment size={24} />
+                    </div>
+                    <div className="action-content">
+                      <h3>Nuevo Servicio</h3>
+                      <p>Registrar servicio en la plataforma</p>
+                    </div>
+                    <div className="action-arrow">
+                      <IconArrowRight size={20} />
+                    </div>
                   </Link>
                 </div>
               </div>
+
+              {/* Notificaciones/Alertas */}
+              
 
               {error && (
-                <div className="error-message1">
+                <div className="error-message">
                   <p>{error}</p>
                 </div>
               )}
@@ -207,4 +279,5 @@ const AdministradorDashboard = () => {
 }
 
 export default AdministradorDashboard
+
 

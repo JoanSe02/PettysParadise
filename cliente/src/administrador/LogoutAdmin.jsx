@@ -264,41 +264,41 @@ const LogoutComponent = () => {
 
         {showModal && (
           <div
-            className="modal-overlay"
+            className="modal-overlay1"
             onClick={handleModalClose}
             role="dialog"
             aria-modal="true"
             aria-labelledby="logout-modal-title"
           >
-            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-              <div className="modal-header">
-                <div className="modal-icon">
+            <div className="modal-content1" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header1">
+                <div className="modal-icon1">
                   <LogOut size={24} />
                 </div>
-                <h3 id="logout-modal-title">Cerrar sesión</h3>
+                <h3 id="logout-modal-title1">Cerrar sesión</h3>
                 <p>¿Estás seguro de que quieres salir de tu cuenta?</p>
               </div>
 
-              <div className="modal-user-info">
-                <div className="modal-initials">
+              <div className="modal-user-info1">
+                <div className="modal-initials1">
                   {userData.avatar ? (
                     <img src={userData.avatar || "/placeholder.svg"} alt={fullName} className="modal-avatar-img" />
                   ) : (
                     userInitials
                   )}
                 </div>
-                <div className="modal-user-details">
-                  <div className="modal-user-name">{fullName}</div>
-                  <div className="modal-user-email">{userData.email}</div>
-                  <div className="modal-session-time">{sessionTime}</div>
+                <div className="modal-user-details1">
+                  <div className="modal-user-name1">{fullName}</div>
+                  <div className="modal-user-email1">{userData.email}</div>
+                  <div className="modal-session-time1">{sessionTime}</div>
                 </div>
               </div>
 
-              <div className="modal-footer">
-                <button onClick={handleModalClose} className="cancel-button" disabled={isLoggingOut} type="button">
+              <div className="modal-footer1">
+                <button onClick={handleModalClose} className="cancel-button1" disabled={isLoggingOut} type="button">
                   Cancelar
                 </button>
-                <button onClick={handleLogout} disabled={isLoggingOut} className="confirm-logout-button" type="button">
+                <button onClick={handleLogout} disabled={isLoggingOut} className="confirm-logout-button1" type="button">
                   {isLoggingOut ? (
                     <>
                       <Loader2 size={16} className="animate-spin" />

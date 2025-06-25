@@ -135,6 +135,10 @@ CREATE TABLE historiales_log (
     INDEX idx_usuario (id_usuario_modificador ASC)
 );
 
+
+
+
+
 -- Tabla de citas (SE AGREGÓ campo activo)
 CREATE TABLE citas (
     cod_cit INT(11) UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT COMMENT 'Código único de la cita',
@@ -154,16 +158,16 @@ CREATE TABLE citas (
 );
 
 -- Tabla de logs de citas (NO necesita campo activo)
-CREATE TABLE IF NOT EXISTS logs_citas (
+CREATE TABLE logs_citas (
     id_log INT NOT NULL AUTO_INCREMENT,
     id_cita_afectada INT NULL,
     accion VARCHAR(10) NULL COMMENT 'INSERT, UPDATE, DELETE',
     descripcion TEXT NULL COMMENT 'Descripción legible de lo que ocurrió',
     fecha_hora_accion TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     usuario_db VARCHAR(255) NOT NULL COMMENT 'El usuario de la BD que realizó la acción',
+    id_usuario_accion INT NULL,
     PRIMARY KEY (id_log)
 );
-
 
 -- ========= INSERCIÓN DE DATOS =========
 
@@ -221,6 +225,3 @@ INSERT INTO servicios (nom_ser, descrip_ser, precio) VALUES
 INSERT INTO citas (fech_cit, hora, cod_ser, id_vet, cod_mas, id_pro, est_cit) VALUES
 ('2025-05-10', '10:00:00', 1, 102, 2, 103, 'CONFIRMADA'),
 ('2025-05-12', '14:30:00', 2, 102, 2, 103, 'PENDIENTE');
-
-ALTER TABLE `logs_citas` 
-ADD COLUMN `id_usuario_accion` INT NULL AFTER `descripcion`;
