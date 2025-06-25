@@ -89,7 +89,7 @@ router.get("/admin/todas", authenticateToken, async (req, res) => {
 
 // Crear cita 
 router.post("/", authenticateToken, async (req, res) => {
-  const { id_pro, id_vet, cod_mas, cod_ser, fech_cit, hora, estado, notas } = req.body;
+  const { id_pro, id_vet, cod_mas, cod_ser, fech_cit, hora,  est_cit, notas } = req.body;
   let connection;
 
   try {
@@ -165,7 +165,7 @@ router.put("/:cod_cit", authenticateToken, async (req, res) => {
     }
 
     // 3. Si tiene permiso, proceder con la actualización
-    const { cod_mas, cod_ser, id_vet, fech_cit, hora, estado, notas } = req.body;
+    const { cod_mas, cod_ser, id_vet, fech_cit, hora, est_cit, notas } = req.body;
 
     await connection.query(`CALL ActualizarCita(?, ?, ?, ?, ?, ?, ?, ?)`, [
       cod_cit,
@@ -174,7 +174,7 @@ router.put("/:cod_cit", authenticateToken, async (req, res) => {
       cod_ser,
       id_vet,
       cod_mas,
-      estado,
+      est_cit,
       notas,
     ]);
 
@@ -216,7 +216,7 @@ router.get("/veterinario/stats", authenticateToken, async (req, res) => {
 
     // 1. Contar citas programadas para este veterinario (Pendientes o Confirmadas)
     const [citasResult] = await connection.query(
-      "SELECT COUNT(*) as total FROM citas WHERE id_vet = ? AND estado IN ('PENDIENTE', 'CONFIRMADA')",
+      "SELECT COUNT(*) as total FROM citas WHERE id_vet = ? AND est_cit IN ('PENDIENTE', 'CONFIRMADA')",
       [id_usuario]
     );
     const totalCitas = citasResult[0].total;

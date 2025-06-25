@@ -282,97 +282,122 @@ router.post("/usuarios", authenticateToken, verificarAdmin, async (req, res) => 
 /**
  * Actualizar usuario
  */
+// CÓDIGO CORREGIDO
+// CÓDIGO CORREGIDO
 router.put("/usuarios/:id", authenticateToken, verificarAdmin, async (req, res) => {
-  let connection
-  try {
-    const userId = req.params.id
-    const { nombre, apellido, email, telefono, ciudad, direccion, id_rol, tipo_doc, fecha_nacimiento, password, especialidad, horario } = req.body
+    let connection;
+    try {
+        const userId = req.params.id;
+        const userData = req.body; // Usamos todo el body
 
-    connection = await pool.getConnection()
-    await connection.beginTransaction()
+        connection = await pool.getConnection();
+        await connection.beginTransaction();
 
-    const [userCheck] = await connection.query("SELECT id_rol, id_tipo FROM usuarios WHERE id_usuario = ?", [userId])
-    if (userCheck.length === 0) {
-      await connection.rollback()
-      return res.status(404).json({ success: false, message: "Usuario no encontrado" })
+        const [userCheck] = await connection.query("SELECT id_rol, id_tipo FROM usuarios WHERE id_usuario = ?", [userId]);
+        if (userCheck.length === 0) {
+            await connection.rollback();
+            return res.status(404).json({ success: false, message: "Usuario no encontrado" });
+        }
+        if (userCheck[0].id_rol === 1 && userId !== req.user.id_usuario) {
+            await connection.rollback();
+            return res.status(403).json({ success: false, message: "No se puede editar un administrador" });
+        }
+
+        if (userData.email) {
+            const [emailCheck] = await connection.query("SELECT id_usuario FROM usuarios WHERE email = ? AND id_usuario != ?", [userData.email, userId]);
+            if (emailCheck.length > 0) {
+                await connection.rollback();
+                return res.status(400).json({ success: false, message: "El email ya está en uso por otro usuario" });
+            }
+        }
+
+        // --- INICIO DE LA LÓGICA CORREGIDA ---
+
+        const updateFields = [];
+        const queryParams = [];
+
+        // Lista de campos permitidos para actualizar directamente
+        const allowedFields = ['nombre', 'apellido', 'email', 'telefono', 'ciudad', 'direccion', 'tipo_doc', 'fecha_nacimiento'];
+
+        allowedFields.forEach(field => {
+            if (userData[field] !== undefined) {
+                updateFields.push(`${field} = ?`);
+                queryParams.push(userData[field]);
+            }
+        });
+        
+        // Lógica para actualizar rol y tipo
+        if (userData.id_rol !== undefined) {
+            let id_tipo_asignado;
+            if (userData.id_rol == 3) id_tipo_asignado = 1;
+            else if (userData.id_rol == 2) id_tipo_asignado = 2;
+            else id_tipo_asignado = userCheck[0].id_tipo; // Mantener el tipo si el rol no es 2 o 3
+
+            updateFields.push('id_rol = ?');
+            queryParams.push(userData.id_rol);
+            updateFields.push('id_tipo = ?');
+            queryParams.push(id_tipo_asignado);
+        }
+
+        // Lógica para actualizar la contraseña
+        if (userData.password && userData.password.length > 0) {
+            if (userData.password.length < 8) {
+                await connection.rollback();
+                return res.status(400).json({ success: false, message: "La nueva contraseña debe tener al menos 8 caracteres." });
+            }
+            const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-[\]{};':"\\|,.<>/?]).{8,}$/;
+            if (!passwordRegex.test(userData.password)) {
+                await connection.rollback();
+                return res.status(400).json({ success: false, message: "La nueva contraseña no cumple los requisitos." });
+            }
+            const hashedPassword = await bcrypt.hash(userData.password, 10);
+            updateFields.push('contrasena = ?');
+            queryParams.push(hashedPassword);
+        }
+
+        // Ejecutar la actualización solo si hay campos para cambiar
+        if (updateFields.length > 0) {
+            const updateQuery = `UPDATE usuarios SET ${updateFields.join(", ")} WHERE id_usuario = ?`;
+            queryParams.push(userId);
+            await connection.query(updateQuery, queryParams);
+        }
+        
+        // --- FIN DE LA LÓGICA CORREGIDA ---
+
+        // La lógica para veterinarios y propietarios depende del rol final, por lo que se mantiene
+        const final_rol = userData.id_rol !== undefined ? userData.id_rol : userCheck[0].id_rol;
+
+        if (final_rol == 2) {
+            const [vetCheck] = await connection.query("SELECT id_vet FROM veterinarios WHERE id_vet = ?", [userId]);
+            if (vetCheck.length > 0) {
+                await connection.query("UPDATE veterinarios SET especialidad = ?, horario = ? WHERE id_vet = ?", [userData.especialidad || null, userData.horario || null, userId]);
+            } else {
+                await connection.query("INSERT INTO veterinarios (id_vet, especialidad, horario) VALUES (?, ?, ?)", [userId, userData.especialidad || null, userData.horario || null]);
+            }
+        } else {
+            await connection.query("DELETE FROM veterinarios WHERE id_vet = ?", [userId]);
+        }
+        
+        if (final_rol == 3) {
+            const [propCheck] = await connection.query("SELECT id_pro FROM propietarios WHERE id_pro = ?", [userId]);
+            if (propCheck.length === 0) {
+                await connection.query("INSERT INTO propietarios (id_pro) VALUES (?)", [userId]);
+            }
+        } else {
+            // Consideración sobre eliminar de propietarios si cambia de rol
+        }
+
+        await connection.commit();
+        console.log(`✅ Usuario actualizado (ID: ${userId})`);
+        res.json({ success: true, message: "Usuario actualizado exitosamente" });
+    } catch (error) {
+        if (connection) await connection.rollback();
+        console.error("❌ Error al actualizar usuario:", error);
+        res.status(500).json({ success: false, message: "Error del servidor: " + error.message, error: error });
+    } finally {
+        if (connection) connection.release();
     }
-    if (userCheck[0].id_rol === 1 && userId !== req.user.id_usuario) {
-      await connection.rollback()
-      return res.status(403).json({ success: false, message: "No se puede editar un administrador" })
-    }
-
-    if (email) {
-      const [emailCheck] = await connection.query("SELECT id_usuario FROM usuarios WHERE email = ? AND id_usuario != ?", [email, userId])
-      if (emailCheck.length > 0) {
-        await connection.rollback()
-        return res.status(400).json({ success: false, message: "El email ya está en uso por otro usuario" })
-      }
-    }
-    
-    let id_tipo_asignado;
-    if (id_rol == 3) id_tipo_asignado = 1;
-    else if (id_rol == 2) id_tipo_asignado = 2;
-    else id_tipo_asignado = userCheck[0].id_tipo;
-
-    let updateQuery = "UPDATE usuarios SET nombre = ?, apellido = ?, email = ?, telefono = ?, ciudad = ?, direccion = ?, tipo_doc = ?, fecha_nacimiento = ?, id_rol = ?, id_tipo = ?"
-    const queryParams = [
-      nombre, apellido, email, telefono || null, ciudad || null, direccion || null,
-      tipo_doc, fecha_nacimiento, id_rol, id_tipo_asignado,
-    ]
-
-    if (password && password.length > 0) {
-      if (password.length < 8) { // Asegurar validación de contraseña también en backend al actualizar
-        await connection.rollback();
-        return res.status(400).json({ success: false, message: "La nueva contraseña debe tener al menos 8 caracteres." });
-      }
-      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-[\]{};':"\\|,.<>/?]).{8,}$/;
-      if (!passwordRegex.test(password)) {
-          await connection.rollback();
-          return res.status(400).json({ success: false, message: "La nueva contraseña no cumple los requisitos." });
-      }
-      const hashedPassword = await bcrypt.hash(password, 10)
-      updateQuery += ", contrasena = ?"
-      queryParams.push(hashedPassword)
-    }
-    updateQuery += " WHERE id_usuario = ?"
-    queryParams.push(userId)
-    
-    await connection.query(updateQuery, queryParams)
-
-    if (id_rol == 2) {
-      const [vetCheck] = await connection.query("SELECT id_vet FROM veterinarios WHERE id_vet = ?", [userId])
-      if (vetCheck.length > 0) {
-        await connection.query("UPDATE veterinarios SET especialidad = ?, horario = ? WHERE id_vet = ?", [especialidad || null, horario || null, userId])
-      } else {
-        await connection.query("INSERT INTO veterinarios (id_vet, especialidad, horario) VALUES (?, ?, ?)", [userId, especialidad || null, horario || null])
-      }
-    } else {
-      await connection.query("DELETE FROM veterinarios WHERE id_vet = ?", [userId])
-    }
-    
-    if (id_rol == 3) {
-      const [propCheck] = await connection.query("SELECT id_pro FROM propietarios WHERE id_pro = ?", [userId]);
-      if (propCheck.length === 0) {
-        await connection.query("INSERT INTO propietarios (id_pro) VALUES (?)", [userId]);
-      }
-    } else {
-      // Considera si se debe eliminar de propietarios si cambia de rol propietario a otro.
-      // Por ahora, se mantiene para roles duales. Si no es el caso, agregar:
-      // await connection.query("DELETE FROM propietarios WHERE id_pro = ?", [userId]);
-    }
-
-    await connection.commit()
-    console.log(`✅ Usuario actualizado: ${nombre} ${apellido} (ID: ${userId})`)
-    res.json({ success: true, message: "Usuario actualizado exitosamente" })
-  } catch (error) {
-    if (connection) await connection.rollback()
-    console.error("❌ Error al actualizar usuario:", error)
-    res.status(500).json({ success: false, message: "Error del servidor: " + error.message, error: error })
-  } finally {
-    if (connection) connection.release()
-  }
-})
-
+});
 /**
  * Cambiar estado de usuario (activar/desactivar)
  */

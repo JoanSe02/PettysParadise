@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import Swal from 'sweetalert2';
-import { apiService } from '../../services/api-service';
-import '../../stylos/Admin/GestionCitasAdmin.css';
+import { apiService } from '../services/api-service';
+import '../stylos/Admin/GestionCitasAdmin.css';
 import { FaPlus, FaEdit, FaTrash, FaHistory, FaTimes, FaCalendarAlt, FaFilter, FaSearch } from 'react-icons/fa';
 
 // --- Componente Local: Modal para Crear/Editar Citas ---
@@ -17,13 +17,13 @@ const CitaModalAdmin = ({ isOpen, onClose, cita, onSave, propietarios, mascotas,
                 id_vet: cita.id_vet || '',
                 fech_cit: cita.fech_cit ? new Date(cita.fech_cit).toISOString().split('T')[0] : '',
                 hora: cita.hora || '',
-                estado: cita.estado || 'PENDIENTE',
+                est_cit: cita.est_cit || 'PENDIENTE',
                 notas: cita.notas || ''
             };
         }
         return { 
             id_pro: '', cod_mas: '', cod_ser: '', id_vet: '', fech_cit: '',
-            hora: '', estado: 'PENDIENTE', notas: ''
+            hora: '', est_cit: 'PENDIENTE', notas: ''
         };
     };
     
@@ -173,8 +173,8 @@ const CitaModalAdmin = ({ isOpen, onClose, cita, onSave, propietarios, mascotas,
                             <div className="citas-form-group">
                                 <label className="citas-form-label">Estado</label>
                                 <select 
-                                    name="estado" 
-                                    value={formData.estado} 
+                                    name="est_cit" 
+                                    value={formData.est_cit} 
                                     onChange={handleChange} 
                                     className="citas-form-select"
                                     required
@@ -337,24 +337,34 @@ const GestionCitasAdmin = () => {
     const [showLogModal, setShowLogModal] = useState(false);
     const [selectedCitaId, setSelectedCitaId] = useState(null);
     const [filtroFecha, setFiltroFecha] = useState('');
-    const [filtroEstado, setFiltroEstado] = useState('');
+    const [filtroEst_Cit, setFiltroEstado] = useState('');
 
     const fetchAllData = useCallback(async () => {
         setLoading(true);
         setError("");
         try {
             const [citasRes, usersRes, mascotasRes, serviciosRes] = await Promise.all([
-                apiService.get("/api/citas/admin/todas"), // <-- CAMBIO AQUÍ,
+                apiService.get("/api/citas/admin/todas"),
                 apiService.get('/api/users'),
                 apiService.get('/api/mascota/todas'),
                 apiService.get('/api/servicios/servicios')
             ]);
-            
+            if (Array.isArray(usersRes)) {
+            // Filtra el arreglo basándote en la propiedad 'id_rol' que viene de la API
+            // (Asegúrate de que los IDs de rol 2 y 3 sean los correctos para tu sistema)
+            const veterinariosFiltrados = usersRes.filter(user => user.id_rol === 2);
+            const propietariosFiltrados = usersRes.filter(user => user.id_rol === 3);
+
+            setPropietarios(propietariosFiltrados);
+            setVeterinarios(veterinariosFiltrados);
+        }
             setCitas(citasRes || []);
-            setPropietarios(formDataRes.propietarios || []);
-            setVeterinarios(formDataRes.veterinarios || []);
-            setMascotas(formDataRes.mascotas || []);
-            setServicios(formDataRes.servicios || []);
+            // FIX: Use 'usersRes' which likely contains arrays for propietarios and veterinarios
+         
+            // FIX: Use 'mascotasRes' for mascotas
+            setMascotas(mascotasRes || []);
+            // FIX: Use 'serviciosRes' for servicios
+            setServicios(serviciosRes || []);
 
         } catch (error) {
             setError(`Error al cargar los datos: ${error.message}`);
@@ -381,7 +391,7 @@ const GestionCitasAdmin = () => {
     const handleSaveCita = async (formData) => {
         try {
             if (isEditing) {
-                await apiService.put(`/api/citas/admin/${currentCita.cod_cit}`, formData);
+                await apiService.put(`/api/citas/admin/${currentCita.cod_cit}/act`, formData);
                 Swal.fire('Éxito', 'Cita actualizada correctamente.', 'success');
             } else {
                 await apiService.post('/api/citas/admin', formData);
@@ -428,10 +438,10 @@ const GestionCitasAdmin = () => {
         return citas.filter(cita => {
             const fechaCita = new Date(cita.fech_cit).toISOString().split('T')[0];
             const matchFecha = !filtroFecha || fechaCita === filtroFecha;
-            const matchEstado = !filtroEstado || cita.estado === filtroEstado;
+            const matchEstado = !filtroEst_Cit || cita.est_cit === filtroEst_Cit;
             return matchFecha && matchEstado;
         });
-    }, [citas, filtroFecha, filtroEstado]);
+    }, [citas, filtroFecha,filtroEst_Cit]);
 
     const formatDate = (dateString) => {
         if (!dateString) return 'N/A';
@@ -443,10 +453,10 @@ const GestionCitasAdmin = () => {
     const getEstadoStats = () => {
         const stats = {
             total: citas.length,
-            pendientes: citas.filter(c => c.estado === 'PENDIENTE').length,
-            confirmadas: citas.filter(c => c.estado === 'CONFIRMADA').length,
-            completadas: citas.filter(c => c.estado === 'COMPLETADA').length,
-            canceladas: citas.filter(c => c.estado === 'CANCELADA').length
+            pendientes: citas.filter(c => c.est_cit === 'PENDIENTE').length,
+            confirmadas: citas.filter(c => c.est_cit === 'CONFIRMADA').length,
+            completadas: citas.filter(c => c.est_cit === 'COMPLETADA').length,
+            canceladas: citas.filter(c => c.est_cit === 'CANCELADA').length
         };
         return stats;
     };
@@ -528,7 +538,7 @@ const GestionCitasAdmin = () => {
                             <FaFilter /> Filtrar por Estado:
                         </label>
                         <select 
-                            value={filtroEstado} 
+                            value={filtroEst_Cit} 
                             onChange={e => setFiltroEstado(e.target.value)}
                             className="citas-filter-select"
                         >
@@ -572,8 +582,8 @@ const GestionCitasAdmin = () => {
                                     </div>
                                 </td>
                                 <td>
-                                    <span className={`citas-badge citas-badge-${cita.estado.toLowerCase()}`}>
-                                        {cita.estado}
+                                    <span className={`citas-badge citas-badge-${cita.est_cit.toLowerCase()}`}>
+                                        {cita.est_cit}
                                     </span>
                                 </td>
                                 <td>
@@ -605,13 +615,7 @@ const GestionCitasAdmin = () => {
                                         >
                                             <FaEdit />
                                         </button>
-                                        <button 
-                                            onClick={() => handleDeleteCita(cita.cod_cit)} 
-                                            className="citas-btn-icon citas-btn-delete" 
-                                            title="Eliminar Cita"
-                                        >
-                                            <FaTrash />
-                                        </button>
+                                       
                                         <button 
                                             onClick={() => handleViewLogs(cita.cod_cit)} 
                                             className="citas-btn-icon citas-btn-history" 

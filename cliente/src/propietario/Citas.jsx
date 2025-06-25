@@ -6,7 +6,7 @@ import { FaCalendarAlt } from "react-icons/fa";
 import "../stylos/Citas.css"
 import Dashboard from "../propietario/Dashbord"
 import { apiService } from "../services/api-service"
-import Logout from "../pages/Logout"
+import Logout from "../propietario/Logout"
 import HeaderSir from "../propietario/HeaderSir"
 import Dashbord from "../propietario/Dashbord"
 import Swal from "sweetalert2"; 
@@ -23,7 +23,7 @@ export default function GestionCitas() {
   const [showEditModal, setShowEditModal] = useState(false)
 
   // Estados para filtros
-  const [filtroEstado, setFiltroEstado] = useState("all")
+  const [filtroEstado_Cit, setFiltroEstado] = useState("all")
   const [filtroMascota, setFiltroMascota] = useState("all")
   const [filtroFecha, setFiltroFecha] = useState("")
   const [mascotas, setMascotas] = useState([])
@@ -188,7 +188,7 @@ export default function GestionCitas() {
         id_vet: Number.parseInt(citaData.id_veterinario),
         fech_cit: citaData.fecha,
         hora: citaData.hora,
-        estado: citaData.estado,
+        est_cit: citaData.est_cit,
         notas: citaData.notas || "",
       }
 
@@ -229,7 +229,7 @@ export default function GestionCitas() {
 
   // Filtrar citas según los criterios seleccionados
   const citasFiltradas = citas.filter((cita) => {
-    if (filtroEstado !== "all" && cita.estado !== filtroEstado) {
+    if (filtroEstado_Cit !== "all" && cita.est_cit !== filtroEstado_Cit) {
       return false
     }
 
@@ -293,7 +293,7 @@ export default function GestionCitas() {
                 <div className="stat-icon" style={{ background: "var(--warning)" }}>
                   <Clock size={24} />
                 </div>
-                <div className="stat-value">{citas.filter((c) => c.estado === "PENDIENTE").length}</div>
+                <div className="stat-value">{citas.filter((c) => c.est_cit === "PENDIENTE").length}</div>
               </div>
               <div className="stat-label">Citas Pendientes</div>
             </div>
@@ -303,7 +303,7 @@ export default function GestionCitas() {
                 <div className="stat-icon" style={{ background: "var(--success)" }}>
                   <Check size={24} />
                 </div>
-                <div className="stat-value">{citas.filter((c) => c.estado === "CONFIRMADA").length}</div>
+                <div className="stat-value">{citas.filter((c) => c.est_cit === "CONFIRMADA").length}</div>
               </div>
               <div className="stat-label">Citas Confirmadas</div>
             </div>
@@ -317,7 +317,7 @@ export default function GestionCitas() {
                 <select
                   id="filter-status"
                   className="filter-select"
-                  value={filtroEstado}
+                  value={filtroEstado_Cit}
                   onChange={(e) => setFiltroEstado(e.target.value)}
                 >
                   <option value="all">Todos los estados</option>
@@ -454,7 +454,7 @@ function CitaCard({ cita, onView, onEdit, onCancel, onReschedule }) {
   const hora = cita.hora ? cita.hora.substring(0, 5) : "00:00"
 
   let statusClass = ""
-  switch (cita.estado) {
+  switch (cita.est_cit) {
     case "CONFIRMADA":
       statusClass = "confirmed"
       break
@@ -484,7 +484,7 @@ function CitaCard({ cita, onView, onEdit, onCancel, onReschedule }) {
             </div>
             <div style={{ fontSize: "1.125rem", fontWeight: "600", marginBottom: "0.5rem" }}>{hora}</div>
           </div>
-          <span className={`status-badge ${statusClass}`}>{cita.estado}</span>
+          <span className={`status-badge ${statusClass}`}>{cita.est_cit}</span>
         </div>
       </div>
 
@@ -526,7 +526,7 @@ function CitaCard({ cita, onView, onEdit, onCancel, onReschedule }) {
           <Eye size={14} />
           Ver
         </button>
-        {cita.estado !== "CANCELADA" && cita.estado !== "REALIZADA" && (
+        {cita.est_cit !== "CANCELADA" && cita.est_cit !== "REALIZADA" && (
           <>
             <button
               className="btn-secondary"
@@ -783,7 +783,7 @@ function VerCitaModal({ cita, onClose, mascotas, servicios, veterinarios, onResc
               <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
                 <p>
                   <strong>Estado:</strong>{" "}
-                  <span className={`status-badge ${cita.estado.toLowerCase()}`}>{cita.estado}</span>
+                  <span className={`status-badge ${cita.est_cit.toLowerCase()}`}>{cita.est_cit}</span>
                 </p>
                 <p>
                   <strong>Fecha:</strong> {fechaValida ? new Date(fechaRaw).toLocaleDateString() : "Fecha inválida"}
@@ -845,7 +845,7 @@ function VerCitaModal({ cita, onClose, mascotas, servicios, veterinarios, onResc
         </div>
 
         <div className="modal-footer">
-          {cita.estado !== "CANCELADA" && cita.estado !== "REALIZADA" && (
+          {cita.est_cit !== "CANCELADA" && cita.est_cit !== "REALIZADA" && (
             <button className="btn-secondary" onClick={onReschedule}>
               <Calendar size={16} />
               Reagendar
@@ -869,7 +869,7 @@ function EditarCitaModal({ cita, onClose, onSubmit, mascotas, servicios, veterin
     id_veterinario: cita.id_vet || cita.id_veterinario || "",
     fecha: cita.fech_cit || cita.fecha ? new Date(cita.fech_cit || cita.fecha).toISOString().split("T")[0] : "",
     hora: cita.hora || "",
-    estado: cita.estado || "PENDIENTE",
+    est_cit: cita.est_cit || "PENDIENTE",
     notas: cita.notas || "",
     id_usuario: cita.id_pro || cita.id_usuario,
   })
@@ -950,14 +950,14 @@ function EditarCitaModal({ cita, onClose, onSubmit, mascotas, servicios, veterin
   const confirmarCita = () => {
     setFormData((prev) => ({
       ...prev,
-      estado: "CONFIRMADA",
+      est_cit: "CONFIRMADA",
     }))
   }
 
   const cancelarCita = () => {
     setFormData((prev) => ({
       ...prev,
-      estado: "CANCELADA",
+      est_cit: "CANCELADA",
     }))
   }
 
@@ -981,21 +981,21 @@ function EditarCitaModal({ cita, onClose, onSubmit, mascotas, servicios, veterin
             }}
           >
             <p style={{ marginBottom: "0.75rem" }}>
-              Estado actual: <span className={`status-badge ${formData.estado.toLowerCase()}`}>{formData.estado}</span>
+              Estado actual: <span className={`status-badge ${formData.est_cit.toLowerCase()}`}>{formData.est_cit}</span>
             </p>
             <div style={{ display: "flex", gap: "0.75rem" }}>
               <button
-                className={`btn-secondary ${formData.estado === "CONFIRMADA" ? "btn-primary" : ""}`}
+                className={`btn-secondary ${formData.est_cit === "CONFIRMADA" ? "btn-primary" : ""}`}
                 onClick={confirmarCita}
                 type="button"
               >
                 <Check size={16} /> Confirmar
               </button>
               <button
-                className={`btn-secondary ${formData.estado === "CANCELADA" ? "btn-primary" : ""}`}
+                className={`btn-secondary ${formData.est_cit === "CANCELADA" ? "btn-primary" : ""}`}
                 onClick={cancelarCita}
                 type="button"
-                style={{ background: formData.estado === "CANCELADA" ? "var(--danger)" : undefined }}
+                style={{ background: formData.est_cit === "CANCELADA" ? "var(--danger)" : undefined }}
               >
                 <X size={16} /> Cancelar
               </button>

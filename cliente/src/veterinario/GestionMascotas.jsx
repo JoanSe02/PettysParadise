@@ -8,9 +8,9 @@ import {
   CheckCircle, XCircle, AlertCircle, Upload, User, Dog, Award, CreditCard,
   User as Male, User as Female
 } from "lucide-react";
-import "../../stylos/vet/GestionMascotas.css";
-import "../../stylos/vet/loadingvet.css";
-import { apiService } from "../../services/api-service";
+import "../stylos/vet/GestionMascotas.css";
+import "../stylos/vet/loadingvet.css";
+import { apiService } from "../services/api-service";
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:5000/api";
 

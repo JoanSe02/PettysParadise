@@ -6,31 +6,32 @@ AFTER INSERT ON citas
 FOR EACH ROW
 BEGIN
     DECLARE descripcion_log TEXT;
-    SET descripcion_log = CONCAT('Se creó una nueva cita. ID: ', NEW.cod_cit, ', Fecha: ', NEW.fech_cit, ', Estado: ''', NEW.estado, '''.');
+    SET descripcion_log = CONCAT('Se creó una nueva cita. ID: ', NEW.cod_cit, ', Fecha: ', NEW.fech_cit, ', Estado: ''', NEW.est_cit, '''.');
     INSERT INTO logs_citas (id_cita_afectada, accion, descripcion, usuario_db)
     VALUES (NEW.cod_cit, 'INSERT', descripcion_log, USER());
 END$$
 
-
--- Trigger para registrar ACTUALIZACIONES de citas 
 CREATE TRIGGER trg_citas_after_update
 AFTER UPDATE ON citas
 FOR EACH ROW
 BEGIN
     DECLARE descripcion_log TEXT;
     SET descripcion_log = CONCAT('Se actualizó la cita ID: ', OLD.cod_cit, '.');
-    IF OLD.estado <> NEW.estado THEN
-        SET descripcion_log = CONCAT(descripcion_log, ' Estado cambió de ''', OLD.estado, ''' a ''', NEW.estado, '''.');
+
+    IF OLD.est_cit <> NEW.est_cit THEN
+        SET descripcion_log = CONCAT(descripcion_log, ' Estado cambió de ''', OLD.est_cit, ''' a ''', NEW.est_cit, '''.');
     END IF;
+
     IF OLD.fech_cit <> NEW.fech_cit THEN
         SET descripcion_log = CONCAT(descripcion_log, ' Fecha cambió de ''', OLD.fech_cit, ''' a ''', NEW.fech_cit, '''.');
     END IF;
+
      IF OLD.hora <> NEW.hora THEN
         SET descripcion_log = CONCAT(descripcion_log, ' Hora cambió de ''', OLD.hora, ''' a ''', NEW.hora, '''.');
     END IF;
 
     -- Solo inserta el log si realmente hubo un cambio en los campos monitoreados
-    IF OLD.estado <> NEW.estado OR OLD.fech_cit <> NEW.fech_cit OR OLD.hora <> NEW.hora THEN
+    IF OLD.est_cit <> NEW.est_cit OR OLD.fech_cit <> NEW.fech_cit OR OLD.hora <> NEW.hora THEN
         INSERT INTO logs_citas (id_cita_afectada, accion, descripcion, usuario_db)
         VALUES (OLD.cod_cit, 'UPDATE', descripcion_log, USER());
     END IF;
@@ -43,7 +44,7 @@ AFTER DELETE ON citas
 FOR EACH ROW
 BEGIN
     DECLARE descripcion_log TEXT;
-    SET descripcion_log = CONCAT('Se eliminó la cita ID: ', OLD.cod_cit, '. Datos previos: Fecha ''', OLD.fech_cit, ''', Estado ''', OLD.estado, '''.');
+    SET descripcion_log = CONCAT('Se eliminó la cita ID: ', OLD.cod_cit, '. Datos previos: Fecha ''', OLD.fech_cit, ''', Estado ''', OLD.est_cit, '''.');
     INSERT INTO logs_citas (id_cita_afectada, accion, descripcion, usuario_db)
     VALUES (OLD.cod_cit, 'DELETE', descripcion_log, USER());
 END$$

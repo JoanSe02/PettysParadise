@@ -39,7 +39,7 @@ router.get('/usuario/:id_usuario', authenticateToken, async (req, res) => {
       JOIN usuarios u_pro ON p.id_pro = u_pro.id_usuario
       LEFT JOIN veterinarios v ON h.id_vet = v.id_vet
       LEFT JOIN usuarios u_vet ON v.id_vet = u_vet.id_usuario
-      WHERE u_pro.id_usuario = ? AND h.activo = 1
+      WHERE u_pro.id_usuario = ? AND h.act_his = 1
       ORDER BY h.fech_his DESC;
     `, [id_usuario_propietario]);
 

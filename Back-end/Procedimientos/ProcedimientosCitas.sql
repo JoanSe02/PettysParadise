@@ -24,7 +24,7 @@ BEGIN
     FROM citas
     WHERE id_vet = p_id_vet
       AND fech_cit = p_fech_cit
-      AND estado != 'CANCELADA'
+      AND est_cit != 'CANCELADA'
       -- Lógica de solapamiento:
       -- La nueva cita (p_hora) no puede empezar antes de que termine una existente.
       -- Y una cita existente no puede empezar antes de que termine la nueva.
@@ -38,7 +38,7 @@ BEGIN
     ELSE
         -- Si no hay conflictos, se procede con la inserción de la nueva cita
         INSERT INTO citas (
-            fech_cit, hora, cod_ser, id_vet, cod_mas, id_pro, estado, notas
+            fech_cit, hora, cod_ser, id_vet, cod_mas, id_pro,est_cit, notas
         )
         VALUES (
             p_fech_cit, p_hora, p_cod_ser, p_id_vet, p_cod_mas, p_id_pro, 'PENDIENTE', p_notas
@@ -102,7 +102,7 @@ CREATE PROCEDURE ActualizarCita (
     IN p_cod_ser INT,
     IN p_id_vet INT,
     IN p_cod_mas INT,
-    IN p_estado ENUM('PENDIENTE', 'CONFIRMADA', 'CANCELADA', 'REALIZADA', 'NO_ASISTIDA'),
+    IN p_est_cit ENUM('PENDIENTE', 'CONFIRMADA', 'CANCELADA', 'REALIZADA', 'NO_ASISTIDA'),
     IN p_notas TEXT
 )
 BEGIN
@@ -112,34 +112,12 @@ BEGIN
         cod_ser = p_cod_ser,
         id_vet = p_id_vet,
         cod_mas = p_cod_mas,
-        estado = p_estado,
+        est_cit = p_est_cit,
         notas = p_notas
     WHERE cod_cit = p_cod_cit;
 END$$
 DELIMITER ;
 
-DELIMITER $$
-CREATE PROCEDURE CancelarCita (
-    IN p_cod_cit INT,
-    IN p_id_pro INT
-)
-BEGIN
-    DECLARE cita_valida INT;
-
-    SELECT COUNT(*) INTO cita_valida
-    FROM citas
-    WHERE cod_cit = p_cod_cit AND id_pro = p_id_pro;
-
-    IF cita_valida = 0 THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'No tienes permiso para cancelar esta cita.';
-    ELSE
-        UPDATE citas
-        SET estado = 'CANCELADA'
-        WHERE cod_cit = p_cod_cit;
-    END IF;
-END$$
-DELIMITER ;
 
 DELIMITER $$
 DROP PROCEDURE IF EXISTS CancelarCita$$
@@ -163,7 +141,7 @@ BEGIN
     ELSE
         -- Si tiene permiso, se actualiza el estado.
         UPDATE citas
-        SET estado = 'CANCELADA'
+        SET est_cit = 'CANCELADA'
         WHERE cod_cit = p_cod_cit;
     END IF;
 END$$

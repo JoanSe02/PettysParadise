@@ -3,11 +3,11 @@
 import { useState, useEffect } from "react";
 import Swal from "sweetalert2";
 import { Plus, Search, Edit, Trash2, Stethoscope, User, Dog, Calendar, FileText, X, Download, Thermometer, Weight, FilePlus, History, Clock, UserCheck } from "lucide-react";
-import { apiService } from "../../services/api-service";
+import { apiService } from "../services/api-service";
 import jsPDF from "jspdf";
-import "../../stylos/vet/HistorialesMedicos.css";
-import "../../stylos/vet/loadingvet.css";
-import logoUrl from '../../img/logo.png';
+import "../stylos/vet/HistorialesMedicos.css";
+import "../stylos/vet/loadingvet.css";
+import logoUrl from '../img/logo.png';
 
 // =================================================================================
 // COMPONENTE PRINCIPAL

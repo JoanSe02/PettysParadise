@@ -10,25 +10,13 @@ const isAdmin = (req, res, next) => {
     next();
 };
 
-router.get("/todas", isAdmin, async (req, res) => {
-    let connection;
-    try {
-        connection = await pool.getConnection();
-        const [rows] = await connection.query("CALL MostrarTodasLasCitasAdmin()");
-        res.json(rows[0] || []);
-    } catch (error) {
-        res.status(500).json({ success: false, message: "Error en el servidor al obtener citas." });
-    } finally {
-        if (connection) connection.release();
-    }
-};
 
 // --- NUEVOS ENDPOINTS SEGUROS PARA ADMIN ---
-router.get('/todas', async (req, res) => {
+router.get('/todas', authenticateToken, isAdmin, async (req, res) => {
     try {
         const [rows] = await pool.query(`
             SELECT 
-                c.cod_cit, c.fech_cit, c.hora, c.estado, c.notas,
+                c.cod_cit, c.fech_cit, c.hora, c.est_cit, c.notas,
                 c.id_pro, c.cod_mas, c.cod_ser, c.id_vet,
                 CONCAT(u_pro.nombre, ' ', u_pro.apellido) AS propietario,
                 m.nom_mas AS mascota,
@@ -50,17 +38,9 @@ router.get('/todas', async (req, res) => {
     }
 });
 // Crear Cita
-router.post('/', isAdmin, async (req, res) => {
-    const { id_pro, id_vet, cod_mas, cod_ser, fech_cit, hora, notas } = req.body;
-    try {
-        const [result] = await pool.query("CALL InsertarCita(?, ?, ?, ?, ?, ?, ?)", [fech_cit, hora, cod_ser, id_vet, cod_mas, id_pro, notas || '']);
-        const newCitaId = result[0][0].new_cita_id;
-        await registrarLog(newCitaId, 'INSERT', `Admin creó la cita.`, req.user.id_usuario);
-        res.status(201).json({ success: true, message: "Cita creada." });
-    } catch (error) { res.status(500).json({ success: false, message: "Error al crear la cita." }); }
-});
 
-router.post("/", isAdmin, async (req, res) => {
+
+router.post("/", authenticateToken, isAdmin, async (req, res) => {
     let connection;
     try {
         const { fech_cit, hora, cod_ser, id_vet, cod_mas, id_pro, notas } = req.body;
@@ -75,10 +55,56 @@ router.post("/", isAdmin, async (req, res) => {
         if (connection) connection.release();
     }
 });
+router.put("/:cod_cit/act", authenticateToken, async (req, res) => { // <-- CORRECCIÓN AQUÍ
+  let connection;
+  try {
+    const { cod_cit } = req.params;
+    const { id_usuario, id_rol } = req.user; 
 
+    connection = await pool.getConnection();
+
+    const [citasExistentes] = await connection.query(
+      `SELECT id_pro, id_vet FROM citas WHERE cod_cit = ?`, 
+      [cod_cit]
+    );
+
+    if (citasExistentes.length === 0) {
+      return res.status(404).json({ success: false, message: "La cita no fue encontrada." });
+    }
+
+    const cita = citasExistentes[0];
+    const esPropietario = id_rol === 3 && cita.id_pro === id_usuario;
+    const esVeterinarioAsignado = id_rol === 2 && cita.id_vet === id_usuario;
+    const esAdmin = id_rol === 1;
+
+    if (!esAdmin && !esPropietario && !esVeterinarioAsignado) {
+      return res.status(403).json({ success: false, message: "No tienes permiso para modificar esta cita" });
+    }
+
+    const { cod_mas, cod_ser, id_vet, fech_cit, hora,est_cit, notas } = req.body;
+
+    await connection.query(`CALL ActualizarCita(?, ?, ?, ?, ?, ?, ?, ?)`, [
+      cod_cit,
+      fech_cit,
+      hora,
+      cod_ser,
+      id_vet,
+      cod_mas,
+      est_cit,
+      notas,
+    ]);
+
+    res.json({ success: true, message: "Cita actualizada exitosamente" });
+  } catch (error) {
+    console.error("Error al actualizar cita:", error);
+    res.status(500).json({ success: false, message: "Error al actualizar la cita", error: error.message });
+  } finally {
+    if (connection) connection.release();
+  }
+});
 // Cancelar Cita
 // Cancelar Cita
-router.put('/:cod_cit/cancelar', isAdmin, async (req, res) => {
+router.put('/:cod_cit/cancelar', authenticateToken, isAdmin, async (req, res) => {
     const { cod_cit } = req.params;
     try {
         // ----> ¡EL ERROR OCURRE AQUÍ! <----
@@ -92,7 +118,7 @@ router.put('/:cod_cit/cancelar', isAdmin, async (req, res) => {
     }
 });
 
-router.get('/:cod_cit/logs', isAdmin, async (req, res) => {
+router.get('/:cod_cit/logs', authenticateToken, isAdmin, async (req, res) => {
     const { cod_cit } = req.params;
     let connection;
     try {

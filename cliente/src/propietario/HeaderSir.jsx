@@ -1,7 +1,7 @@
 "use client"
 
 import { FaBars, FaBell } from "react-icons/fa"
-import Logout from "../pages/Logout"
+import Logout from "../propietario/Logout"
 import "../stylos/Bar.css"
 
 const RecorvetHeader = ({ onToggleSidebar, showSidebarToggle = true }) => {

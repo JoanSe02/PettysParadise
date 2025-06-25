@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from "react";
 import axios from "axios";
-import "../../stylos/Admin/GestionUsuarios.css"; 
+import "../stylos/Admin/GestionUsuarios.css"; 
 import { FaToggleOn, FaToggleOff, FaEdit } from 'react-icons/fa'; // Importar iconos
 
 const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";

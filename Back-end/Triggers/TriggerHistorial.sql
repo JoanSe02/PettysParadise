@@ -15,7 +15,7 @@ AFTER UPDATE ON `historiales_medicos`
 FOR EACH ROW
 BEGIN
     -- Si el campo 'activo' cambia de 1 (activo) a 0 (eliminado)
-    IF OLD.activo = 1 AND NEW.activo = 0 THEN
+    IF OLD.act_his = 1 AND NEW.act_his = 0 THEN
         INSERT INTO `historiales_log` (
             cod_his_fk, 
             accion, 
@@ -31,7 +31,7 @@ BEGIN
             OLD.tratamiento
         );
     -- Si otros campos importantes cambian (y el registro sigue activo)
-    ELSEIF OLD.activo = 1 AND (OLD.descrip_his <> NEW.descrip_his OR OLD.tratamiento <> NEW.tratamiento) THEN
+    ELSEIF OLD.act_his = 1 AND (OLD.descrip_his <> NEW.descrip_his OR OLD.tratamiento <> NEW.tratamiento) THEN
         INSERT INTO `historiales_log` (
             cod_his_fk, 
             accion, 

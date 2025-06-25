@@ -19,7 +19,7 @@ import {
 } from "react-icons/fa"
 import { GiSittingDog } from 'react-icons/gi'
 import { IoSettingsOutline } from "react-icons/io5"
-import Logout from "../pages/Logout.jsx"
+import Logout from "../propietario/Logout.jsx"
 import "../stylos/Usu.css"
 
 import HeaderSir from "../propietario/HeaderSir.jsx"

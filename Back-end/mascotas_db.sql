@@ -1,20 +1,20 @@
--- Base de datos unificada para sistema de mascotas - Versión 2
+-- Base de datos
 CREATE DATABASE mascotas_db;
 USE mascotas_db;
 
--- Tabla de roles
+-- Tabla de roles (NO necesita campo activo)
 CREATE TABLE rol (
     id_rol INT(11) PRIMARY KEY NOT NULL COMMENT 'Identificador único del rol',
     rol VARCHAR(50) NOT NULL COMMENT 'Nombre del rol'
 );
 
--- Tabla de tipos de persona
+-- Tabla de tipos de persona (NO necesita campo activo)
 CREATE TABLE tipo_persona (
     id_tipo INT(11) PRIMARY KEY NOT NULL COMMENT 'Identificador único del tipo de persona',
     tipo VARCHAR(50) NOT NULL COMMENT 'Descripción del tipo de persona'
 );
 
--- Tabla principal de usuarios
+-- Tabla principal de usuarios (YA incluía campo estado)
 CREATE TABLE usuarios (
     tipo_doc ENUM('C.C','C.E') COMMENT 'Tipo de documento de identidad',
     id_usuario INT(11) PRIMARY KEY NOT NULL COMMENT 'Identificador único del usuario',
@@ -38,35 +38,38 @@ CREATE TABLE usuarios (
     FOREIGN KEY (id_tipo) REFERENCES tipo_persona(id_tipo)
 );
 
--- Tabla de administradores
+-- Tabla de administradores (SE AGREGÓ campo activo)
 CREATE TABLE administradores (
     id_admin INT(11) PRIMARY KEY NOT NULL COMMENT 'Identificador del administrador (FK a usuarios)',
     cargo VARCHAR(100) NOT NULL COMMENT 'Cargo del administrador',
     fecha_ingreso DATE NOT NULL COMMENT 'Fecha de ingreso del administrador',
+    act_admin TINYINT(1) DEFAULT 1 COMMENT '1 = Activo, 0 = Inactivo',
     FOREIGN KEY (id_admin) REFERENCES usuarios(id_usuario)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION
 );
 
--- Tabla de propietarios
+-- Tabla de propietarios (SE AGREGÓ campo activo)
 CREATE TABLE propietarios (
     id_pro INT(11) PRIMARY KEY NOT NULL COMMENT 'Identificador del propietario (FK a usuarios)',
+    act_pro TINYINT(1) DEFAULT 1 COMMENT '1 = Activo, 0 = Inactivo',
     FOREIGN KEY (id_pro) REFERENCES usuarios(id_usuario)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION
 );
 
--- Tabla de veterinarios
+-- Tabla de veterinarios (SE AGREGÓ campo activo)
 CREATE TABLE veterinarios (
     id_vet INT(11) PRIMARY KEY NOT NULL COMMENT 'Identificador del veterinario (FK a usuarios)',
     especialidad VARCHAR(100) NOT NULL COMMENT 'Especialidad del veterinario',
     horario VARCHAR(255) NOT NULL COMMENT 'Horario de trabajo del veterinario',
+    act_vet TINYINT(1) DEFAULT 1 COMMENT '1 = Activo, 0 = Inactivo',
     FOREIGN KEY (id_vet) REFERENCES usuarios(id_usuario)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION
 );
 
--- Tabla de mascotas
+-- Tabla de mascotas (SE AGREGÓ campo activo)
 CREATE TABLE mascotas (
     cod_mas INT(11) PRIMARY KEY NOT NULL AUTO_INCREMENT COMMENT 'Código único de la mascota',
     nom_mas VARCHAR(100) NOT NULL COMMENT 'Nombre de la mascota',
@@ -77,20 +80,22 @@ CREATE TABLE mascotas (
     peso DECIMAL(10,2) NOT NULL COMMENT 'Peso de la mascota en kg',
     id_pro INT(11) NOT NULL COMMENT 'Identificador del propietario (FK)',
     foto VARCHAR(255) NOT NULL COMMENT 'Ruta de la foto de la mascota',
+    act_mas TINYINT(1) DEFAULT 1 COMMENT '1 = Activa, 0 = Inactiva',
     FOREIGN KEY (id_pro) REFERENCES propietarios(id_pro)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION
 );
 
--- Tabla de servicios
+-- Tabla de servicios (SE AGREGÓ campo activo)
 CREATE TABLE servicios (
     cod_ser INT(11) NOT NULL PRIMARY KEY AUTO_INCREMENT COMMENT 'Código único del servicio',
     nom_ser VARCHAR(100) NOT NULL COMMENT 'Nombre del servicio',
     descrip_ser TEXT COMMENT 'Descripción detallada del servicio',
-    precio DECIMAL(20,2) NOT NULL COMMENT 'Precio del servicio'
+    precio DECIMAL(20,2) NOT NULL COMMENT 'Precio del servicio',
+    act_ser TINYINT(1) DEFAULT 1 COMMENT '1 = Activo, 0 = Inactivo'
 );
 
--- Tabla de historiales médicos (con todas las mejoras incluidas)
+-- Tabla de historiales médicos (YA incluía campo activo)
 CREATE TABLE historiales_medicos (
     cod_his INT(11) NOT NULL AUTO_INCREMENT COMMENT 'Código del historial médico',
     fech_his DATE NOT NULL COMMENT 'Fecha del registro médico',
@@ -106,7 +111,7 @@ CREATE TABLE historiales_medicos (
     creado_por INT NULL COMMENT 'ID del usuario que creó el registro',
     actualizado_por INT NULL COMMENT 'ID del último usuario que modificó el registro',
     fecha_actualizacion TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Fecha de la última modificación',
-    activo TINYINT(1) NOT NULL DEFAULT 1 COMMENT '1 = Activo, 0 = Eliminado',
+    act_his TINYINT(1) NOT NULL DEFAULT 1 COMMENT '1 = Activo, 0 = Eliminado',
     eliminado_por INT NULL COMMENT 'ID del usuario que eliminó el registro',
     fecha_eliminacion DATETIME NULL COMMENT 'Fecha de la eliminación',
     PRIMARY KEY(cod_his, cod_mas),
@@ -116,7 +121,7 @@ CREATE TABLE historiales_medicos (
     ON UPDATE NO ACTION
 );
 
--- Tabla de log de historiales para auditoría
+-- Tabla de log de historiales (NO necesita campo activo)
 CREATE TABLE historiales_log (
     log_id INT NOT NULL AUTO_INCREMENT,
     cod_his_fk INT NOT NULL,
@@ -130,7 +135,7 @@ CREATE TABLE historiales_log (
     INDEX idx_usuario (id_usuario_modificador ASC)
 );
 
--- Tabla de citas
+-- Tabla de citas (SE AGREGÓ campo activo)
 CREATE TABLE citas (
     cod_cit INT(11) UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT COMMENT 'Código único de la cita',
     fech_cit DATE NOT NULL COMMENT 'Fecha programada para la cita',
@@ -139,23 +144,26 @@ CREATE TABLE citas (
     id_vet INT(11) COMMENT 'Veterinario asignado (FK)',
     cod_mas INT(11) COMMENT 'Mascota para la cita (FK)',
     id_pro INT(11) NOT NULL COMMENT 'Usuario que solicita la cita (FK)',
-    estado ENUM('PENDIENTE', 'CONFIRMADA', 'CANCELADA', 'REALIZADA', 'NO_ASISTIDA') NOT NULL DEFAULT 'PENDIENTE' COMMENT 'Estado actual de la cita',
+    est_cit ENUM('PENDIENTE', 'CONFIRMADA', 'CANCELADA', 'REALIZADA', 'NO_ASISTIDA') NOT NULL DEFAULT 'PENDIENTE' COMMENT 'Estado actual de la cita',
     notas TEXT COMMENT 'Notas adicionales sobre la cita',
+    est_act TINYINT(1) NOT NULL DEFAULT 1 COMMENT '1 = Activa, 0 = Eliminada lógicamente',
     FOREIGN KEY (cod_ser) REFERENCES servicios(cod_ser),
     FOREIGN KEY (id_pro) REFERENCES propietarios(id_pro),
     FOREIGN KEY (id_vet) REFERENCES veterinarios(id_vet),
     FOREIGN KEY (cod_mas) REFERENCES mascotas(cod_mas)
 );
 
+-- Tabla de logs de citas (NO necesita campo activo)
 CREATE TABLE IF NOT EXISTS logs_citas (
-id_log INT NOT NULL AUTO_INCREMENT,
-  id_cita_afectada INT NULL,
-  accion VARCHAR(10) NULL COMMENT 'INSERT, UPDATE, DELETE',
-  descripcion TEXT NULL COMMENT 'Descripción legible de lo que ocurrió',
-  fecha_hora_accion TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  usuario_db VARCHAR(255) NOT NULL COMMENT 'El usuario de la BD que realizó la acción',
-  PRIMARY KEY (id_log)
+    id_log INT NOT NULL AUTO_INCREMENT,
+    id_cita_afectada INT NULL,
+    accion VARCHAR(10) NULL COMMENT 'INSERT, UPDATE, DELETE',
+    descripcion TEXT NULL COMMENT 'Descripción legible de lo que ocurrió',
+    fecha_hora_accion TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    usuario_db VARCHAR(255) NOT NULL COMMENT 'El usuario de la BD que realizó la acción',
+    PRIMARY KEY (id_log)
 );
+
 
 -- ========= INSERCIÓN DE DATOS =========
 
@@ -210,7 +218,7 @@ INSERT INTO servicios (nom_ser, descrip_ser, precio) VALUES
 ('Baño y Peluquería', 'Servicio completo de higiene y estética para la mascota.', 35000.00);
 
 -- Insertar citas
-INSERT INTO citas (fech_cit, hora, cod_ser, id_vet, cod_mas, id_pro, estado) VALUES
+INSERT INTO citas (fech_cit, hora, cod_ser, id_vet, cod_mas, id_pro, est_cit) VALUES
 ('2025-05-10', '10:00:00', 1, 102, 2, 103, 'CONFIRMADA'),
 ('2025-05-12', '14:30:00', 2, 102, 2, 103, 'PENDIENTE');
 

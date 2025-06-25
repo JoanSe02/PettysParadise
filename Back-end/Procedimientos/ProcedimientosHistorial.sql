@@ -19,7 +19,7 @@ CREATE PROCEDURE CrearHistorial(
 BEGIN
     INSERT INTO historiales_medicos (
         cod_mas, id_vet, fech_his, descrip_his, tratamiento, motivo_consulta,
-        peso_kg, temperatura_c, proximo_seguimiento, costo_consulta, creado_por, actualizado_por, activo
+        peso_kg, temperatura_c, proximo_seguimiento, costo_consulta, creado_por, actualizado_por, act_his
     )
     VALUES (
         p_cod_mas, p_id_vet, p_fecha, p_descripcion, p_tratamiento, p_motivo_consulta,
@@ -56,7 +56,7 @@ BEGIN
     JOIN usuarios u_pro ON p.id_pro = u_pro.id_usuario
     LEFT JOIN veterinarios v ON h.id_vet = v.id_vet
     LEFT JOIN usuarios u_vet ON v.id_vet = u_vet.id_usuario
-    WHERE h.activo = 1
+    WHERE h.act_his = 1
     ORDER BY h.fech_his DESC;
 END$$
 
@@ -123,10 +123,10 @@ CREATE PROCEDURE EliminarHistorial(
 BEGIN
     UPDATE historiales_medicos
     SET 
-        activo = 0,
+        act_his = 0,
         eliminado_por = p_id_usuario_eliminador,
         fecha_eliminacion = NOW()
-    WHERE cod_his = p_cod_his AND activo = 1;
+    WHERE cod_his = p_cod_his AND act_his = 1;
 END$$
 
 

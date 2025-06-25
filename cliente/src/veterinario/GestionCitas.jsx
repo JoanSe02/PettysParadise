@@ -18,9 +18,9 @@ import {
   CheckCircle,
   XCircle,
 } from "lucide-react";
-import "../../stylos/vet/GestionCitas.css";
-import "../../stylos/vet/loadingvet.css";
-import { apiService } from "../../services/api-service";
+import "../stylos/vet/GestionCitas.css";
+import "../stylos/vet/loadingvet.css";
+import { apiService } from "../services/api-service";
 import Swal from "sweetalert2";
 import emailjs from '@emailjs/browser';
 
@@ -36,7 +36,7 @@ export default function GestionCitas() {
   const [selectedCita, setSelectedCita] = useState(null);
   const [showViewModal, setShowViewModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [filtroEstado, setFiltroEstado] = useState("all");
+  const [filtroEstado_Cit, setFiltroEstado] = useState("all");
   const [filtroFecha, setFiltroFecha] = useState("");
   const [propietarios, setPropietarios] = useState([]);
   const [servicios, setServicios] = useState([]);
@@ -197,7 +197,7 @@ const crearCita = async (citaData) => {
   };
 
   const citasFiltradas = citas.filter((cita) => {
-    if (filtroEstado !== "all" && cita.estado !== filtroEstado) return false;
+    if (filtroEstado_Cit !== "all" && cita.est_cit!== filtroEstado_Cit) return false;
     if (filtroFecha) {
       const citaFecha = new Date(cita.fech_cit).toDateString();
       const filtroFechaObj = new Date(filtroFecha).toDateString();
@@ -214,7 +214,7 @@ const crearCita = async (citaData) => {
       </div>
       
       <div className="vet-citas-filters">
-        <div className="vet-filter-group"><label htmlFor="filter-status">Estado:</label><select id="filter-status" className="vet-filter-select" value={filtroEstado} onChange={(e) => setFiltroEstado(e.target.value)}><option value="all">Todos</option><option value="PENDIENTE">Pendiente</option><option value="CONFIRMADA">Confirmada</option><option value="CANCELADA">Cancelada</option><option value="REALIZADA">Realizada</option><option value="NO_ASISTIDA">No Asistida</option></select></div>
+        <div className="vet-filter-group"><label htmlFor="filter-status">Estado:</label><select id="filter-status" className="vet-filter-select" value={filtroEstado_Cit} onChange={(e) => setFiltroEstado(e.target.value)}><option value="all">Todos</option><option value="PENDIENTE">Pendiente</option><option value="CONFIRMADA">Confirmada</option><option value="CANCELADA">Cancelada</option><option value="REALIZADA">Realizada</option><option value="NO_ASISTIDA">No Asistida</option></select></div>
         <div className="vet-filter-group"><label htmlFor="filter-date">Fecha:</label><div className="vet-date-input-container"><input type="date" id="filter-date" className="vet-filter-input" value={filtroFecha} onChange={(e) => setFiltroFecha(e.target.value)} /><CalendarIcon size={16} className="vet-calendar-icon" /></div></div>
         <div className="vet-filter-actions"><button className="vet-clear-filters-btn" onClick={limpiarFiltros}><RotateCcw size={16} /> Limpiar filtros</button><button className="vet-refresh-btn" onClick={fetchCitas}><RefreshCw size={16} /> Actualizar</button></div>
       </div>
@@ -245,10 +245,10 @@ function CitaCard({ cita, onView, onEdit, onCancel }) {
     const dia = fecha.getDate();
     const año = fecha.getFullYear();
     const hora = cita.hora ? cita.hora.substring(0, 5) : "Sin hora";
-    const cardClass = `vet-cita-card ${cita.estado === 'CANCELADA' ? 'canceled' : ''}`;
+    const cardClass = `vet-cita-card ${cita.est_cit === 'CANCELADA' ? 'canceled' : ''}`;
     let statusClass = ""; let statusIcon = null;
-    switch (cita.estado) { case "CONFIRMADA": statusClass = "confirmed"; statusIcon = <Check size={16}/>; break; case "PENDIENTE": statusClass = "pending"; statusIcon = <Clock size={16}/>; break; case "CANCELADA": statusClass = "canceled"; statusIcon = <X size={16}/>; break; case "REALIZADA": statusClass = "completed"; statusIcon = <CheckCircle size={16}/>; break; case "NO_ASISTIDA": statusClass = "missed"; statusIcon = <AlertCircle size={16}/>; break; default: statusClass = "pending"; statusIcon = <Clock size={16}/>; }
-    return (<div className={cardClass}><div className="vet-cita-date"><div className="month">{mes}</div><div className="day">{dia}</div><div className="year">{año}</div><div className="time">{hora}</div></div><div className="vet-cita-details"><div className="vet-cita-info"><h3>{cita.servicio || "Servicio no especificado"}</h3><div className="vet-cita-meta"><span className="vet-meta-item"><User size={16}/> {cita.propietario_nombre || "Propietario no especificado"}</span><span className="vet-meta-item"><Stethoscope size={16}/> {cita.mascota || "Mascota no especificada"}</span></div><div className="vet-cita-status"><span className={`vet-status-badge ${statusClass}`}>{statusIcon} {cita.estado}</span></div></div><div className="vet-cita-actions"><button className="vet-action-btn vet-view-btn" onClick={onView}><Eye size={16}/> Ver</button>{cita.estado !== "CANCELADA" && cita.estado !== "REALIZADA" && (<><button className="vet-action-btn vet-edit-btn" onClick={onEdit}><Edit size={16}/> Editar</button><button className="vet-action-btn vet-cancel-btn" onClick={onCancel}><X size={16}/> Cancelar</button></>)}</div></div></div>);
+    switch (cita.est_cit) { case "CONFIRMADA": statusClass = "confirmed"; statusIcon = <Check size={16}/>; break; case "PENDIENTE": statusClass = "pending"; statusIcon = <Clock size={16}/>; break; case "CANCELADA": statusClass = "canceled"; statusIcon = <X size={16}/>; break; case "REALIZADA": statusClass = "completed"; statusIcon = <CheckCircle size={16}/>; break; case "NO_ASISTIDA": statusClass = "missed"; statusIcon = <AlertCircle size={16}/>; break; default: statusClass = "pending"; statusIcon = <Clock size={16}/>; }
+    return (<div className={cardClass}><div className="vet-cita-date"><div className="month">{mes}</div><div className="day">{dia}</div><div className="year">{año}</div><div className="time">{hora}</div></div><div className="vet-cita-details"><div className="vet-cita-info"><h3>{cita.servicio || "Servicio no especificado"}</h3><div className="vet-cita-meta"><span className="vet-meta-item"><User size={16}/> {cita.propietario_nombre || "Propietario no especificado"}</span><span className="vet-meta-item"><Stethoscope size={16}/> {cita.mascota || "Mascota no especificada"}</span></div><div className="vet-cita-status"><span className={`vet-status-badge ${statusClass}`}>{statusIcon} {cita.est_cit}</span></div></div><div className="vet-cita-actions"><button className="vet-action-btn vet-view-btn" onClick={onView}><Eye size={16}/> Ver</button>{cita.est_cit !== "CANCELADA" && cita.est_cit !== "REALIZADA" && (<><button className="vet-action-btn vet-edit-btn" onClick={onEdit}><Edit size={16}/> Editar</button><button className="vet-action-btn vet-cancel-btn" onClick={onCancel}><X size={16}/> Cancelar</button></>)}</div></div></div>);
 }
 
 // Modal de Nueva Cita con Validaciones
@@ -411,7 +411,7 @@ function EditarCitaModal({ cita, onClose, onSubmit, servicios, veterinarios }) {
               <div className="vet-form-group"><label htmlFor="fech_cit">Fecha:</label><input type="date" id="fech_cit" value={formData.fech_cit} onChange={handleChange} min={minDateStr} max={maxDateStr} required />{errors.fech_cit && <p className="vet-error-message">{errors.fech_cit}</p>}</div>
               <div className="vet-form-group"><label htmlFor="hora">Hora:</label><input type="time" id="hora" value={formData.hora} onChange={handleChange} min="08:00" max="19:00" required />{errors.hora && <p className="vet-error-message">{errors.hora}</p>}</div>
             </div>
-            <div className="vet-form-group"><label htmlFor="estado">Estado:</label><select id="estado" value={formData.estado} onChange={handleChange}><option value="PENDIENTE">Pendiente</option><option value="CONFIRMADA">Confirmada</option><option value="REALIZADA">Realizada</option><option value="CANCELADA">Cancelada</option><option value="NO_ASISTIDA">No Asistida</option></select></div>
+            <div className="vet-form-group"><label htmlFor="estado">Estado:</label><select id="estado" value={formData.est_cit} onChange={handleChange}><option value="PENDIENTE">Pendiente</option><option value="CONFIRMADA">Confirmada</option><option value="REALIZADA">Realizada</option><option value="CANCELADA">Cancelada</option><option value="NO_ASISTIDA">No Asistida</option></select></div>
             <div className="vet-form-group"><label htmlFor="notas">Notas:</label><textarea id="notas" rows={3} value={formData.notas} onChange={handleChange}></textarea></div>
           </form>
         </div>

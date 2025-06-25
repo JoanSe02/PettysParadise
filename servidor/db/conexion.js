@@ -4,13 +4,13 @@ const mysql = require("mysql2/promise");
 const pool = mysql.createPool({
   host: process.env.DB_HOST || 'localhost',
   user: process.env.DB_USER || 'root',
-  password: process.env.DB_PASSWORD || '',
+  password: process.env.DB_PASSWORD || '12345678',
   database: process.env.DB_DATABASE,
-  port: process.env.DB_PORT || 3306,
+  port: process.env.DB_PORT || 3309,
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
-  multipleStatements: true, // Solo si necesitas ejecutar múltiples queries a la vez
+  multipleStatements: true // Solo si necesitas ejecutar múltiples queries a la vez
 });
 
 // Verificar conexión a la base de datos al iniciar
