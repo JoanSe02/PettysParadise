@@ -8,70 +8,108 @@ import {
   MdCalendarToday as IconCalendar,
   MdAssignment as IconAssignment,
   MdClose as IconClose,
+  MdVerifiedUser as IconVerified,
+  MdExpandLess as IconExpandLess,
+  MdExpandMore as IconExpandMore,
 } from "react-icons/md"
-import "../stylos/Vet.css"
+import { useState } from "react"
 
 const VetSidebar = ({ dashboardData, sidebarOpen, setSidebarOpen }) => {
   const location = useLocation()
+  const [gestionExpanded, setGestionExpanded] = useState(true)
 
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen)
   }
 
+  const toggleGestion = () => {
+    setGestionExpanded(!gestionExpanded)
+  }
+
   return (
     <>
-      {/* Overlay para móvil cuando el sidebar está abierto */}
       {sidebarOpen && <div className="mobile-overlay" onClick={toggleSidebar}></div>}
 
-      {/* Sidebar con clase condicional para móvil */}
       <div className={`vet-sidebar ${sidebarOpen ? "mobile-open" : ""}`}>
         <div className="vet-sidebar-header">
-          {/* Botón para cerrar sidebar en móvil */}
+          <div className="sidebar-brand">
+            <img
+              src="https://raw.githubusercontent.com/Vale250910/mascotas_app1/refs/heads/main/img/Logo1.png"
+              alt="Petty's Paradise Logo"
+              className="sidebar-logo"
+            />
+            <div className="brand-text">
+              <h3>Petty's Paradise</h3>
+              <p>Sistema de Gestión</p>
+            </div>
+          </div>
           <button className="vet-sidebar-close" onClick={toggleSidebar}>
             <IconClose size={24} />
           </button>
         </div>
 
-        <div className="vet-user-info">
-          <div className="vet-avatar">
-            {dashboardData.nombre.charAt(0).toUpperCase()}
-            {dashboardData.apellido.charAt(0).toUpperCase()}
+        <div className="vet-user-profile">
+          <div className="user-avatar-container">
+            <div className="vet-avatar">
+              {dashboardData.nombre?.charAt(0)?.toUpperCase() || "D"}
+              {dashboardData.apellido?.charAt(0)?.toUpperCase() || "R"}
+            </div>
+            <div className="online-indicator"></div>
           </div>
-          <div className="vet-user-details">
-            <h3 className="user-name_vet">
+          <div className="user-info">
+            <h4 className="user-name">
               Dr. {dashboardData.nombre} {dashboardData.apellido}
-            </h3>
-            <p className="vet-user-email">
-              <IconMail size={16} /> {dashboardData.email}
-            </p>
-            <span className="vet-user-role">VETERINARIO</span>
-            {dashboardData.especialidad && <p className="vet-user-specialty">{dashboardData.especialidad}</p>}
+            </h4>
+            <div className="user-email">
+              <IconMail size={14} />
+              <span>{dashboardData.email}</span>
+            </div>
+            <div className="user-role-badge">
+              <IconVerified size={12} />
+              VETERINARIO
+            </div>
           </div>
         </div>
 
-        <nav className="vet-nav">
-          <ul>
-            <li className={location.pathname === "/veterinario" ? "active" : ""}>
-              <Link to="/veterinario" onClick={() => setSidebarOpen(false)}>
-                <IconDashboard /> Dashboard
-              </Link>
-            </li>
-            <li className={location.pathname.includes("/veterinario/citas") ? "active" : ""}>
-              <Link to="/veterinario/citas" onClick={() => setSidebarOpen(false)}>
-                <IconCalendar /> Gestión de Citas
-              </Link>
-            </li>
-            <li className={location.pathname.includes("/veterinario/pacientes") ? "active" : ""}>
-              <Link to="/veterinario/pacientes" onClick={() => setSidebarOpen(false)}>
-                <IconPets /> Mis Pacientes
-              </Link>
-            </li>
-            <li className={location.pathname.includes("/veterinario/historiales") ? "active" : ""}>
-              <Link to="/veterinario/historiales" onClick={() => setSidebarOpen(false)}>
-                <IconAssignment /> Historiales Médicos
+        <nav className="vet-navigation">
+          <ul className="nav-list">
+            <li className={`nav-item ${location.pathname === "/veterinario" ? "active" : ""}`}>
+              <Link to="/veterinario" onClick={() => setSidebarOpen(false)} className="nav-link">
+                <IconDashboard size={20} />
+                <span>Dashboard</span>
               </Link>
             </li>
           </ul>
+
+          <div className="nav-section">
+            <div className="section-header" onClick={toggleGestion}>
+              <span className="section-title">GESTIÓN</span>
+              {gestionExpanded ? <IconExpandLess size={20} /> : <IconExpandMore size={20} />}
+            </div>
+
+            {gestionExpanded && (
+              <ul className="nav-list section-list">
+                <li className={`nav-item ${location.pathname.includes("/veterinario/citas") ? "active" : ""}`}>
+                  <Link to="/veterinario/citas" onClick={() => setSidebarOpen(false)} className="nav-link">
+                    <IconCalendar size={20} />
+                    <span>Citas</span>
+                  </Link>
+                </li>
+                <li className={`nav-item ${location.pathname.includes("/veterinario/pacientes") ? "active" : ""}`}>
+                  <Link to="/veterinario/pacientes" onClick={() => setSidebarOpen(false)} className="nav-link">
+                    <IconPets size={20} />
+                    <span>Pacientes</span>
+                  </Link>
+                </li>
+                <li className={`nav-item ${location.pathname.includes("/veterinario/historiales") ? "active" : ""}`}>
+                  <Link to="/veterinario/historiales" onClick={() => setSidebarOpen(false)} className="nav-link">
+                    <IconAssignment size={20} />
+                    <span>Historiales</span>
+                  </Link>
+                </li>
+              </ul>
+            )}
+          </div>
         </nav>
       </div>
     </>
@@ -79,3 +117,5 @@ const VetSidebar = ({ dashboardData, sidebarOpen, setSidebarOpen }) => {
 }
 
 export default VetSidebar
+
+

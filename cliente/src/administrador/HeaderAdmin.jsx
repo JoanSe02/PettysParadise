@@ -5,7 +5,6 @@ import {
   MdNotifications as IconNotifications,
   MdSearch as IconSearch,
   MdSettings as IconSettings,
-  MdHelp as IconHelp,
   MdFullscreen as IconFullscreen,
   MdFullscreenExit as IconFullscreenExit,
 } from "react-icons/md"
@@ -13,7 +12,7 @@ import { useState, useEffect, useRef } from "react"
 import Logout from "../administrador/LogoutAdmin"
 import "../stylos/Admin.css"
 
-const Header = ({ toggleSidebar }) => {
+const UnifiedHeader = ({ toggleSidebar, userData }) => {
   const [notifications, setNotifications] = useState([])
   const [showNotifications, setShowNotifications] = useState(false)
   const [showSearch, setShowSearch] = useState(false)
@@ -44,24 +43,6 @@ const Header = ({ toggleSidebar }) => {
         read: false,
         type: "user",
         priority: "medium",
-      },
-      {
-        id: 3,
-        title: "Recordatorio de cita",
-        message: "Cita con Luna en 1 hora",
-        time: "Hace 30 min",
-        read: true,
-        type: "reminder",
-        priority: "low",
-      },
-      {
-        id: 4,
-        title: "Sistema actualizado",
-        message: "El sistema se ha actualizado a la versión 2.1.0",
-        time: "Hace 2 horas",
-        read: true,
-        type: "system",
-        priority: "low",
       },
     ])
 
@@ -117,15 +98,6 @@ const Header = ({ toggleSidebar }) => {
     )
   }
 
-  const markAllAsRead = () => {
-    setNotifications((prev) => prev.map((notification) => ({ ...notification, read: true })))
-  }
-
-  const clearAllNotifications = () => {
-    setNotifications([])
-    setShowNotifications(false)
-  }
-
   const formatTime = (date) => {
     return date.toLocaleTimeString("es-ES", {
       hour: "2-digit",
@@ -143,83 +115,68 @@ const Header = ({ toggleSidebar }) => {
     })
   }
 
-  const getNotificationIcon = (type) => {
-    switch (type) {
-      case "appointment":
-        return "📅"
-      case "user":
-        return "👤"
-      case "reminder":
-        return "⏰"
-      case "system":
-        return "⚙️"
-      default:
-        return "📢"
-    }
-  }
-
-  const getPriorityColor = (priority) => {
-    switch (priority) {
-      case "high":
-        return "priority-high"
-      case "medium":
-        return "priority-medium"
-      case "low":
-        return "priority-low"
-      default:
-        return ""
-    }
-  }
-
+  // Tu código (incompleto)
+const fullName = userData?.nombre && userData?.apellido ? `${userData.nombre} ${userData.apellido}` : '';
   return (
-    <header className="admin-header-improved admin-header-dark-blue" role="banner">
+    <header className="unified-header" role="banner">
       {/* Left Section */}
-      <div className="header-left-section">
-        <button
-          className="admin-menu-toggle-improved"
-          onClick={toggleSidebar}
-          aria-label="Abrir menú lateral"
-          title="Menú"
-        >
+      <div className="unified-header-left">
+        <button className="unified-menu-toggle" onClick={toggleSidebar} aria-label="Abrir menú lateral" title="Menú">
           <IconMenu size={22} />
         </button>
 
-        <div className="header-branding">
-          <div className="brand-logo">
-            
-            <div className="brand-info">
-              <h1 className="brand-title">Panel de Administrador</h1>
-              <span className="brand-subtitle">Panel de Control</span>
-            </div>
+        <div className="unified-header-branding">
+         
+          <div className="unified-header-brand-info">
+            <h1 className="unified-header-brand-title">Panel de Administrador</h1>
+            <span className="unified-header-brand-subtitle">Panel de Control</span>
           </div>
         </div>
       </div>
 
       {/* Center Section */}
-      
+      <div className="unified-header-center">
+       
+      </div>
 
       {/* Right Section */}
-      <div className="header-right-section">
-        
+      <div className="unified-header-right">
+        {/* Search */}
+        <div className="unified-header-search" ref={searchRef}>
+        </div>
+
+        {/* Notifications */}
+        <div className="unified-notifications-container" ref={notificationsRef}>
+          
+         
+          
+        </div>
+
+        {/* Quick Actions */}
+        <div className="unified-quick-actions">
+          
+        </div>
 
         {/* User Menu */}
-        <div className="user-menu-section">
+        <div className="unified-user-menu">
+          <div className="unified-header-user-info">
+            <span className="unified-header-user-name">{fullName}</span>
+            
+          </div>
           <Logout />
         </div>
       </div>
 
       {/* Search Overlay */}
-      {showSearch && <div className="search-overlay" onClick={() => setShowSearch(false)}></div>}
+  
 
       {/* Notifications Overlay */}
-      {showNotifications && (
-        <div className="notifications-overlay-improved" onClick={() => setShowNotifications(false)}></div>
-      )}
+      
     </header>
   )
 }
 
-export default Header
+export default UnifiedHeader
 
 
 

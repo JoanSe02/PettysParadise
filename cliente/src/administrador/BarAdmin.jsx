@@ -13,14 +13,12 @@ import {
   MdBarChart as IconAnalytics,
   MdExpandLess as IconExpandLess,
   MdExpandMore as IconExpandMore,
-  MdCircle as IconDot,
 } from "react-icons/md"
 import { useState, useEffect } from "react"
 import "../stylos/Admin.css"
 
-const Sidebar = ({ userData, sidebarOpen, setSidebarOpen }) => {
+const UnifiedSidebar = ({ userData, sidebarOpen, setSidebarOpen }) => {
   const location = useLocation()
-  const [notifications, setNotifications] = useState(3)
   const [expandedSections, setExpandedSections] = useState({
     management: true,
     reports: false,
@@ -28,7 +26,6 @@ const Sidebar = ({ userData, sidebarOpen, setSidebarOpen }) => {
   const [onlineUsers, setOnlineUsers] = useState(12)
 
   useEffect(() => {
-    // Simular datos en tiempo real
     const interval = setInterval(() => {
       setOnlineUsers(Math.floor(Math.random() * 20) + 5)
     }, 30000)
@@ -59,7 +56,6 @@ const Sidebar = ({ userData, sidebarOpen, setSidebarOpen }) => {
       icon: IconDashboard,
       label: "Dashboard",
       exact: true,
-      badge: null,
     },
   ]
 
@@ -74,21 +70,18 @@ const Sidebar = ({ userData, sidebarOpen, setSidebarOpen }) => {
       path: "/administrador/roles",
       icon: IconSupervisor,
       label: "Roles y Permisos",
-      badge: null,
       description: "Configurar roles de usuario",
     },
     {
       path: "/administrador/servicios",
       icon: IconAssignment,
       label: "Servicios",
-      badge: null,
       description: "Administrar servicios veterinarios",
     },
     {
       path: "/administrador/citas",
       icon: IconCalendar,
       label: "Citas",
-      badge: null,
       description: "Gestionar citas y horarios",
     },
   ]
@@ -98,14 +91,12 @@ const Sidebar = ({ userData, sidebarOpen, setSidebarOpen }) => {
       path: "/administrador/analytics",
       icon: IconAnalytics,
       label: "Analíticas",
-      badge: null,
       description: "Reportes y estadísticas",
     },
     {
       path: "/administrador/configuracion",
       icon: IconSettings,
       label: "Configuración",
-      badge: null,
       description: "Configuración del sistema",
     },
   ]
@@ -129,7 +120,7 @@ const Sidebar = ({ userData, sidebarOpen, setSidebarOpen }) => {
       {/* Overlay para móvil */}
       {sidebarOpen && (
         <div
-          className="mobile-overlay-improved"
+          className="unified-mobile-overlay"
           onClick={toggleSidebar}
           role="button"
           tabIndex={0}
@@ -144,77 +135,79 @@ const Sidebar = ({ userData, sidebarOpen, setSidebarOpen }) => {
 
       {/* Sidebar */}
       <aside
-        className={`admin-sidebar-improved ${sidebarOpen ? "mobile-open" : ""}`}
+        className={`unified-sidebar ${sidebarOpen ? "mobile-open" : ""}`}
         role="navigation"
         aria-label="Menú principal de administración"
       >
         {/* Header del Sidebar */}
-        <div className="sidebar-header-improved">
-          <div className="sidebar-brand">
-            
-              <img src="https://raw.githubusercontent.com/Vale250910/mascotas_app1/refs/heads/main/img/Logo1.png" alt="VetAdmin Logo" className="logo-dog-sidebar" />
-            
-            <div className="brand-text">
+        <div className="unified-sidebar-header">
+          <div className="unified-sidebar-brand">
+            <div className="unified-brand-logo">
+              <img
+                src="https://raw.githubusercontent.com/Vale250910/mascotas_app1/refs/heads/main/img/Logo1.png"
+                alt="VetAdmin Logo"
+                className="unified-logo-image"
+              />
+            </div>
+            <div className="unified-brand-text">
               <h2>Petty's Paradise</h2>
-              
+              <span>Sistema de Gestión</span>
             </div>
           </div>
 
-          <button className="sidebar-close-btn" onClick={toggleSidebar} aria-label="Cerrar menú lateral">
+          <button className="unified-sidebar-close-btn" onClick={toggleSidebar} aria-label="Cerrar menú lateral">
             <IconClose size={20} />
           </button>
         </div>
 
         {/* Información del Usuario */}
-        <div className="user-info-improved">
-          <div className="user-avatar-improved">
+        <div className="unified-user-info">
+          <div className="unified-user-avatar">
             {userData?.avatar ? (
-              <img src={userData.avatar || "/placeholder.svg"} alt={fullName} className="avatar-image" />
+              <img src={userData.avatar || "/placeholder.svg"} alt={fullName} className="unified-avatar-image" />
             ) : (
-              <span className="avatar-initials">{userInitials}</span>
+              <span className="unified-avatar-initials">{userInitials}</span>
             )}
-            
+            <div className="unified-user-status online"></div>
           </div>
 
-          <div className="user-details-improved">
-            <h3 className="user-name-improved" title={fullName}>
+          <div className="unified-user-details">
+            <h3 className="unified-user-name" title={fullName}>
               {fullName}
             </h3>
-            <div className="user-email-improved" title={userData?.email}>
+            <div className="unified-user-email" title={userData?.email}>
               <IconMail size={14} />
-              <span>{userData?.email || "admin@recorvet.com"}</span>
+              <span>{userData?.email || "admin@pettysparadise.com"}</span>
             </div>
-            <div className="user-role-improved">
-              <span className="role-badge">ADMINISTRADOR</span>
-             
+            <div className="unified-user-role">
+              <span className="unified-role-badge">ADMINISTRADOR</span>
             </div>
           </div>
         </div>
 
-        {/* Sistema de Estadísticas Rápidas */}
+        {/* Estadísticas rápidas */}
         
 
         {/* Navegación Principal */}
-        <nav className="sidebar-nav-improved">
+        <nav className="unified-sidebar-nav">
           {/* Dashboard */}
-          <div className="nav-section">
-            <ul className="nav-list">
+          <div className="unified-nav-section">
+            <ul className="unified-nav-list">
               {mainNavigationItems.map((item) => {
                 const Icon = item.icon
                 const isActive = isActiveLink(item)
 
                 return (
-                  <li key={item.path} className="nav-item">
+                  <li key={item.path} className="unified-nav-item">
                     <Link
                       to={item.path}
                       onClick={handleLinkClick}
-                      className={`nav-link-improved ${isActive ? "active" : ""}`}
+                      className={`unified-nav-link ${isActive ? "active" : ""}`}
                       title={item.label}
                     >
-                      <div className="nav-link-content">
-                        <Icon size={20} className="nav-icon" />
-                        <span className="nav-text">{item.label}</span>
-                        {item.badge && <span className="nav-badge">{item.badge}</span>}
+                      <div className="unified-nav-link-content">
+                        <Icon size={20} className="unified-nav-icon" />
+                        <span className="unified-nav-text">{item.label}</span>
                       </div>
                     </Link>
                   </li>
@@ -224,37 +217,36 @@ const Sidebar = ({ userData, sidebarOpen, setSidebarOpen }) => {
           </div>
 
           {/* Sección de Gestión */}
-          <div className="nav-section">
+          <div className="unified-nav-section">
             <button
-              className="section-header"
+              className="unified-section-header"
               onClick={() => toggleSection("management")}
               aria-expanded={expandedSections.management}
             >
-              <span className="section-title">Gestión</span>
+              <span className="unified-section-title">Gestión</span>
               {expandedSections.management ? <IconExpandLess size={18} /> : <IconExpandMore size={18} />}
             </button>
 
             {expandedSections.management && (
-              <ul className="nav-list subsection">
+              <ul className="unified-nav-list unified-subsection">
                 {managementItems.map((item) => {
                   const Icon = item.icon
                   const isActive = isActiveLink(item)
 
                   return (
-                    <li key={item.path} className="nav-item">
+                    <li key={item.path} className="unified-nav-item">
                       <Link
                         to={item.path}
                         onClick={handleLinkClick}
-                        className={`nav-link-improved ${isActive ? "active" : ""}`}
+                        className={`unified-nav-link ${isActive ? "active" : ""}`}
                         title={item.description}
                       >
-                        <div className="nav-link-content">
-                          <Icon size={18} className="nav-icon" />
-                          <div className="nav-text-container">
-                            <span className="nav-text">{item.label}</span>
-                            <span className="nav-description">{item.description}</span>
+                        <div className="unified-nav-link-content">
+                          <Icon size={18} className="unified-nav-icon" />
+                          <div className="unified-nav-text-container">
+                            <span className="unified-nav-text">{item.label}</span>
+                            <span className="unified-nav-description">{item.description}</span>
                           </div>
-                          {item.badge && <span className="nav-badge">{item.badge}</span>}
                         </div>
                       </Link>
                     </li>
@@ -265,28 +257,28 @@ const Sidebar = ({ userData, sidebarOpen, setSidebarOpen }) => {
           </div>
 
           {/* Sección de Reportes */}
-          <div className="nav-section">
-           
-
+          <div className="unified-nav-section">
+            
+            
             {expandedSections.reports && (
-              <ul className="nav-list subsection">
+              <ul className="unified-nav-list unified-subsection">
                 {reportsItems.map((item) => {
                   const Icon = item.icon
                   const isActive = isActiveLink(item)
 
                   return (
-                    <li key={item.path} className="nav-item">
+                    <li key={item.path} className="unified-nav-item">
                       <Link
                         to={item.path}
                         onClick={handleLinkClick}
-                        className={`nav-link-improved ${isActive ? "active" : ""}`}
+                        className={`unified-nav-link ${isActive ? "active" : ""}`}
                         title={item.description}
                       >
-                        <div className="nav-link-content">
-                          <Icon size={18} className="nav-icon" />
-                          <div className="nav-text-container">
-                            <span className="nav-text">{item.label}</span>
-                            <span className="nav-description">{item.description}</span>
+                        <div className="unified-nav-link-content">
+                          <Icon size={18} className="unified-nav-icon" />
+                          <div className="unified-nav-text-container">
+                            <span className="unified-nav-text">{item.label}</span>
+                            <span className="unified-nav-description">{item.description}</span>
                           </div>
                         </div>
                       </Link>
@@ -299,7 +291,7 @@ const Sidebar = ({ userData, sidebarOpen, setSidebarOpen }) => {
         </nav>
 
         {/* Footer del Sidebar */}
-        <div className="sidebar-footer-improved">
+        <div className="unified-sidebar-footer">
           
         </div>
       </aside>
@@ -307,7 +299,7 @@ const Sidebar = ({ userData, sidebarOpen, setSidebarOpen }) => {
   )
 }
 
-export default Sidebar
+export default UnifiedSidebar
 
 
 

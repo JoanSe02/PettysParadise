@@ -230,7 +230,7 @@ const LogoutComponent = () => {
                 <div className="header-name" title={fullName}>
                   {fullName}
                 </div>
-                <div className="header-role">
+                <div className="header-role1">
                   <Shield size={12} />
                   {userData.role}
                 </div>
@@ -290,7 +290,6 @@ const LogoutComponent = () => {
                 <div className="modal-user-details1">
                   <div className="modal-user-name1">{fullName}</div>
                   <div className="modal-user-email1">{userData.email}</div>
-                  <div className="modal-session-time1">{sessionTime}</div>
                 </div>
               </div>
 

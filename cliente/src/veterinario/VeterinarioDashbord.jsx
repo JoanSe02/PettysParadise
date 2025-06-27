@@ -1,14 +1,12 @@
-"use client"
-
 import { Outlet, useLocation } from "react-router-dom"
 import { useState, useEffect } from "react"
 import { apiService } from "../services/api-service"
-import "../stylos/Vet.css"
 
 // Importar componentes separados
-import VetSidebar from "../veterinario/VetSidebar"
-import VetHeader from "../veterinario/VetHeader"
-import VetContent from "../veterinario/VetContent"
+import VetSidebar from "./VetSidebar"
+import VetHeader from "./VetHeader"
+import VetContent from "./VetContent"
+import "../stylos/Vet.css"
 
 const VeterinarioDashboard = () => {
   const location = useLocation()
@@ -119,3 +117,4 @@ const VeterinarioDashboard = () => {
 }
 
 export default VeterinarioDashboard
+

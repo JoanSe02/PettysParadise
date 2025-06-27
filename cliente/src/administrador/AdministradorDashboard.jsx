@@ -101,19 +101,7 @@ const AdministradorDashboard = () => {
     loadDashboardData()
   }, [isMainDashboard])
 
-  if (loading && isMainDashboard) {
-    return (
-      <div className="admin-dashboard">
-        <div className="loading-container">
-          <div className="loading-spinner"></div>
-          <div className="loading-text">
-            <h3>Cargando Dashboard</h3>
-            <p>Preparando tu panel de administración...</p>
-          </div>
-        </div>
-      </div>
-    )
-  }
+ 
 
   return (
     <div className="admin-dashboard">
