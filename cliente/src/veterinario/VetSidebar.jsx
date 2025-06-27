@@ -54,10 +54,10 @@ const VetSidebar = ({ dashboardData, sidebarOpen, setSidebarOpen }) => {
               {dashboardData.nombre?.charAt(0)?.toUpperCase() || "D"}
               {dashboardData.apellido?.charAt(0)?.toUpperCase() || "R"}
             </div>
-            <div className="online-indicator"></div>
+            
           </div>
           <div className="user-info">
-            <h4 className="user-name">
+            <h4 className="user-name1">
               Dr. {dashboardData.nombre} {dashboardData.apellido}
             </h4>
             <div className="user-email">
@@ -83,7 +83,7 @@ const VetSidebar = ({ dashboardData, sidebarOpen, setSidebarOpen }) => {
 
           <div className="nav-section">
             <div className="section-header" onClick={toggleGestion}>
-              <span className="section-title">GESTIÓN</span>
+              <span className="section-title">Gestión</span>
               {gestionExpanded ? <IconExpandLess size={20} /> : <IconExpandMore size={20} />}
             </div>
 

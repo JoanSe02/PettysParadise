@@ -12,9 +12,7 @@ const VetHeader = ({ toggleSidebar, dashboardData }) => {
         </button>
 
         <div className="header-brand">
-          <div className="header-brand-icon">
-            <span>P</span>
-          </div>
+          
           <div className="header-brand-info">
             <h3>Petty's Paradise</h3>
             <p>Sistema de Gestión</p>

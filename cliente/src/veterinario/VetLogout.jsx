@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useCallback, useRef, useMemo } from "react"
 import { LogOut, ChevronDown, ChevronUp, CheckCircle, Loader2, Mail, X, User, Shield, Clock } from "lucide-react"
-import "../stylos/Admin/LogoutAdmin.css"
+import "../stylos/vet/LogoutVet.css"
+
 
 const LogoutComponent = () => {
   const [expanded, setExpanded] = useState(false)
@@ -181,10 +182,10 @@ const LogoutComponent = () => {
 
   return (
     <>
-      <div ref={dropdownRef} className="user-dropdown-container">
+      <div ref={dropdownRef} className="user-dropdown-container1">
         <div
           onClick={toggleExpand}
-          className="user-info-container"
+          className="user-info-container1"
           role="button"
           tabIndex={0}
           onKeyDown={(e) => {
@@ -196,56 +197,56 @@ const LogoutComponent = () => {
           aria-expanded={expanded}
           aria-haspopup="true"
         >
-          <div className="user-initials1">
+          <div className="user-initials2">
             {userData.avatar ? (
-              <img src={userData.avatar || "/placeholder.svg"} alt={fullName} className="user-avatar-img" />
+              <img src={userData.avatar || "/placeholder.svg"} alt={fullName} className="user-avatar-img1" />
             ) : (
               userInitials
             )}
           </div>
 
-          <div className="user-details">
-            <div className="user-name1" title={fullName}>
+          <div className="user-details1">
+            <div className="user-name2" title={fullName}>
               {fullName}
             </div>
-            <div className="user-role1">{userData.role}</div>
+            <div className="user-role2">{userData.role}</div>
           </div>
 
-          <button className="toggle-button" aria-label={expanded ? "Ocultar menú" : "Mostrar menú"} tabIndex={-1}>
+          <button className="toggle-button1" aria-label={expanded ? "Ocultar menú" : "Mostrar menú"} tabIndex={-1}>
             {expanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
           </button>
         </div>
 
         {expanded && (
-          <div className="dropdown-content header-dropdown" role="menu">
-            <div className="dropdown-header">
-              <div className="header-initials">
+          <div className="dropdown-content header-dropdown1" role="menu">
+            <div className="dropdown-header1">
+              <div className="header-initials1">
                 {userData.avatar ? (
-                  <img src={userData.avatar || "/placeholder.svg"} alt={fullName} className="header-avatar-img" />
+                  <img src={userData.avatar || "/placeholder.svg"} alt={fullName} className="header-avatar-img1" />
                 ) : (
                   userInitials
                 )}
               </div>
-              <div className="header-text">
-                <div className="header-name" title={fullName}>
+              <div className="header-text1">
+                <div className="header-name1" title={fullName}>
                   {fullName}
                 </div>
-                <div className="header-role1">
+                <div className="header-role2">
                   <Shield size={12} />
                   {userData.role}
                 </div>
               </div>
             </div>
 
-            <div className="dropdown-info">
-              <div className="info-item">
-                <Mail size={14} className="info-icon" />
+            <div className="dropdown-info1">
+              <div className="info-item1">
+                <Mail size={14} className="info-icon1" />
                 <span title={userData.email}>{userData.email}</span>
               </div>
              
             </div>
 
-            <div className="dropdown-divider"></div>
+            <div className="dropdown-divider1"></div>
 
             <button
               onClick={() => {
@@ -253,10 +254,10 @@ const LogoutComponent = () => {
                 setShowModal(true)
               }}
               disabled={isLoggingOut}
-              className="logout-button"
+              className="logout-button1"
               role="menuitem"
             >
-              {isLoggingOut ? <Loader2 size={16} className="animate-spin" /> : <LogOut size={16} />}
+              {isLoggingOut ? <Loader2 size={16} className="animate-spin1" /> : <LogOut size={16} />}
               Cerrar sesión
             </button>
           </div>
@@ -271,36 +272,36 @@ const LogoutComponent = () => {
             aria-labelledby="logout-modal-title"
           >
             <div className="modal-content1" onClick={(e) => e.stopPropagation()}>
-              <div className="modal-header1">
-                <div className="modal-icon1">
+              <div className="modal-header2">
+                <div className="modal-icon2">
                   <LogOut size={24} />
                 </div>
-                <h3 id="logout-modal-title1">Cerrar sesión</h3>
+                <h3 id="logout-modal-title2">Cerrar sesión</h3>
                 <p>¿Estás seguro de que quieres salir de tu cuenta?</p>
               </div>
 
-              <div className="modal-user-info1">
-                <div className="modal-initials1">
+              <div className="modal-user-info2">
+                <div className="modal-initials2">
                   {userData.avatar ? (
-                    <img src={userData.avatar || "/placeholder.svg"} alt={fullName} className="modal-avatar-img" />
+                    <img src={userData.avatar || "/placeholder.svg"} alt={fullName} className="modal-avatar-img1" />
                   ) : (
                     userInitials
                   )}
                 </div>
-                <div className="modal-user-details1">
-                  <div className="modal-user-name1">{fullName}</div>
-                  <div className="modal-user-email1">{userData.email}</div>
+                <div className="modal-user-details2">
+                  <div className="modal-user-name2">{fullName}</div>
+                  <div className="modal-user-email2">{userData.email}</div>
                 </div>
               </div>
 
-              <div className="modal-footer1">
-                <button onClick={handleModalClose} className="cancel-button1" disabled={isLoggingOut} type="button">
+              <div className="modal-footer2">
+                <button onClick={handleModalClose} className="cancel-button2" disabled={isLoggingOut} type="button">
                   Cancelar
                 </button>
-                <button onClick={handleLogout} disabled={isLoggingOut} className="confirm-logout-button1" type="button">
+                <button onClick={handleLogout} disabled={isLoggingOut} className="confirm-logout-button2" type="button">
                   {isLoggingOut ? (
                     <>
-                      <Loader2 size={16} className="animate-spin" />
+                      <Loader2 size={16} className="animate-spin1" />
                       Cerrando sesión...
                     </>
                   ) : (
@@ -324,7 +325,7 @@ const LogoutComponent = () => {
               <h4>Sesión finalizada</h4>
               <p>Has cerrado sesión correctamente. Redirigiendo...</p>
             </div>
-            <button onClick={closeToast} className="toast-close-button" aria-label="Cerrar notificación">
+            <button onClick={closeToast} className="toast-close-button1" aria-label="Cerrar notificación">
               <X size={16} />
             </button>
           </div>
