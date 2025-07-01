@@ -76,11 +76,11 @@
   }
   
   @media (min-width: 768px) {
-    h1 {
+    .h1 {
       font-size: 4rem;
     }
   
-    h2 {
+    .h2 {
       font-size: 3rem;
     }
   }

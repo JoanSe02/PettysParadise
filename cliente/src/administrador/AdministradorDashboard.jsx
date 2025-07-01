@@ -13,11 +13,13 @@ import {
   MdNotifications as IconNotifications,
 } from "react-icons/md"
 import axios from "axios"
+import { Base64 } from "js-base64"
 
 // Importar componentes separados
 import Sidebar from "../administrador/BarAdmin"
 import Header from "../administrador/HeaderAdmin"
 import "../stylos/Admin/ContentAdmin.css"
+import InterceptarAtras from "../componentes/InterceptarAtras"
 
 const AdministradorDashboard = () => {
   const location = useLocation()
@@ -106,6 +108,7 @@ const AdministradorDashboard = () => {
   return (
     <div className="admin-dashboard">
       {/* Sidebar Component */}
+      <InterceptarAtras />
       <Sidebar userData={userData} sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
 
       <div className="admin-main-content">
@@ -137,7 +140,7 @@ const AdministradorDashboard = () => {
               {/* Grid de Estadísticas Mejorado */}
               <div className="stats-section">
                 <div className="section-header">
-                  <h2>Resumen del Sistema</h2>
+                  <h2 className="h21">Resumen del Sistema</h2>
                   <p>Estadísticas principales de tu plataforma</p>
                 </div>
 
@@ -154,7 +157,7 @@ const AdministradorDashboard = () => {
                       <div className="stat-value">{userData.totalUsers}</div>
                       <p className="stat-description">Usuarios registrados activos</p>
                     </div>
-                    <Link to="/administrador/usuarios" className="stat-action">
+                    <Link to={`/administrador/${Base64.encode("usuarios")}`}  className="stat-action">
                       <span>Gestionar usuarios</span>
                       <IconArrowRight size={16} />
                     </Link>
@@ -172,7 +175,7 @@ const AdministradorDashboard = () => {
                       <div className="stat-value">{userData.totalRoles}</div>
                       <p className="stat-description">Roles de usuario configurados</p>
                     </div>
-                    <Link to="/administrador/roles" className="stat-action">
+                    <Link to={`/administrador/${Base64.encode("roles")}`} className="stat-action">
                       <span>Gestionar roles</span>
                       <IconArrowRight size={16} />
                     </Link>
@@ -190,7 +193,7 @@ const AdministradorDashboard = () => {
                       <div className="stat-value">{userData.totalServices}</div>
                       <p className="stat-description">Servicios activos en la plataforma</p>
                     </div>
-                    <Link to="/administrador/servicios" className="stat-action">
+                    <Link to={`/administrador/${Base64.encode("servicios")}`} className="stat-action">
                       <span>Gestionar servicios</span>
                       <IconArrowRight size={16} />
                     </Link>
@@ -201,49 +204,50 @@ const AdministradorDashboard = () => {
               {/* Acciones Rápidas Mejoradas */}
               <div className="actions-section">
                 <div className="section-header">
-                  <h2>Acciones Rápidas</h2>
+                  <h2 className="h21">Acciones Rápidas</h2>
                   <p>Tareas administrativas más comunes</p>
                 </div>
 
-                <div className="actions-grid">
-                  <Link to="/administrador/usuarios" className="action-card primary">
-                    <div className="action-icon">
+                <div className="actions-grid1">
+                  <Link to={`/administrador/${Base64.encode("usuarios")}`} className="action-card1 primary1">
+                    <div className="action-icon1">
                       <IconPlus size={24} />
                     </div>
-                    <div className="action-content">
+                    <div className="action-content1">
                       <h3>Crear Usuario</h3>
                       <p>Agregar nuevo usuario al sistema</p>
                     </div>
-                    <div className="action-arrow">
+                    <div className="action-arrow1">
                       <IconArrowRight size={20} />
                     </div>
                   </Link>
 
-                  <Link to="/administrador/roles" className="action-card secondary">
-                    <div className="action-icon">
+                  <Link to={`/administrador/${Base64.encode("roles")}`} className="action-card1 secondary1">
+                    <div className="action-icon1">
                       <IconSupervisor size={24} />
                     </div>
-                    <div className="action-content">
+                    <div className="action-content1">
                       <h3>Gestionar Roles</h3>
                       <p>Configurar permisos y roles</p>
                     </div>
-                    <div className="action-arrow">
+                    <div className="action-arrow1">
                       <IconArrowRight size={20} />
                     </div>
                   </Link>
 
-                  <Link to="/administrador/servicios" className="action-card tertiary">
-                    <div className="action-icon">
+                  <Link to={`/administrador/${Base64.encode("servicios")}`} className="action-card1 tertiary1">
+                    <div className="action-icon1">
                       <IconAssignment size={24} />
                     </div>
-                    <div className="action-content">
+                    <div className="action-content1">
                       <h3>Nuevo Servicio</h3>
                       <p>Registrar servicio en la plataforma</p>
                     </div>
-                    <div className="action-arrow">
+                    <div className="action-arrow1">
                       <IconArrowRight size={20} />
                     </div>
                   </Link>
+
                 </div>
               </div>
 

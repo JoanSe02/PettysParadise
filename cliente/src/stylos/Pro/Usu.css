@@ -1,41 +1,61 @@
 /* Estilos mejorados para el dashboard */
+.app-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
 
+/* Contenedor principal centrado */
+.dashboard-container6 {
+  display: flex;
+  justify-content: center;
+  padding: 20px;
+  margin-left: 250px; /* Ajustar según el ancho de tu sidebar */
+  transition: margin-left 0.3s ease;
+}
+.main-content1{
+  margin-top: 25px;
+  max-width: 1550px;
+  width: 100%;
+}
 /* Sección de bienvenida mejorada */
-.welcome-section-enhanced {
-  background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 50%, #1e293b 100%);
+.welcome-section-enhanced1 {
+  background: linear-gradient(135deg,rgb(14, 142, 221) 0%,rgb(21, 76, 112) 100%);
   border-radius: 16px;
   padding: 2rem;
   margin-bottom: 2rem;
   color: white;
+  margin-top: 40px;
   position: relative;
   overflow: hidden;
   min-height: 180px;
 }
 
-.welcome-content h2 {
+.welcome-content1 h2 {
   font-size: 2rem;
   font-weight: 700;
   margin-bottom: 0.5rem;
 }
 
-.welcome-content p {
+.welcome-content1 p {
   font-size: 1.1rem;
   opacity: 0.9;
 }
 
-.welcome-decoration {
+.welcome-decoration1 {
   position: absolute;
   right: 2rem;
   top: 2rem;
   opacity: 0.1;
 }
 
-.paw-icon {
+.paw-icon1 {
   font-size: 4rem;
 }
 
 /* Notificaciones importantes */
-.notifications-section {
+.notifications-section1 {
   background: #fef3c7;
   border: 1px solid #f59e0b;
   border-radius: 12px;
@@ -43,7 +63,7 @@
   margin-bottom: 2rem;
 }
 
-.notifications-section h3 {
+.notifications-section1 h3 {
   color: #92400e;
   margin-bottom: 1rem;
   display: flex;
@@ -51,13 +71,13 @@
   gap: 0.5rem;
 }
 
-.notifications-list {
+.notifications-list1 {
   display: flex;
   flex-direction: column;
   gap: 1rem;
 }
 
-.notification-item {
+.notification-item1 {
   display: flex;
   align-items: center;
   gap: 1rem;
@@ -67,31 +87,31 @@
   border-left: 4px solid #f59e0b;
 }
 
-.notification-icon {
+.notification-icon1 {
   color: #f59e0b;
   font-size: 1.2rem;
 }
 
-.notification-content p {
+.notification-content1 p {
   margin: 0;
   font-weight: 500;
   color: #374151;
 }
 
-.notification-time {
+.notification-time1 {
   font-size: 0.875rem;
   color: #6b7280;
 }
 
 /* Stats grid mejorado */
-.stats-grid-enhanced {
+.stats-grid-enhanced1 {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 1.5rem;
   margin-bottom: 2rem;
 }
 
-.stat-card {
+.stat-card1 {
   background: white;
   border-radius: 12px;
   padding: 1.5rem;
@@ -100,25 +120,25 @@
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.stat-card:hover {
+.stat-card1:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 15px -3px rgba(0, 0, 0, 0.1);
 }
 
-.stat-card.primary {
-  border-left: 4px solid #3b82f6;
+.stat-card1.primary1 {
+  border-left: 4px solid #0e8edd ;
 }
 
-.stat-card.success {
+.stat-card1.success1 {
   border-left: 4px solid #10b981;
 }
 
-.stat-card.warning {
+.stat-card1.warning1 {
   border-left: 4px solid #f59e0b;
 }
 
-.stat-card.info {
-  border-left: 4px solid #8b5cf6;
+.stat-card1.info1 {
+  border-left: 4px solid #0e8edd ;
 }
 
 .stat-icon1 {
@@ -132,39 +152,39 @@
   font-size: 1.5rem;
 }
 
-.stat-card.primary .stat-icon1 {
+.stat-card1.primary1 .stat-icon1 {
   background: #dbeafe;
-  color: #3b82f6;
+  color: #0e8edd ;
 }
 
-.stat-card.success .stat-icon1 {
+.stat-card1.success1 .stat-icon1 {
   background: #d1fae5;
   color: #10b981;
 }
 
-.stat-card.warning .stat-icon1 {
+.stat-card1.warning1 .stat-icon1 {
   background: #fef3c7;
   color: #f59e0b;
 }
 
-.stat-card.info .stat-icon1 {
+.stat-card1.info1 .stat-icon1 {
   background: #ede9fe;
   color: #8b5cf6;
 }
 
-.stat-value {
+.stat-value1 {
   font-size: 2.5rem;
   font-weight: 700;
   color: #111827;
   margin: 0.5rem 0;
 }
 
-.stat-change {
+.stat-change1 {
   font-size: 0.875rem;
   color: #6b7280;
 }
 
-.stat-change.positive {
+.stat-change1.positive {
   color: #10b981;
 }
 
@@ -262,7 +282,7 @@
 }
 
 .btn-small.primary {
-  background: #3b82f6;
+  background: #0e8edd ;
   color: white;
 }
 
@@ -309,7 +329,7 @@
 }
 
 .action-btn.primary {
-  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  background: linear-gradient(135deg, #0e8edd , #154c70);
 }
 
 .action-btn.success {

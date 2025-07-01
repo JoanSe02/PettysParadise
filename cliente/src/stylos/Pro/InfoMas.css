@@ -1,5 +1,5 @@
 /* Layout principal */
-.dashboard-container {
+.dashboard-container1 {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
@@ -8,10 +8,14 @@
 
 .main-content4 {
   margin-left: 0;
-  margin-top: -40px;
+  margin-top:20px;
   padding: 1.5rem;
   min-height: calc(100vh - 60px);
   transition: margin-left 0.3s ease;
+}
+
+.modal-header {
+  background: linear-gradient(135deg, rgb(14, 142, 221) 0%, rgb(21, 76, 112) 100%);
 }
 
 /* Cuando el sidebar está abierto */
@@ -35,15 +39,15 @@
   gap: 1rem;
 }
 
-.header-icon {
+.header-icon1 {
   width: 3rem;
   height: 3rem;
-  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  background: linear-gradient(135deg, rgb(14, 142, 221) 0%, rgb(21, 76, 112) 100%);
   border-radius: 0.75rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2);
+  box-shadow: 0 4px 6px rgba(14, 142, 221, 0.3);
 }
 
 .icon-white {
@@ -51,11 +55,16 @@
   font-size: 1.25rem;
 }
 
-.header-title {
-  font-size: 1.875rem;
+.header-title1 {
+font-size: 2.5rem;
   font-weight: 700;
-  color: #1f2937;
+  color: #1e293b;
   margin: 0;
+  margin-top: 20px;
+  background: linear-gradient(135deg, rgb(14, 142, 221) 0%, rgb(21, 76, 112) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .header-subtitle {
@@ -92,8 +101,8 @@
 
 .search-box input:focus {
   outline: none;
-  border-color: #2563eb;
-  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+  border-color: rgb(14, 142, 221);
+  box-shadow: 0 0 0 2px rgba(14, 142, 221, 0.2);
 }
 
 .search-box svg {
@@ -103,14 +112,14 @@
 }
 
 /* Stats cards */
-.stats-grid {
+.stats-grid1 {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   gap: 1rem;
   margin-bottom: 2rem;
 }
 
-.stat-card {
+.stat-card1 {
   background-color: white;
   border-radius: 0.75rem;
   padding: 1.5rem;
@@ -119,12 +128,12 @@
   transition: transform 0.2s, box-shadow 0.2s;
 }
 
-.stat-card:hover {
+.stat-card1:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
 }
 
-.stat-header {
+.stat-header1 {
   display: flex;
   align-items: center;
   gap: 1rem;
@@ -138,8 +147,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  background: linear-gradient(135deg, rgb(14, 142, 221) 0%, rgb(21, 76, 112) 100%);
   color: white;
+  box-shadow: 0 4px 6px rgba(14, 142, 221, 0.3);
 }
 
 .stat-value {
@@ -197,18 +207,23 @@
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  background-color: #2563eb;
+  background: linear-gradient(135deg, rgb(14, 142, 221) 0%, rgb(21, 76, 112) 100%);
   color: white;
   padding: 0.5rem 1rem;
   border-radius: 0.5rem;
   font-size: 0.875rem;
   font-weight: 500;
   text-decoration: none;
-  transition: background-color 0.2s;
+  transition: all 0.2s;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(14, 142, 221, 0.3);
 }
 
 .btn-primary:hover {
-  background-color: #1d4ed8;
+  background: linear-gradient(135deg, rgb(21, 76, 112) 0%, rgb(14, 142, 221) 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(14, 142, 221, 0.4);
 }
 
 .btn-secondary {
@@ -216,18 +231,20 @@
   align-items: center;
   gap: 0.5rem;
   background-color: white;
-  color: #2563eb;
+  color: rgb(14, 142, 221);
   padding: 0.5rem 1rem;
   border-radius: 0.5rem;
   font-size: 0.875rem;
   font-weight: 500;
   text-decoration: none;
-  border: 1px solid #2563eb;
+  border: 1px solid rgb(14, 142, 221);
   transition: all 0.2s;
+  cursor: pointer;
 }
 
 .btn-secondary:hover {
-  background-color: #f0f4ff;
+  background-color: rgba(14, 142, 221, 0.1);
+  transform: translateY(-1px);
 }
 
 /* Loading state */
@@ -243,9 +260,9 @@
 .spinner {
   width: 3rem;
   height: 3rem;
-  border: 0.25rem solid rgba(37, 99, 235, 0.1);
+  border: 0.25rem solid rgba(14, 142, 221, 0.2);
   border-radius: 50%;
-  border-top-color: #2563eb;
+  border-top-color: rgb(14, 142, 221);
   animation: spin 1s linear infinite;
 }
 
@@ -272,13 +289,14 @@
 .empty-icon {
   width: 5rem;
   height: 5rem;
-  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  background: linear-gradient(135deg, rgb(14, 142, 221) 0%, rgb(21, 76, 112) 100%);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   margin-bottom: 1.5rem;
   color: white;
+  box-shadow: 0 4px 6px rgba(14, 142, 221, 0.3);
 }
 
 .empty-title {
@@ -361,4 +379,5 @@
   background: #00a085;
   transform: translateY(-1px);
 }
+
 

@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { useForm } from "react-hook-form"
 import axios from "axios"
-import "../stylos/Mascotas.css"
+import "../stylos/vet/Mascotas.css"
 import Swal from "sweetalert2"
 import {
   PawPrint,
@@ -316,10 +316,6 @@ function FormularioMascota() {
                 <option value="">Selecciona una especie</option>
                 <option value="Perro">Perro</option>
                 <option value="Gato">Gato</option>
-                <option value="Ave">Ave</option>
-                <option value="Conejo">Conejo</option>
-                <option value="Hamster">Hamster</option>
-                <option value="Otro">Otro</option>
               </select>
               {errors.especie && <p className="error-message3">{errors.especie.message}</p>}
             </div>

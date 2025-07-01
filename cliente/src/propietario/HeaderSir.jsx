@@ -2,12 +2,12 @@
 
 import { FaBars, FaBell } from "react-icons/fa"
 import Logout from "../propietario/Logout"
-import "../stylos/Bar.css"
+import "../stylos/Pro/Bar.css"
 
 const RecorvetHeader = ({ onToggleSidebar, showSidebarToggle = true }) => {
   return (
     <header className="recorvet-header" style={{
-      background: "linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)",
+      background: "linear-gradient(135deg,rgb(21, 76, 112) 0%,rgb(14, 142, 221) 100%)",
       padding: "0 1rem",
       display: "flex",
       alignItems: "center",
@@ -31,7 +31,7 @@ const RecorvetHeader = ({ onToggleSidebar, showSidebarToggle = true }) => {
         )}
         <div className="recorvet-brand-icon">
           <img
-            src="https://raw.githubusercontent.com/Vale250910/mascotas_app1/refs/heads/main/img/logo.png"
+            src="https://raw.githubusercontent.com/Vale250910/mascotas_app1/refs/heads/main/img/Logo1.png"
             alt="Petty's Paradise Logo"
             style={{
               width: "32px",

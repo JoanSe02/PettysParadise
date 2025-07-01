@@ -315,16 +315,16 @@ const LogoutComponent = () => {
           </div>
         )}
 
-        {showToast && (
-          <div className="toast-notification1" role="alert" aria-live="polite">
-            <div className="toast-icon1">
+         {showToast && (
+          <div className="toast-notification3">
+            <div className="toast-icon3">
               <CheckCircle size={20} />
             </div>
-            <div className="toast-content1">
+            <div className="toast-content3">
               <h4>Sesión finalizada</h4>
-              <p>Has cerrado sesión correctamente. Redirigiendo...</p>
+              <p>Has cerrado sesión correctamente</p>
             </div>
-            <button onClick={closeToast} className="toast-close-button" aria-label="Cerrar notificación">
+            <button onClick={closeToast} className="toast-close-button3">
               <X size={16} />
             </button>
           </div>

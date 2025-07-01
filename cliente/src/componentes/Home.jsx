@@ -208,7 +208,7 @@ const Home = () => {
           <div className="container">
             <div className="section-header">
               <div className="section-header-left">
-                <div className="badge">
+                <div className="badge1">
                   <FaShieldAlt />
                   Nuestros Servicios
                 </div>

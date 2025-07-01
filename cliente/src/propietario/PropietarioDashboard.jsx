@@ -5,234 +5,132 @@ import axios from "axios"
 import {
   FaPaw,
   FaCalendarAlt,
-  FaBell,
-  FaCalendarCheck,
   FaFileMedical,
-  FaSyringe,
-  FaSearch,
   FaArrowRight,
   FaHeart,
-  FaChartLine,
-  FaUserMd,
-  FaClock,
   FaExclamationTriangle,
+  FaCalendarCheck,
 } from "react-icons/fa"
 import { GiSittingDog } from 'react-icons/gi'
 import { IoSettingsOutline } from "react-icons/io5"
-import Logout from "../propietario/Logout.jsx"
-import "../stylos/Usu.css"
+import "../stylos/Pro/Usu.css"
+import InterceptarAtras from "../componentes/InterceptarAtras"
+import { Base64 } from "js-base64"
 
 import HeaderSir from "../propietario/HeaderSir.jsx"
 import Dashbord from "../propietario/Dashbord.jsx"
 
 const PropietarioDashboard = () => {
+  // Estados para datos reales
   const [userData, setUserData] = useState({
     nombre: "",
     apellido: "",
     email: "",
     genero: "masculino",
-    petsCount: 0,
-    upcomingAppointments: 0,
-    remindersCount: 0,
-    pets: [],
-  })
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
-  const [searchTerm, setSearchTerm] = useState("")
-  const [searchResults, setSearchResults] = useState([])
-  const [showSearchResults, setShowSearchResults] = useState(false)
-  const [recentActivities, setRecentActivities] = useState([])
-  const [upcomingAppointments, setUpcomingAppointments] = useState([])
-  const [healthTips, setHealthTips] = useState([])
-  const [notifications, setNotifications] = useState([])
-  const [sidebarOpen, setSidebarOpen] = useState(false)
+  });
+  const [pets, setPets] = useState([]);
+  const [citas, setCitas] = useState([]);
+  const [historiales, setHistoriales] = useState([]);
 
-  const API_URL = "http://localhost:5000"
+  // Estados de carga y error
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const API_URL = "http://localhost:5000"; // Asegúrate de que esta URL sea correcta
 
   const toggleSidebar = () => {
-    setSidebarOpen(!sidebarOpen)
-  }
+    setSidebarOpen(!sidebarOpen);
+  };
 
   useEffect(() => {
-    const loadUserData = async () => {
+    const loadDashboardData = async () => {
       try {
-        setLoading(true)
-        setError(null)
+        setLoading(true);
+        setError(null);
 
-        const token = localStorage.getItem("token")
-        const user = JSON.parse(localStorage.getItem("user") || "{}")
+        const token = localStorage.getItem("token");
+        const user = JSON.parse(localStorage.getItem("user") || "{}");
+        const id_usuario = user.id_usuario;
 
-        if (!token) {
-          throw new Error("No hay token de autenticación")
+        if (!token || !id_usuario) {
+          throw new Error("No hay información de usuario o token de autenticación");
         }
 
-        axios.defaults.headers.common["Authorization"] = `Bearer ${token}`
+        axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
-        const petsResponse = await axios.get(`${API_URL}/api/vermas/mascotas`)
-        const petsData = petsResponse.data
+        // --- 1. Obtener Mascotas ---
+        const fetchPets = axios.get(`${API_URL}/api/vermas/mascotas`);
 
-        // Simulamos datos adicionales para mejorar el dashboard
-        setRecentActivities([
-          {
-            id: 1,
-            type: "cita",
-            description: "Vacunación completada para Max",
-            date: "2024-01-15",
-            status: "completed",
-            petName: "Max",
-          },
-          {
-            id: 2,
-            type: "recordatorio",
-            description: "Próxima desparasitación para Luna",
-            date: "2024-01-20",
-            status: "pending",
-            petName: "Luna",
-          },
-          {
-            id: 3,
-            type: "cita",
-            description: "Chequeo general programado para Rocky",
-            date: "2024-01-25",
-            status: "scheduled",
-            petName: "Rocky",
-          },
-        ])
+        // --- 2. Obtener Citas ---
+        const fetchCitas = axios.get(`${API_URL}/api/citas`).then(response => {
+            // Filtrar para obtener solo citas próximas (pendientes o confirmadas)
+            return response.data.filter(cita => 
+                (cita.est_cit === "PENDIENTE" || cita.est_cit === "CONFIRMADA") && new Date(cita.fech_cit) >= new Date()
+            );
+        });
 
-        setUpcomingAppointments([
-          {
-            id: 1,
-            petName: "Max",
-            type: "Vacunación",
-            date: "2024-01-20",
-            time: "10:30 AM",
-            veterinarian: "Dr. García",
-            clinic: "Clínica Veterinaria Central",
-          },
-          {
-            id: 2,
-            petName: "Luna",
-            type: "Chequeo General",
-            date: "2024-01-22",
-            time: "3:15 PM",
-            veterinarian: "Dra. Martínez",
-            clinic: "Clínica Norte",
-          },
-        ])
+        // --- 3. Obtener Historiales ---
+        const fetchHistorial = axios.get(`${API_URL}/api/historial/usuario/${id_usuario}`).then(response => {
+            return response.data.success ? response.data.data : [];
+        });
 
-        setHealthTips([
-          {
-            id: 1,
-            title: "Hidratación en verano",
-            content: "Asegúrate de que tu mascota tenga agua fresca disponible en todo momento.",
-            icon: "💧",
-          },
-          {
-            id: 2,
-            title: "Ejercicio diario",
-            content: "Los paseos regulares son esenciales para la salud física y mental.",
-            icon: "🐕",
-          },
-          {
-            id: 3,
-            title: "Alimentación balanceada",
-            content: "Consulta con tu veterinario sobre la dieta más adecuada.",
-            icon: "🥗",
-          },
-        ])
+        // Ejecutar todas las peticiones en paralelo
+        const [petsResponse, citasResponse, historialResponse] = await Promise.all([
+          fetchPets,
+          fetchCitas,
+          fetchHistorial,
+        ]);
 
-        setNotifications([
-          {
-            id: 1,
-            message: "Recordatorio: Cita de Max mañana a las 10:30 AM",
-            type: "appointment",
-            read: false,
-            timestamp: "2024-01-19",
-          },
-          {
-            id: 2,
-            message: "Nueva vacuna disponible para gatos",
-            type: "info",
-            read: false,
-            timestamp: "2024-01-18",
-          },
-        ])
-
+        // Actualizar estados con los datos reales
         setUserData({
           nombre: user.nombre || "",
           apellido: user.apellido || "",
           email: user.email || "",
           genero: user.genero || "masculino",
-          petsCount: petsData.length || 0,
-          upcomingAppointments: 2,
-          remindersCount: 3,
-          pets: petsData || [],
-        })
+        });
+
+        setPets(petsResponse.data || []);
+        setCitas(citasResponse || []);
+        setHistoriales(historialResponse || []);
+
       } catch (error) {
-        console.error("Error al cargar datos:", error)
-        setError(error.message || "Error al cargar los datos")
+        console.error("Error al cargar datos del dashboard:", error);
+        setError(error.message || "Error al cargar los datos");
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    loadUserData()
-  }, [])
-
-  const handleSearch = (e) => {
-    const term = e.target.value
-    setSearchTerm(term)
-
-    if (term.length > 0) {
-      const results = userData.pets.filter((pet) => 
-        pet.nombre.toLowerCase().includes(term.toLowerCase())
-      )
-      setSearchResults(results)
-      setShowSearchResults(true)
-    } else {
-      setSearchResults([])
-      setShowSearchResults(false)
-    }
-  }
-
-  const clearSearch = () => {
-    setSearchTerm("")
-    setSearchResults([])
-    setShowSearchResults(false)
-  }
+    loadDashboardData();
+  }, []);
 
   const getTitleByGender = () => {
     return userData.genero === "femenino" 
-      ? "¡Bienvenida, Sra. Propietaria!" 
-      : "¡Bienvenido, Sr. Propietario!"
-  }
+      ? `¡Bienvenida, Sra. ${userData.nombre}!`
+      : `¡Bienvenido, Propietario!`;
+  };
 
-  const getUnreadNotifications = () => {
-    return notifications.filter((notification) => !notification.read).length
-  }
+  // Consejos de salud (pueden seguir siendo estáticos o venir de una API)
+  const healthTips = [
+    { id: 1, title: "Hidratación en verano", content: "Asegúrate de que tu mascota tenga agua fresca disponible.", icon: "💧" },
+    { id: 2, title: "Ejercicio diario", content: "Los paseos regulares son esenciales para su salud.", icon: "🐕" },
+    { id: 3, title: "Alimentación balanceada", content: "Consulta con tu veterinario sobre la dieta más adecuada.", icon: "🥗" },
+  ];
 
   if (loading) {
     return (
       <div className="app-layout">
         <HeaderSir onToggleSidebar={toggleSidebar} />
         <Dashbord isOpen={sidebarOpen} />
-        <div className="dashboard-container">
-          <main className="main-content">
-            <div className="loading-spinner">
-              <div className="spinner-icon">
-                <FaPaw className="spinning" />
-              </div>
-              <p>Cargando datos...</p>
-            </div>
-          </main>
-        </div>
+        
       </div>
-    )
+    );
   }
 
   if (error) {
     return (
-      <div className="dashboard-container">
+      <div className="dashboard-container6">
         <HeaderSir onToggleSidebar={toggleSidebar} />
         <Dashbord isOpen={sidebarOpen} />
         <main className="main-content">
@@ -247,122 +145,113 @@ const PropietarioDashboard = () => {
           </div>
         </main>
       </div>
-    )
+    );
   }
 
   return (
-         <div className="app-layout">
-        <HeaderSir onToggleSidebar={toggleSidebar} />
-        <Dashbord isOpen={sidebarOpen} />
-    <div className="dashboard-container">
-    
-      <main className="main-content">
-        <div className="content-body">
-          {/* Sección de bienvenida mejorada */}
-          <div className="welcome-section-enhanced">
-            <div className="welcome-content">
-              <h2>{getTitleByGender()}</h2>
-              <p>Gestiona la salud y bienestar de tus mascotas desde un solo lugar.</p>
-            </div>
-            <div className="welcome-decoration">
-              <FaPaw className="paw-icon" />
-            </div>
-          </div>
-
-          {/* Stats grid mejorado */}
-          <div className="stats-grid-enhanced">
-            <div className="stat-card primary">
-              <div className="stat-icon1">
-                <FaPaw />
+    <div className="app-layout">
+      <InterceptarAtras />
+      <HeaderSir onToggleSidebar={toggleSidebar} />
+      <Dashbord isOpen={sidebarOpen} />
+      <div className="dashboard-container6">
+        <main className="main-content1">
+          <div className="content-body1">
+            <div className="welcome-section-enhanced1">
+              <div className="welcome-content1">
+                <h2>{getTitleByGender()}</h2>
+                <p>Gestiona la salud y bienestar de tus mascotas desde un solo lugar.</p>
               </div>
-              <div className="stat-info">
-                <h3>Mascotas Registradas</h3>
-                <p className="stat-value">{userData.petsCount}</p>
-                <span className="stat-change positive">+1 este mes</span>
+              <div className="welcome-decoration1">
+                <FaPaw className="paw-icon1" />
               </div>
-              <Link to="/propietario/infomas" className="card-link">
-                Ver detalles <FaArrowRight />
-              </Link>
             </div>
 
-            <div className="stat-card success">
-              <div className="stat-icon1">
-                <FaCalendarCheck />
-              </div>
-              <div className="stat-info">
-                <h3>Próximas Citas</h3>
-                <p className="stat-value">{userData.upcomingAppointments}</p>
-                <span className="stat-change">Esta semana</span>
-              </div>
-              <Link to="/propietario/citas" className="card-link">
-                Ver agenda <FaArrowRight />
-              </Link>
-            </div>
-
-            <div className="stat-card warning">
-              <div className="stat-icon1">
-                <FaBell />
-              </div>
-              <div className="stat-info">
-                <h3>Recordatorios</h3>
-                <p className="stat-value">{userData.remindersCount}</p>
-                <span className="stat-change">Pendientes</span>
-              </div>
-              <Link to="/propietario/recordatorios" className="card-link">
-                Ver todos <FaArrowRight />
-              </Link>
-            </div>
-          </div>
-
-          {/* Quick actions mejorado */}
-          <div className="quick-actions-section-enhanced">
-            <h3>Acciones rápidas</h3>
-            <div className="action-buttons-grid">
-              <Link to="/propietario/infomas" className="action-btn primary">
-                <GiSittingDog />
-                <span>Ver Mascotas</span>
-                <small> Ver tu mascotas registradas</small>
-              </Link>
-              <Link to="/propietario/citas" className="action-btn success">
-                <FaCalendarAlt />
-                <span>Agendar nueva cita</span>
-                <small>Programa una visita veterinaria</small>
-              </Link>
-              <Link to="/propietario/historial" className="action-btn info">
-                <FaFileMedical />
-                <span>Ver historial médico</span>
-                <small>Consulta el historial completo</small>
-              </Link>
-              <Link to="/propietario/perfil" className="action-btn warning">
-                <IoSettingsOutline />
-                <span>Administra tu perfil</span>
-                <small>Modifica aqui tus datos</small>
-              </Link>
-            </div>
-          </div>
-
-          {/* Consejos de salud */}
-          <div className="health-tips-section">
-            <h3>
-              <FaHeart /> Consejos de salud
-            </h3>
-            <div className="tips-grid">
-              {healthTips.map((tip) => (
-                <div key={tip.id} className="tip-card">
-                  <div className="tip-icon">{tip.icon}</div>
-                  <h4>{tip.title}</h4>
-                  <p>{tip.content}</p>
+            <div className="stats-grid-enhanced1">
+              <div className="stat-card1 primary1">
+                <div className="stat-icon1">
+                  <FaPaw />
                 </div>
-              ))}
+                <div className="stat-info1">
+                  <h3>Mascotas Registradas</h3>
+                  <p className="stat-value1">{pets.length}</p>
+                </div>
+                <Link to={`/propietario/${Base64.encode("infomas")}`} className="card-link2">
+                  Ver detalles <FaArrowRight />
+                </Link>
+              </div>
+
+              <div className="stat-card1 success1">
+                <div className="stat-icon1">
+                  <FaCalendarCheck />
+                </div>
+                <div className="stat-info1">
+                  <h3>Próximas Citas</h3>
+                  <p className="stat-value1">{citas.length}</p>
+                </div>
+                <Link to={`/propietario/${Base64.encode("citas")}`} className="card-link2">
+                  Ver agenda <FaArrowRight />
+                </Link>
+              </div>
+
+              <div className="stat-card1 warning1">
+                <div className="stat-icon1">
+                  <FaFileMedical />
+                </div>
+                <div className="stat-info1">
+                  <h3>Registros Médicos</h3>
+                  <p className="stat-value1">{historiales.length}</p>
+                </div>
+                <Link to={`/propietario/${Base64.encode("historial")}`} className="card-link2">
+                  Ver todos <FaArrowRight />
+                </Link>
+              </div>
             </div>
+
+            <div className="quick-actions-section-enhanced">
+              <h3>Acciones rápidas</h3>
+              <div className="action-buttons-grid">
+                <Link to={`/propietario/${Base64.encode("infomas")}`} className="action-btn primary">
+                  <GiSittingDog />
+                  <span>Ver Mascotas</span>
+                  <small>Ver tus mascotas registradas</small>
+                </Link>
+                <Link to={`/propietario/${Base64.encode("citas")}`} className="action-btn success">
+                  <FaCalendarAlt />
+                  <span>Agendar nueva cita</span>
+                  <small>Programa una visita veterinaria</small>
+                </Link>
+                <Link to={`/propietario/${Base64.encode("historial")}`} className="action-btn info">
+                  <FaFileMedical />
+                  <span>Ver historial médico</span>
+                  <small>Consulta el historial completo</small>
+                </Link>
+                <Link to={`/propietario/${Base64.encode("perfil")}`} className="action-btn warning">
+                  <IoSettingsOutline />
+                  <span>Administra tu perfil</span>
+                  <small>Modifica aquí tus datos</small>
+                </Link>
+              </div>
+            </div>
+
+            <div className="health-tips-section">
+              <h3><FaHeart /> Consejos de salud</h3>
+              <div className="tips-grid">
+                {healthTips.map((tip) => (
+                  <div key={tip.id} className="tip-card">
+                    <div className="tip-icon">{tip.icon}</div>
+                    <h4>{tip.title}</h4>
+                    <p>{tip.content}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <Outlet />
           </div>
-
-          <Outlet />
-        </div>
-      </main>
+        </main>
+      </div>
     </div>
-    </div>
-  )
-}
+  );
+};
 
-export default PropietarioDashboard
+export default PropietarioDashboard;

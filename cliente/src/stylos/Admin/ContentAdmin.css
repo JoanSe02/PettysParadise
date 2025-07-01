@@ -326,7 +326,7 @@ body {
   margin-bottom: var(--space-2xl);
 }
 
-.section-header h2 {
+.section-header .h21 {
   font-size: 2.2rem;
   font-weight: 700;
   color: var(--text-primary);
@@ -334,7 +334,7 @@ body {
   position: relative;
 }
 
-.section-header h2::after {
+.section-header .h21::after {
   content: "";
   position: absolute;
   bottom: -8px;
@@ -512,13 +512,13 @@ body {
 }
 
 /* ===== ACCIONES RÁPIDAS MEJORADAS ===== */
-.actions-grid {
+.actions-grid1 {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: var(--space-lg);
 }
 
-.action-card {
+.action-card1 {
   display: flex;
   align-items: center;
   gap: var(--space-lg);
@@ -534,7 +534,7 @@ body {
   overflow: hidden;
 }
 
-.action-card::before {
+.action-card1::before {
   content: "";
   position: absolute;
   top: 0;
@@ -545,17 +545,17 @@ body {
   transition: left 0.6s ease;
 }
 
-.action-card:hover::before {
+.action-card1:hover::before {
   left: 100%;
 }
 
-.action-card:hover {
+.action-card1:hover {
   transform: translateY(-6px);
   box-shadow: var(--shadow-blue);
   border-color: rgba(59, 130, 246, 0.2);
 }
 
-.action-icon {
+.action-icon1 {
   width: 56px;
   height: 56px;
   border-radius: var(--radius-lg);
@@ -568,44 +568,44 @@ body {
   transition: all var(--transition-fast);
 }
 
-.action-card.primary .action-icon {
+.action-card1.primary1 .action-icon1 {
   background: linear-gradient(135deg, var(--primary-blue), var(--primary-blue-light));
 }
 
-.action-card.secondary .action-icon {
+.action-card1.secondary1 .action-icon1 {
   background: linear-gradient(135deg, var(--primary-blue-dark), var(--primary-blue));
 }
 
-.action-card.tertiary .action-icon {
+.action-card1.tertiary1 .action-icon1 {
   background: linear-gradient(135deg, var(--accent-cyan), var(--accent-cyan-light));
 }
 
-.action-card:hover .action-icon {
+.action-card1:hover .action-icon1 {
   transform: scale(1.1) rotate(10deg);
 }
 
-.action-content {
+.action-content1 {
   flex: 1;
 }
 
-.action-content h3 {
+.action-content1 h3 {
   font-size: 1.2rem;
   font-weight: 600;
   margin-bottom: var(--space-xs);
   color: var(--text-primary);
 }
 
-.action-content p {
+.action-content1 p {
   font-size: 0.95rem;
   color: var(--text-secondary);
 }
 
-.action-arrow {
+.action-arrow1 {
   color: var(--text-muted);
   transition: all var(--transition-fast);
 }
 
-.action-card:hover .action-arrow {
+.action-card1:hover .action-arrow1 {
   color: var(--primary-blue);
   transform: translateX(6px);
 }

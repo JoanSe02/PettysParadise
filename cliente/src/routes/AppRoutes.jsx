@@ -1,6 +1,8 @@
-import { Routes, Route } from "react-router-dom"
+import { Routes, Route, useParams, Navigate } from "react-router-dom"
 import { Suspense, lazy } from "react"
+import { Base64 } from "js-base64"
 
+// Importaciones de componentes
 import Login from "../pages/Login.jsx"
 import Registrar from "../pages/Registrar.jsx"
 import RecuperarContraseña from "../pages/RecuperarContraseña.jsx"
@@ -31,78 +33,89 @@ import GestionCitasAdmin from "../administrador/GestionCitasAdmin.jsx"
 
 const Home = lazy(() => import("../componentes/Home"))
 
-const AppRoutes = () => {
-  console.log("AppRoutes renderizado") // Debug
+// --- MANEJADORES DE RUTAS ENCRIPTADAS ---
 
+const PropietarioRouteHandler = () => {
+  const { encodedPath } = useParams()
+  try {
+    const decodedPath = Base64.decode(encodedPath)
+    switch (decodedPath) {
+      case "infomas": return <InfoMas />
+      case "mascotas": return <Mascotas />
+      case "citas": return <Citas />
+      case "historial": return <HistorialMedicoPage />
+      case "perfil": return <PerfilUsuarioPage />
+      default: return <NotFound />
+    }
+  } catch (e) { return <NotFound /> }
+}
+
+const AdministradorRouteHandler = () => {
+  const { encodedPath } = useParams()
+  try {
+    const decodedPath = Base64.decode(encodedPath)
+    switch (decodedPath) {
+      case "usuarios": return <GestionUsuarios />
+      case "roles": return <GestionRoles />
+      case "servicios": return <GestionServicios />
+      case "citas": return <GestionCitasAdmin />
+      default: return <NotFound />
+    }
+  } catch (e) { return <NotFound /> }
+}
+
+const VeterinarioRouteHandler = () => {
+  const { encodedPath } = useParams()
+  try {
+    const decodedPath = Base64.decode(encodedPath)
+    switch (decodedPath) {
+      case "citas": return <GestionCitas />
+      case "pacientes": return <MisPacientes />
+      case "historiales": return <HistorialesMedicos />
+      default: return <NotFound />
+    }
+  } catch (e) { return <NotFound /> }
+}
+
+
+// --- COMPONENTE PRINCIPAL DE RUTAS ---
+
+const AppRoutes = () => {
   return (
     <>
-      {/* Componente de debug temporal */}
-
       <Routes>
-        {/* Ruta Home con Header y Footer */}
-        <Route
-          path="/"
-          element={
-            <Suspense fallback={<Loading fullPage={true} />}>
-              <>
-                <Header />
-                <Home />
-                <Footer />
-              </>
-            </Suspense>
-          }
-        />
-
-        <Route
-          path="/nosotros"
-          element={
-            <Suspense fallback={<Loading fullPage={true} />}>
-              <>
-                <Header />
-                <Nosotros />
-                <Footer />
-              </>
-            </Suspense>
-          }
-        />
-
-        {/* Rutas sin Header y Footer */}
+        {/* Rutas públicas */}
+        <Route path="/" element={<Suspense fallback={<Loading fullPage={true} />}><><Header /><Home /><Footer /></></Suspense>} />
+        <Route path="/nosotros" element={<Suspense fallback={<Loading fullPage={true} />}><><Header /><Nosotros /><Footer /></></Suspense>} />
         <Route path="/login" element={<Login />} />
         <Route path="/registrar" element={<Registrar />} />
         <Route path="/recuperar" element={<RecuperarContraseña />} />
 
-        {/* RUTA PRIVADA PARA PROPIETARIOS */}
+        {/* RUTA PRIVADA PARA PROPIETARIOS (ENCRIPTADA) */}
         <Route element={<PrivateRoutePropietario />}>
           <Route path="/propietario" element={<PropietarioDashboard />} />
-          <Route path="/propietario/infomas" element={<InfoMas />} />
-          <Route path="/propietario/mascotas" element={<Mascotas />} />
-          <Route path="/propietario/citas" element={<Citas />} />
-          <Route path="/propietario/historial" element={<HistorialMedicoPage />} />
-          <Route path="/propietario/perfil" element={<PerfilUsuarioPage />} />
+          <Route path="/propietario/:encodedPath" element={<PropietarioRouteHandler />} />
         </Route>
 
-        {/* RUTAS PRIVADAS PARA ADMINISTRADORES */}
+        {/* RUTAS PRIVADAS PARA ADMINISTRADORES (ENCRIPTADA) */}
         <Route element={<PrivateRouteAdministrador />}>
           <Route path="/administrador" element={<AdministradorDashboard />}>
-            <Route index element={<div />} /> {/* Dashboard principal */}
-            <Route path="usuarios" element={<GestionUsuarios />} />
-            <Route path="roles" element={<GestionRoles />} />
-            <Route path="servicios" element={<GestionServicios />} />
-            <Route path="citas" element={<GestionCitasAdmin />} />
+            {/* La ruta índice muestra un dashboard principal o un resumen */}
+            <Route index element={<div><h4>Panel Principal del Administrador</h4><p>Selecciona una opción del menú para comenzar.</p></div>} />
+            <Route path=":encodedPath" element={<AdministradorRouteHandler />} />
           </Route>
         </Route>
 
-        {/* RUTAS PRIVADAS PARA VETERINARIOS */}
+        {/* RUTAS PRIVADAS PARA VETERINARIOS (ENCRIPTADA) */}
         <Route element={<PrivateRouteVeterinario />}>
           <Route path="/veterinario" element={<VeterinarioDashboard />}>
-            <Route index element={<div />} /> {/* Ruta por defecto para mostrar el dashboard */}
-            <Route path="citas" element={<GestionCitas />} />
-            <Route path="pacientes" element={<MisPacientes/>} />
-            <Route path="historiales" element={<HistorialesMedicos />} />
+             {/* La ruta índice muestra un dashboard principal o un resumen */}
+            <Route index element={<div><h4>Panel Principal del Veterinario</h4><p>Selecciona una opción del menú para comenzar.</p></div>} />
+            <Route path=":encodedPath" element={<VeterinarioRouteHandler />} />
           </Route>
         </Route>
 
-        {/* Redirección para rutas no encontradas */}
+        {/* Ruta para página no encontrada */}
         <Route path="*" element={<NotFound />} />
       </Routes>
       <CookieBanner />

@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { Calendar, Eye, Edit, X, Check, RefreshCw, RotateCcw, Plus, Clock, User, Stethoscope } from "lucide-react"
 import { FaCalendarAlt } from "react-icons/fa";
-import "../stylos/Citas.css"
+import "../stylos/Pro/Citas.css"
 import Dashboard from "../propietario/Dashbord"
 import { apiService } from "../services/api-service"
 import Logout from "../propietario/Logout"
@@ -249,7 +249,7 @@ export default function GestionCitas() {
   })
 
   return (
-    <div className="dashboard-container">
+    <div className="dashboard-container2">
       <HeaderSir onToggleSidebar={toggleSidebar} />
       <Dashbord isOpen={sidebarOpen} />
 
@@ -259,11 +259,11 @@ export default function GestionCitas() {
        <header className="content-header">
         <div className="page-header">
           <div className="header-title-container">
-            <div className="header-icon">
+            <div className="header-icon2">
               <FaCalendarAlt className="icon-white" />
             </div>
             <div>
-              <h1 className="header-title">Gestión de Citas</h1>
+              <h1 className="header-title2">Gestión de Citas</h1>
               <p className="header-subtitle">Administra y programa las citas veterinarias de tus mascotas</p>
             </div>
           </div>
@@ -639,10 +639,11 @@ function NuevaCitaModal({ onClose, onSubmit, mascotas, servicios, veterinarios }
     <div className="modal-overlay" onClick={(e) => e.target.classList.contains("modal-overlay") && onClose()}>
       <div className="modal-content">
         <div className="modal-header">
-          <h2>Nueva Cita</h2>
-          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer" }}>
+          <button onClick={onClose}>
             <X size={18} />
           </button>
+          <h2>Nueva Cita</h2>
+          
         </div>
 
         <div className="modal-body">
@@ -744,11 +745,11 @@ function NuevaCitaModal({ onClose, onSubmit, mascotas, servicios, veterinarios }
           </form>
         </div>
 
-        <div className="modal-footer">
-          <button className="btn-secondary" onClick={onClose}>
+        <div className="modal-footer8">
+          <button className="btn-secondary8" onClick={onClose}>
             Cancelar
           </button>
-          <button className="btn-primary" onClick={handleSubmit}>
+          <button className="btn-primary8" onClick={handleSubmit}>
             Agendar Cita
           </button>
         </div>
@@ -770,10 +771,11 @@ function VerCitaModal({ cita, onClose, mascotas, servicios, veterinarios, onResc
     <div className="modal-overlay" onClick={(e) => e.target.classList.contains("modal-overlay") && onClose()}>
       <div className="modal-content">
         <div className="modal-header">
-          <h2>Detalles de la Cita</h2>
-          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer" }}>
+          <button onClick={onClose}>
             <X size={18} />
           </button>
+          <h2>Detalles de la Cita</h2>
+          
         </div>
 
         <div className="modal-body">
@@ -844,14 +846,14 @@ function VerCitaModal({ cita, onClose, mascotas, servicios, veterinarios, onResc
           </div>
         </div>
 
-        <div className="modal-footer">
+        <div className="modal-footer8">
           {cita.est_cit !== "CANCELADA" && cita.est_cit !== "REALIZADA" && (
-            <button className="btn-secondary" onClick={onReschedule}>
+            <button className="btn-secondary8" onClick={onReschedule}>
               <Calendar size={16} />
               Reagendar
             </button>
           )}
-          <button className="btn-primary" onClick={onClose}>
+          <button className="btn-primary8" onClick={onClose}>
             Cerrar
           </button>
         </div>
@@ -965,10 +967,11 @@ function EditarCitaModal({ cita, onClose, onSubmit, mascotas, servicios, veterin
     <div className="modal-overlay" onClick={(e) => e.target.classList.contains("modal-overlay") && onClose()}>
       <div className="modal-content">
         <div className="modal-header">
-          <h2>Editar Cita</h2>
-          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer" }}>
+          <button onClick={onClose}>
             <X size={18} />
           </button>
+          <h2>Editar Cita</h2>
+          
         </div>
 
         <div className="modal-body">
@@ -1100,11 +1103,11 @@ function EditarCitaModal({ cita, onClose, onSubmit, mascotas, servicios, veterin
           </form>
         </div>
 
-        <div className="modal-footer">
-          <button className="btn-secondary" onClick={onClose}>
+        <div className="modal-footer8">
+          <button className="btn-secondary8" onClick={onClose}>
             Cancelar
           </button>
-          <button className="btn-primary" onClick={handleSubmit}>
+          <button className="btn-primary8" onClick={handleSubmit}>
             <RefreshCw size={16} />
             Actualizar Cita
           </button>

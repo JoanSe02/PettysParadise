@@ -1,6 +1,10 @@
 /* Estilos mejorados para el componente de Logout */
 
 /* Loading States */
+.user-dropdown-container1 {
+    position: relative;
+    display: inline-block;
+  }
 .user-loading {
   display: flex;
   align-items: center;
@@ -33,42 +37,42 @@
 }
 
 /* User Default State */
-.user-default {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
-  color: var(--admin-text-muted);
-  font-size: 14px;
-}
+  .user-default {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 25px;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.85rem;
+    font-weight: 500;
+  }
 
 /* Main Container */
-.user-dropdown-container {
-  position: relative;
-  z-index: 1000;
-}
+
 
 .user-info-container {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 8px 16px;
-  border-radius: 12px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid transparent;
-  min-width: 200px;
+   display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.5rem 1rem;
+    background: var(--unified-bg-primary);;
+    border-radius: 25px;
+    backdrop-filter: blur(10px);
+    
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 200px;
 }
 
 .user-info-container:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.1);
+  background: var(--unified-bg-primary);;
+  
   transform: translateY(-1px);
 }
 
 .user-info-container:focus {
-  outline: 2px solid var(--admin-primary-accent);
   outline-offset: 2px;
 }
 
@@ -77,7 +81,7 @@
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: var(--admin-primary-gradient);
+  background: var(--unified-primary-gradient);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -86,8 +90,19 @@
   color: white;
   flex-shrink: 0;
   box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+  margin: 0; /* Añade esto para eliminar márgenes */
+  padding: 0; /* Añade esto para eliminar paddings */
 }
 
+.user-avatar-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block; /* Asegura que la imagen no tenga espacio adicional */
+  margin: 0;
+  padding: 0;
+}
 .user-avatar-img,
 .header-avatar-img,
 .modal-avatar-img {
@@ -142,15 +157,14 @@
 /* Dropdown Content */
 .dropdown-content {
   position: absolute;
-  top: calc(100% + 8px);
+  top: 100%;
   right: 0;
-  background: var(--admin-card-bg);
-  border-radius: 12px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
-  border: 1px solid var(--admin-border-color);
-  min-width: 280px;
-  z-index: 1001;
-  animation: dropdownSlide 0.2s ease-out;
+  margin-top:-10px;
+  width: 280px;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  z-index: 100;
 }
 
 @keyframes dropdownSlide {
@@ -166,18 +180,20 @@
 
 /* Dropdown Header */
 .dropdown-header {
-  padding: 20px;
-  border-bottom: 1px solid var(--admin-border-color);
-  display: flex;
-  align-items: center;
-  gap: 12px;
+  padding: 1.25rem;
+    background: var(--unified-primary-gradient);
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    
 }
 
 .header-initials {
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background: var(--admin-primary-gradient);
+  background: var(--unified-primary-gradient);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -185,10 +201,12 @@
   font-size: 18px;
   color: white;
   flex-shrink: 0;
+  border: 2px solid rgba(255, 255, 255, 0.3);
   box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }
 
 .header-text {
+  color: white;
   flex: 1;
   min-width: 0;
 }
@@ -196,7 +214,7 @@
 .header-name {
   font-size: 16px;
   font-weight: 600;
-  color: var(--admin-text-strong);
+  color: white;
   margin: 0 0 4px 0;
   white-space: nowrap;
   overflow: hidden;
@@ -205,7 +223,7 @@
 
 .header-role1 {
   font-size: 12px;
-  color: var(--admin-text-muted);
+  color: white;
   display: flex;
   align-items: center;
   gap: 4px;
@@ -370,7 +388,7 @@
   width: 50px;
   height: 50px;
   border-radius: 50%;
-  background: var(--admin-primary-gradient);
+  background: var(--unified-primary-gradient);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -469,23 +487,49 @@
   transform: none;
 }
 
-/* Toast Notification */
-.toast-notification1 {
+/* Toast */
+.toast-notification3 {
   position: fixed;
-  top: 20px;
+  bottom: 20px;
   right: 20px;
-  background: var(--admin-card-bg);
-  border-radius: 12px;
-  padding: 16px 20px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
-  border: 1px solid var(--admin-border-color);
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   display: flex;
   align-items: center;
+  padding: 12px 16px;
   gap: 12px;
-  max-width: 400px;
-  z-index: 3000;
-  animation: toastSlide 0.3s ease-out;
+  border-left: 4px solid #10b981;
+  animation: slideIn 0.3s ease-out;
+  z-index: 1000;
 }
+
+.toast-icon3 {
+  color: #10b981;
+}
+
+.toast-content3 h4 {
+  font-weight: 600;
+  font-size: 14px;
+  color: #1e293b;
+  margin-bottom: 2px;
+}
+
+.toast-content3 p {
+  font-size: 13px;
+  color: #64748b;
+}
+
+.toast-close-button3 {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+}
+
 
 @keyframes toastSlide {
   from {

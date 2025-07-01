@@ -13,6 +13,7 @@ import {
   MdExpandMore as IconExpandMore,
 } from "react-icons/md"
 import { useState } from "react"
+import { Base64 } from "js-base64"
 
 const VetSidebar = ({ dashboardData, sidebarOpen, setSidebarOpen }) => {
   const location = useLocation()
@@ -25,6 +26,16 @@ const VetSidebar = ({ dashboardData, sidebarOpen, setSidebarOpen }) => {
   const toggleGestion = () => {
     setGestionExpanded(!gestionExpanded)
   }
+
+  // --- INICIO DE MODIFICACIONES ---
+
+  // Se definen las rutas codificadas para usarlas tanto en los enlaces como en la lógica de la clase activa.
+  const citasPath = `/veterinario/${Base64.encode("citas")}`
+  const pacientesPath = `/veterinario/${Base64.encode("pacientes")}`
+  const historialesPath = `/veterinario/${Base64.encode("historiales")}`
+
+  // --- FIN DE MODIFICACIONES ---
+
 
   return (
     <>
@@ -54,7 +65,6 @@ const VetSidebar = ({ dashboardData, sidebarOpen, setSidebarOpen }) => {
               {dashboardData.nombre?.charAt(0)?.toUpperCase() || "D"}
               {dashboardData.apellido?.charAt(0)?.toUpperCase() || "R"}
             </div>
-            
           </div>
           <div className="user-info">
             <h4 className="user-name1">
@@ -83,30 +93,32 @@ const VetSidebar = ({ dashboardData, sidebarOpen, setSidebarOpen }) => {
 
           <div className="nav-section">
             <div className="section-header" onClick={toggleGestion}>
-              <span className="section-title">Gestión</span>
+              <span className="section-title1">Gestión</span>
               {gestionExpanded ? <IconExpandLess size={20} /> : <IconExpandMore size={20} />}
             </div>
 
             {gestionExpanded && (
               <ul className="nav-list section-list">
-                <li className={`nav-item ${location.pathname.includes("/veterinario/citas") ? "active" : ""}`}>
-                  <Link to="/veterinario/citas" onClick={() => setSidebarOpen(false)} className="nav-link">
+                {/* --- INICIO DE MODIFICACIONES --- */}
+                <li className={`nav-item ${location.pathname === citasPath ? "active" : ""}`}>
+                  <Link to={citasPath} onClick={() => setSidebarOpen(false)} className="nav-link">
                     <IconCalendar size={20} />
                     <span>Citas</span>
                   </Link>
                 </li>
-                <li className={`nav-item ${location.pathname.includes("/veterinario/pacientes") ? "active" : ""}`}>
-                  <Link to="/veterinario/pacientes" onClick={() => setSidebarOpen(false)} className="nav-link">
+                <li className={`nav-item ${location.pathname === pacientesPath ? "active" : ""}`}>
+                  <Link to={pacientesPath} onClick={() => setSidebarOpen(false)} className="nav-link">
                     <IconPets size={20} />
                     <span>Pacientes</span>
                   </Link>
                 </li>
-                <li className={`nav-item ${location.pathname.includes("/veterinario/historiales") ? "active" : ""}`}>
-                  <Link to="/veterinario/historiales" onClick={() => setSidebarOpen(false)} className="nav-link">
+                <li className={`nav-item ${location.pathname === historialesPath ? "active" : ""}`}>
+                  <Link to={historialesPath} onClick={() => setSidebarOpen(false)} className="nav-link">
                     <IconAssignment size={20} />
                     <span>Historiales</span>
                   </Link>
                 </li>
+                 {/* --- FIN DE MODIFICACIONES --- */}
               </ul>
             )}
           </div>

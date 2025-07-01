@@ -3,7 +3,8 @@
 import { Link, useLocation } from "react-router-dom"
 import { FaHome, FaPaw, FaCalendarAlt, FaFileAlt, FaUsers, FaHeart } from "react-icons/fa"
 import { IoSettingsSharp } from "react-icons/io5";
-import "../stylos/Bar.css"
+import { Base64 } from "js-base64"
+import "../stylos/Pro/Bar.css"
 
 const RecorvetSidebar = ({ isOpen }) => {
   const location = useLocation()
@@ -17,25 +18,25 @@ const RecorvetSidebar = ({ isOpen }) => {
       color: "#3b82f6",
     },
     {
-      path: "/propietario/infomas",
+      path: `/propietario/${Base64.encode("infomas")}`, // Ruta codificada
       icon: FaPaw,
       label: "Mis Mascotas",
       color: "#10b981",
     },
     {
-      path: "/propietario/citas",
+      path: `/propietario/${Base64.encode("citas")}`, // Ruta codificada
       icon: FaCalendarAlt,
       label: "Agendar cita",
       color: "#f59e0b",
     },
     {
-      path: "/propietario/historial",
+      path: `/propietario/${Base64.encode("historial")}`, // Ruta codificada
       icon: FaFileAlt,
       label: "Historial médico",
       color: "#8b5cf6",
     },
-       {
-      path: "/propietario/perfil",
+    {
+      path: `/propietario/${Base64.encode("perfil")}`, // Ruta codificada
       icon: IoSettingsSharp,
       label: "Mi perfil",
       color: "#8b5cf6",
@@ -78,7 +79,7 @@ const RecorvetSidebar = ({ isOpen }) => {
               style={{
                 width: "40px",
                 height: "40px",
-                background: "linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)",
+                background: "linear-gradient(135deg,rgb(14, 142, 221) 0%,rgb(21, 76, 112) 100%)",
                 borderRadius: "10px",
                 display: "flex",
                 alignItems: "center",
@@ -130,7 +131,7 @@ const RecorvetSidebar = ({ isOpen }) => {
                     borderRadius: "10px",
                     textDecoration: "none",
                     transition: "all 0.2s ease",
-                    background: isActive ? "linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)" : "transparent",
+                    background: isActive ? "linear-gradient(135deg,rgb(14, 142, 221) 0%,rgb(21, 76, 112) 100%)" : "transparent",
                     color: isActive ? "white" : "#4b5563",
                     fontWeight: isActive ? "600" : "500",
                     transform: isActive ? "translateX(4px)" : "translateX(0)",
@@ -180,23 +181,7 @@ const RecorvetSidebar = ({ isOpen }) => {
         >
           <button
             className="btn-success"
-            style={{
-              width: "100%",
-              fontSize: "0.875rem",
-              background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
-              border: "none",
-              padding: "0.875rem 1rem",
-              borderRadius: "10px",
-              color: "white",
-              fontWeight: "600",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: "0.5rem",
-              cursor: "pointer",
-              transition: "all 0.2s ease",
-              boxShadow: "0 4px 12px rgba(16, 185, 129, 0.3)",
-            }}
+            
             onMouseEnter={(e) => {
               e.target.style.transform = "translateY(-2px)"
               e.target.style.boxShadow = "0 6px 16px rgba(16, 185, 129, 0.4)"
@@ -206,8 +191,7 @@ const RecorvetSidebar = ({ isOpen }) => {
               e.target.style.boxShadow = "0 4px 12px rgba(16, 185, 129, 0.3)"
             }}
           >
-            <FaUsers />
-            ¿Necesitas ayuda?
+            
           </button>
         </div>
       </div>

@@ -53,7 +53,7 @@ const LogoutComponent = () => {
           nombre: user.nombre || "Usuario",
           apellido: user.apellido || "",
           email: user.email || "usuario@recorvet.com",
-          role: "Administrador",
+          role: "Veterinario",
           lastLogin: user.lastLogin || new Date().toISOString(),
           avatar: user.avatar || null,
         }
@@ -218,7 +218,7 @@ const LogoutComponent = () => {
         </div>
 
         {expanded && (
-          <div className="dropdown-content header-dropdown1" role="menu">
+          <div className="dropdown-content1 header-dropdown1" role="menu">
             <div className="dropdown-header1">
               <div className="header-initials1">
                 {userData.avatar ? (
@@ -316,16 +316,16 @@ const LogoutComponent = () => {
           </div>
         )}
 
-        {showToast && (
-          <div className="toast-notification1" role="alert" aria-live="polite">
-            <div className="toast-icon1">
+         {showToast && (
+          <div className="toast-notification3">
+            <div className="toast-icon3">
               <CheckCircle size={20} />
             </div>
-            <div className="toast-content1">
+            <div className="toast-content3">
               <h4>Sesión finalizada</h4>
-              <p>Has cerrado sesión correctamente. Redirigiendo...</p>
+              <p>Has cerrado sesión correctamente</p>
             </div>
-            <button onClick={closeToast} className="toast-close-button1" aria-label="Cerrar notificación">
+            <button onClick={closeToast} className="toast-close-button3">
               <X size={16} />
             </button>
           </div>

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef, useMemo } from "react"
 import { LogOut, ChevronDown, ChevronUp, CheckCircle, Loader2, Mail, X, User } from "lucide-react"
-import "../stylos/Logout.css"
+import "../stylos/Pro/Logout.css"
 
 const LogoutComponent = () => {
   const [expanded, setExpanded] = useState(false)
@@ -76,27 +76,35 @@ const LogoutComponent = () => {
     setExpanded((prev) => !prev)
   }, [])
 
-  const handleLogout = useCallback(async () => {
+   const handleLogout = useCallback(async () => {
     try {
       setIsLoggingOut(true)
+
+      // Simular proceso de logout
       await new Promise((resolve) => setTimeout(resolve, 1500))
 
-      setShowModal(false)
-      setShowToast(true)
+      // Limpiar datos de sesión
+      const keysToRemove = ["user", "token", "authState", "sessionData"]
+      keysToRemove.forEach((key) => {
+        localStorage.removeItem(key)
+        sessionStorage.removeItem(key)
+      })
 
-      localStorage.removeItem("user")
-      localStorage.removeItem("token")
-      sessionStorage.removeItem("authState")
-
+      // Limpiar headers de axios si existe
       if (window.axios?.defaults?.headers?.common) {
         delete window.axios.defaults.headers.common["Authorization"]
       }
 
+      setShowModal(false)
+      setShowToast(true)
+
+      // Redirigir después del toast
       setTimeout(() => {
         window.location.href = "/"
-      }, 2000)
+      }, 2500)
     } catch (err) {
       console.error("Error al cerrar sesión:", err)
+      setShowToast(true) // Mostrar toast incluso si hay error
     } finally {
       setIsLoggingOut(false)
     }
@@ -105,6 +113,12 @@ const LogoutComponent = () => {
   const closeToast = useCallback(() => {
     setShowToast(false)
   }, [])
+
+  const handleModalClose = useCallback(() => {
+    if (!isLoggingOut) {
+      setShowModal(false)
+    }
+  }, [isLoggingOut])
 
   if (isLoading) {
     return (
@@ -126,17 +140,17 @@ const LogoutComponent = () => {
 
   return (
     <>
-      <div ref={dropdownRef} className="user-dropdown-container">
-        <div onClick={toggleExpand} className="user-info-container">
-          <div className="user-initials1">
+      <div ref={dropdownRef} className="user-dropdown-container3">
+        <div onClick={toggleExpand} className="user-info-container3">
+          <div className="user-initials3">
             {userInitials}
           </div>
 
-          <div className="user-details">
-            <div className="user-name1">
+          <div className="user-details3">
+            <div className="user-name3">
               {fullName}
             </div>
-            <div className="user-role1">{userData.role}</div>
+            <div className="user-role3">{userData.role}</div>
           </div>
 
           <button className="toggle-button" aria-label={expanded ? "Ocultar menú" : "Mostrar menú"}>
@@ -145,22 +159,22 @@ const LogoutComponent = () => {
         </div>
 
         {expanded && (
-          <div className="dropdown-content header-dropdown">
-            <div className="dropdown-header">
-              <div className="header-initials">
+          <div className="dropdown-content3 header-dropdown3">
+            <div className="dropdown-header3">
+              <div className="header-initials3">
                 {userInitials}
               </div>
-              <div className="header-text">
-                <div className="header-name">
+              <div className="header-text3">
+                <div className="header-name3">
                   {fullName}
                 </div>
-                <div className="header-role">{userData.role}</div>
+                <div className="header-role3">{userData.role}</div>
               </div>
             </div>
 
-            <div className="dropdown-info">
-              <div className="info-item">
-                <Mail size={14} className="info-icon" />
+            <div className="dropdown-info3">
+              <div className="info-item3">
+                <Mail size={14} className="info-icon3" />
                 <span>{userData.email}</span>
               </div>
             </div>
@@ -171,7 +185,7 @@ const LogoutComponent = () => {
                 setShowModal(true)
               }}
               disabled={isLoggingOut}
-              className="logout-button"
+              className="logout-button3"
             >
               {isLoggingOut ? <Loader2 size={16} className="animate-spin" /> : <LogOut size={16} />}
               Cerrar sesión
@@ -180,46 +194,51 @@ const LogoutComponent = () => {
         )}
 
         {showModal && (
-          <div className="modal-overlay" onClick={() => !isLoggingOut && setShowModal(false)}>
-            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-              <div className="modal-header">
-                <div className="modal-icon">
+          <div
+            className="modal-overlay1"
+            onClick={handleModalClose}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="logout-modal-title"
+          >
+            <div className="modal-content1" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header1">
+                <div className="modal-icon1">
                   <LogOut size={24} />
                 </div>
-                <h3>Cerrar sesión</h3>
+                <h3 id="logout-modal-title1">Cerrar sesión</h3>
                 <p>¿Estás seguro de que quieres salir de tu cuenta?</p>
               </div>
 
-              <div className="modal-user-info">
-                <div className="modal-initials">
-                  {userInitials}
+              <div className="modal-user-info1">
+                <div className="modal-initials2">
+                  {userData.avatar ? (
+                    <img src={userData.avatar || "/placeholder.svg"} alt={fullName} className="modal-avatar-img" />
+                  ) : (
+                    userInitials
+                  )}
                 </div>
-                <div>
-                  <div className="modal-user-name">{fullName}</div>
-                  <div className="modal-user-email">{userData.email}</div>
+                <div className="modal-user-details1">
+                  <div className="modal-user-name1">{fullName}</div>
+                  <div className="modal-user-email1">{userData.email}</div>
                 </div>
               </div>
 
-              <div className="modal-footer">
-                <button 
-                  onClick={() => setShowModal(false)} 
-                  className="cancel-button" 
-                  disabled={isLoggingOut}
-                >
+              <div className="modal-footer1">
+                <button onClick={handleModalClose} className="cancel-button1" disabled={isLoggingOut} type="button">
                   Cancelar
                 </button>
-                <button
-                  onClick={handleLogout}
-                  disabled={isLoggingOut}
-                  className="confirm-logout-button"
-                >
+                <button onClick={handleLogout} disabled={isLoggingOut} className="confirm-logout-button1" type="button">
                   {isLoggingOut ? (
                     <>
                       <Loader2 size={16} className="animate-spin" />
                       Cerrando sesión...
                     </>
                   ) : (
-                    "Sí, cerrar sesión"
+                    <>
+                      <LogOut size={16} />
+                      Sí, cerrar sesión
+                    </>
                   )}
                 </button>
               </div>
@@ -228,15 +247,15 @@ const LogoutComponent = () => {
         )}
 
         {showToast && (
-          <div className="toast-notification">
-            <div className="toast-icon">
+          <div className="toast-notification3">
+            <div className="toast-icon3">
               <CheckCircle size={20} />
             </div>
-            <div className="toast-content">
+            <div className="toast-content3">
               <h4>Sesión finalizada</h4>
               <p>Has cerrado sesión correctamente</p>
             </div>
-            <button onClick={closeToast} className="toast-close-button">
+            <button onClick={closeToast} className="toast-close-button3">
               <X size={16} />
             </button>
           </div>

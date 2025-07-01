@@ -1018,7 +1018,9 @@ max-width: 80px;
 .social-icon.whatsapp:hover {
   background-color: #25d366;
 }
-
+ .pre-footer-space {
+    height: 40px;
+  }
 /* Responsive para la sección de contacto */
 @media (min-width: 768px) {
   .contact-info {

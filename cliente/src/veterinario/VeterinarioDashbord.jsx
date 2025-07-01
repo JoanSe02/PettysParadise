@@ -7,6 +7,8 @@ import VetSidebar from "./VetSidebar"
 import VetHeader from "./VetHeader"
 import VetContent from "./VetContent"
 import "../stylos/Vet.css"
+import InterceptarAtras from "../componentes/InterceptarAtras"
+import { Base64 } from "js-base64"
 
 const VeterinarioDashboard = () => {
   const location = useLocation()
@@ -97,6 +99,7 @@ const VeterinarioDashboard = () => {
 
   return (
     <div className="vet-dashboard">
+      <InterceptarAtras />
       {/* Sidebar Component */}
       <VetSidebar dashboardData={dashboardData} sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
 

@@ -170,6 +170,7 @@
 
 .unified-avatar-initials {
   background: var(--unified-primary-gradient);
+  
   font-weight: 700;
   font-size: 22px;
   color: var(--unified-text-primary);

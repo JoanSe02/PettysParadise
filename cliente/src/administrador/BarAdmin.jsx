@@ -16,6 +16,7 @@ import {
 } from "react-icons/md"
 import { useState, useEffect } from "react"
 import "../stylos/Admin.css"
+import { Base64 } from "js-base64"
 
 const UnifiedSidebar = ({ userData, sidebarOpen, setSidebarOpen }) => {
   const location = useLocation()
@@ -61,25 +62,25 @@ const UnifiedSidebar = ({ userData, sidebarOpen, setSidebarOpen }) => {
 
   const managementItems = [
     {
-      path: "/administrador/usuarios",
+      path: `/administrador/${Base64.encode("usuarios")}`,
       icon: IconPeople,
       label: "Usuarios",
       description: "Gestionar usuarios del sistema",
     },
     {
-      path: "/administrador/roles",
+      path: `/administrador/${Base64.encode("roles")}`,
       icon: IconSupervisor,
       label: "Roles y Permisos",
       description: "Configurar roles de usuario",
     },
     {
-      path: "/administrador/servicios",
+      path:`/administrador/${Base64.encode("servicios")}`,
       icon: IconAssignment,
       label: "Servicios",
       description: "Administrar servicios veterinarios",
     },
     {
-      path: "/administrador/citas",
+      path: `/administrador/${Base64.encode("citas")}`,
       icon: IconCalendar,
       label: "Citas",
       description: "Gestionar citas y horarios",
@@ -168,7 +169,7 @@ const UnifiedSidebar = ({ userData, sidebarOpen, setSidebarOpen }) => {
             ) : (
               <span className="unified-avatar-initials">{userInitials}</span>
             )}
-            <div className="unified-user-status online"></div>
+            
           </div>
 
           <div className="unified-user-details">
