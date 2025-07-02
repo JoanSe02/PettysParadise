@@ -84,7 +84,7 @@ const CitaModalAdmin = ({ isOpen, onClose, cita, onSave, propietarios, mascotas,
                                 <option value="">-- Seleccione Propietario --</option>
                                 {propietarios.map(p => (
                                     <option key={`prop-${p.id_usuario}`} value={p.id_usuario}>
-                                        {p.nombre} {p.apellido}
+                                        {p.nombre} {p.apellido} - {p.id_usuario}
                                     </option>
                                 ))}
                             </select>

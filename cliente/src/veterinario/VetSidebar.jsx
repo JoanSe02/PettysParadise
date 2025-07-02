@@ -92,7 +92,7 @@ const VetSidebar = ({ dashboardData, sidebarOpen, setSidebarOpen }) => {
           </ul>
 
           <div className="nav-section">
-            <div className="section-header" onClick={toggleGestion}>
+            <div className="section-header5" onClick={toggleGestion}>
               <span className="section-title1">Gestión</span>
               {gestionExpanded ? <IconExpandLess size={20} /> : <IconExpandMore size={20} />}
             </div>
@@ -109,7 +109,7 @@ const VetSidebar = ({ dashboardData, sidebarOpen, setSidebarOpen }) => {
                 <li className={`nav-item ${location.pathname === pacientesPath ? "active" : ""}`}>
                   <Link to={pacientesPath} onClick={() => setSidebarOpen(false)} className="nav-link">
                     <IconPets size={20} />
-                    <span>Pacientes</span>
+                    <span>Mascotas</span>
                   </Link>
                 </li>
                 <li className={`nav-item ${location.pathname === historialesPath ? "active" : ""}`}>

@@ -1,12 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import axios from "axios"; // Asegúrate de tener axios importado
-import Swal from "sweetalert2"; // Importamos Swal para las notificaciones
+import axios from "axios";
+import Swal from "sweetalert2";
 import {
   Plus, Search, Eye, Edit, Trash2, PawPrint, Calendar, Weight, Heart, X,
-  CheckCircle, XCircle, AlertCircle, Upload, User, Dog, Award, CreditCard,
-  User as Male, User as Female
+  AlertCircle, Upload, User, Dog, Award, CreditCard, Mars, Venus
 } from "lucide-react";
 import "../stylos/vet/GestionMascotas.css";
 import "../stylos/vet/loadingvet.css";
@@ -126,22 +125,22 @@ export default function MisPacientes() {
     <div className="vet-pacientes-container">
       <div className="vet-pacientes-header">
         <div className="vet-pacientes-title">
-            <h2>Mis Pacientes</h2>
+            <h2>Mis mascotas</h2>
             <p>Gestiona la información de todos los pacientes de la clínica</p>
         </div>
         <button className="vet-add-paciente-btn" onClick={openCreateModal}>
-            <Plus size={20} /> Registrar Paciente
+            <Plus size={20} /> Registrar mascotas
         </button>
       </div>
 
       <div className="vet-search-container">
         <div className="vet-search-box">
             <Search size={20} className="vet-search-icon" />
-            <input 
-                type="text" 
-                placeholder="Buscar por nombre, propietario o raza..." 
-                value={searchTerm} 
-                onChange={(e) => setSearchTerm(e.target.value)} 
+            <input
+                type="text"
+                placeholder="Buscar por nombre, propietario o raza..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
             />
         </div>
       </div>
@@ -155,12 +154,12 @@ export default function MisPacientes() {
             <div className="vet-empty-message"><PawPrint size={48} /><h3>No hay pacientes</h3><p>No se encontraron pacientes registrados.</p></div>
         ) : (
           mascotasFiltradas.map((mascota) => (
-            <PacienteCard 
-                key={mascota.cod_mas} 
-                mascota={mascota} 
-                onView={() => { setSelectedMascota(mascota); setShowViewModal(true); }} 
-                onEdit={() => openEditModal(mascota)} 
-                onDelete={() => handleDelete(mascota.cod_mas, mascota.nom_mas)} 
+            <PacienteCard
+                key={mascota.cod_mas}
+                mascota={mascota}
+                onView={() => { setSelectedMascota(mascota); setShowViewModal(true); }}
+                onEdit={() => openEditModal(mascota)}
+                onDelete={() => handleDelete(mascota.cod_mas, mascota.nom_mas)}
             />
           ))
         )}
@@ -203,7 +202,8 @@ function PacienteCard({ mascota, onView, onEdit, onDelete }) {
   );
 }
 
-// MODAL PARA CREAR Y EDITAR, CON LA LÓGICA DE IMAGEN CORRECTA
+
+// MODAL PARA CREAR Y EDITAR CON SELECT PARA REGISTRAR Y TEXTO PARA EDITAR
 function PacienteModal({ onClose, onSubmit, mascota, isEditing, showNotification }) {
   const [formData, setFormData] = useState({
     nom_mas: mascota?.nom_mas || "",
@@ -220,10 +220,40 @@ function PacienteModal({ onClose, onSubmit, mascota, isEditing, showNotification
   const [imagePreview, setImagePreview] = useState(mascota?.foto || null);
   const [imageUrl, setImageUrl] = useState(mascota?.foto || "");
   const [uploading, setUploading] = useState(false);
-  
   const token = localStorage.getItem("token");
+  
+  // **ESTADOS ACTUALIZADOS**
+  const [listaPropietarios, setListaPropietarios] = useState([]);
+  const [propietarioDisplay, setPropietarioDisplay] = useState("");
+  const [cargandoPropietarios, setCargandoPropietarios] = useState(false); // Para feedback visual
 
-  // LÓGICA DE SUBIDA DE IMAGEN REPLICADA DE TU COMPONENTE Mascota.jsx
+  // **LÓGICA CORREGIDA Y MEJORADA**
+  useEffect(() => {
+    // Si se está editando, muestra el nombre y el ID del propietario actual.
+    if (isEditing) {
+      if (mascota?.propietario && mascota?.id_pro) {
+        setPropietarioDisplay(`${mascota.propietario} - ${mascota.id_pro}`);
+      }
+    } else {
+      // Si se está creando, busca la lista de todos los propietarios.
+      const fetchPropietarios = async () => {
+        setCargandoPropietarios(true); // Inicia la carga
+        try {
+          // **CORRECCIÓN AQUÍ**: Se cambió de 'usuarios' a 'usuario'
+          const response = await apiService.get("/api/users/todos");
+          setListaPropietarios(response || []);
+        } catch (error) {
+          console.error("Error al cargar la lista de propietarios:", error);
+          showNotification("Error al cargar la lista de propietarios", "error");
+        } finally {
+          setCargandoPropietarios(false); // Finaliza la carga
+        }
+      };
+      fetchPropietarios();
+    }
+  }, [isEditing, mascota, showNotification]);
+
+
   const handleImageChange = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -271,6 +301,12 @@ function PacienteModal({ onClose, onSubmit, mascota, isEditing, showNotification
   const handleChange = (e) => {
     const { id, value, name, type, checked } = e.target;
     const propName = id || name;
+    
+    if (propName === 'id_pro') {
+      setFormData((prev) => ({ ...prev, id_pro: value }));
+      return;
+    }
+
     if (type === 'radio') {
       if (checked) {
         setFormData((prev) => ({...prev, [propName]: value}));
@@ -282,9 +318,13 @@ function PacienteModal({ onClose, onSubmit, mascota, isEditing, showNotification
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (!formData.id_pro) {
+      showNotification("Debes seleccionar un propietario.", "error");
+      return;
+    }
     const finalData = {
       ...formData,
-      foto: imageUrl || formData.foto, // Usa la nueva URL si existe, si no, la que ya tenía
+      foto: imageUrl || formData.foto,
     };
     onSubmit(finalData);
   };
@@ -295,8 +335,8 @@ function PacienteModal({ onClose, onSubmit, mascota, isEditing, showNotification
             <div className="vet-modal-left-panel">
                 <div className="vet-modal-decoration">
                     <div className="vet-modal-icon-container"><PawPrint className="vet-modal-icon" /></div>
-                    <h2>{isEditing ? "Editar Paciente" : "Registro de Paciente"}</h2>
-                    <p>{isEditing ? "Actualiza los datos del paciente" : "Completa los datos del nuevo paciente"}</p>
+                    <h2>{isEditing ? "Editar Mascota" : "Registro de Mascota"}</h2>
+                    <p>{isEditing ? "Actualiza los datos de la mascota" : "Completa los datos de la nueva mascota"}</p>
                 </div>
             </div>
             <div className="vet-modal-right-panel">
@@ -313,14 +353,43 @@ function PacienteModal({ onClose, onSubmit, mascota, isEditing, showNotification
                           {uploading && <p className="vet-uploading-text">Subiendo...</p>}
                         </div>
                         <div className="vet-form-group"><label className="vet-form-label"><User className="vet-field-icon"/><span>Nombre</span></label><input type="text" id="nom_mas" className="vet-form-input" placeholder="Nombre de la mascota" value={formData.nom_mas} onChange={handleChange} required /></div>
-                        <div className="vet-form-group"><label className="vet-form-label"><Dog className="vet-field-icon" /><span>Especie</span></label><select id="especie" className="vet-form-input" value={formData.especie} onChange={handleChange} required><option value="">Seleccionar especie</option><option value="Perro">Perro</option><option value="Gato">Gato</option><option value="Ave">Ave</option><option value="Conejo">Conejo</option><option value="Hamster">Hámster</option><option value="Otro">Otro</option></select></div>
-                        <div className="vet-form-group"><label className="vet-form-label"><Heart className="vet-field-icon" /><span>Género</span></label><div className="vet-gender-options"><label className="vet-gender-option"><input type="radio" name="genero" value="Macho" checked={formData.genero === "Macho"} onChange={handleChange} required /><div className="vet-gender-radio-button"><Male className="vet-gender-icon vet-male-icon"/><span>Macho</span></div></label><label className="vet-gender-option"><input type="radio" name="genero" value="Hembra" checked={formData.genero === "Hembra"} onChange={handleChange} required /><div className="vet-gender-radio-button"><Female className="vet-gender-icon vet-female-icon"/><span>Hembra</span></div></label></div></div>
+                        <div className="vet-form-group"><label className="vet-form-label"><Dog className="vet-field-icon" /><span>Especie</span></label><select id="especie" className="vet-form-input" value={formData.especie} onChange={handleChange} required><option value="">Seleccionar especie</option><option value="Perro">Perro</option><option value="Gato">Gato</option></select></div>
+                        <div className="vet-form-group"><label className="vet-form-label"><Heart className="vet-field-icon" /><span>Género</span></label><div className="vet-gender-options"><label className="vet-gender-option"><input type="radio" name="genero" value="Macho" checked={formData.genero === "Macho"} onChange={handleChange} required /><div className="vet-gender-radio-button"><Mars className="vet-gender-icon vet-male-icon"/><span>Macho</span></div></label><label className="vet-gender-option"><input type="radio" name="genero" value="Hembra" checked={formData.genero === "Hembra"} onChange={handleChange} required /><div className="vet-gender-radio-button"><Venus className="vet-gender-icon vet-female-icon"/><span>Hembra</span></div></label></div></div>
                         <div className="vet-form-group"><label className="vet-form-label"><Award className="vet-field-icon" /><span>Raza</span></label><input type="text" id="raza" className="vet-form-input" placeholder="Raza de la mascota" value={formData.raza} onChange={handleChange} required /></div>
                         <div className="vet-form-row"><div className="vet-form-group"><label className="vet-form-label"><Calendar className="vet-field-icon" /><span>Edad (años)</span></label><input type="number" id="edad" className="vet-form-input" placeholder="Edad" value={formData.edad} onChange={handleChange} step="0.1" min="0" max="30" required /></div><div className="vet-form-group"><label className="vet-form-label"><Weight className="vet-field-icon" /><span>Peso (kg)</span></label><input type="number" id="peso" className="vet-form-input" placeholder="Peso" value={formData.peso} onChange={handleChange} step="0.1" min="0.1" max="200" required /></div></div>
-                        <div className="vet-form-group"><label className="vet-form-label"><CreditCard className="vet-field-icon" /><span>ID del Propietario</span></label><input type="text" id="id_pro" className="vet-form-input" placeholder="Documento del propietario" value={formData.id_pro} onChange={handleChange} required /></div>
+                        
+                        <div className="vet-form-group">
+                            <label className="vet-form-label"><User className="vet-field-icon" /><span>Propietario</span></label>
+                            {isEditing ? (
+                                <input
+                                    type="text"
+                                    className="vet-form-input"
+                                    value={propietarioDisplay}
+                                    readOnly
+                                    style={{ backgroundColor: '#e9ecef' }}
+                                />
+                            ) : (
+                                <select
+                                    id="id_pro"
+                                    name="id_pro"
+                                    className="vet-form-input"
+                                    value={formData.id_pro}
+                                    onChange={handleChange}
+                                    required
+                                    disabled={cargandoPropietarios} // Deshabilitado mientras carga
+                                >
+                                    <option value="">{cargandoPropietarios ? "Cargando..." : "-- Seleccione un propietario --"}</option>
+                                    {listaPropietarios.map((pro) => (
+                                        <option key={pro.id_usu} value={pro.id_usu}>
+                                            {`${pro.nom_usu} ${pro.ape_usu} - ${pro.id_usu}`}
+                                        </option>
+                                    ))}
+                                </select>
+                            )}
+                        </div>
 
                         <div className="vet-form-actions">
-                          <button type="submit" className="vet-submit-button" disabled={uploading}>{uploading ? "Subiendo..." : isEditing ? "Actualizar Paciente" : "Registrar Paciente"}</button>
+                          <button type="submit" className="vet-submit-button" disabled={uploading || cargandoPropietarios}>{uploading ? "Subiendo..." : isEditing ? "Actualizar Paciente" : "Registrar Paciente"}</button>
                           <button type="button" className="vet-cancel-button" onClick={onClose}>Cancelar</button>
                         </div>
                     </form>

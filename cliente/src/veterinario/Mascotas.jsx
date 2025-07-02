@@ -14,8 +14,8 @@ import {
   Calendar,
   Weight,
   CreditCard,
-  UserIcon as Male,
-  UserIcon as Female,
+  Venus,
+  Mars
 } from "lucide-react"
 
 function FormularioMascota() {
@@ -322,7 +322,7 @@ function FormularioMascota() {
 
             <div className="form-group">
               <label className="form-label">
-                <Male className="field-icon" />
+                <Mars className="field-icon" />
                 <span>Género</span>
               </label>
               <div className="gender-options">
@@ -335,7 +335,7 @@ function FormularioMascota() {
                     })}
                   />
                   <div className="gender-radio-button">
-                    <Male className="gender-icon male-icon" />
+                    <Mars className="gender-icon male-icon" />
                     <span>Macho</span>
                   </div>
                 </label>
@@ -348,7 +348,7 @@ function FormularioMascota() {
                     })}
                   />
                   <div className="gender-radio-button">
-                    <Female className="gender-icon female-icon" />
+                    <Venus className="gender-icon female-icon" />
                     <span>Hembra</span>
                   </div>
                 </label>

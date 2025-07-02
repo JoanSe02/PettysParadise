@@ -21,8 +21,8 @@ const VetHeader = ({ toggleSidebar, dashboardData }) => {
       </div>
 
       <div className="header-titles">
-        <h1 className="header-main-title">Panel Veterinario</h1>
-        <p className="header-subtitle">Panel de Control</p>
+        <h1 className="header-main-title1">Panel Veterinario</h1>
+        <p className="header-subtitle1">Panel de Control</p>
       </div>
 
       <div className="header-right">

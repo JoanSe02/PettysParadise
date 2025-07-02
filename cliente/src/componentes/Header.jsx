@@ -41,7 +41,7 @@ const Header = () => {
       <header className="header">
         <div className="container">
           <div className="header-content">
-            <div className="logo">
+            <div className="logo1">
               <Link to="/">
                 <img src="https://raw.githubusercontent.com/Vale250910/mascotas_app1/refs/heads/main/img/logo.png" alt="Akeso Veterinary Clinic" />
               </Link>

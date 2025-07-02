@@ -293,7 +293,27 @@
   justify-content: center;
   z-index: 1000;
   padding: 1rem;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(14, 142, 221, 0.3) transparent;
 }
+
+.historiales-medicos-modal-overlay::-webkit-scrollbar {
+  width: 6px;
+}
+
+.historiales-medicos-modal-overlay::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.historiales-medicos-modal-overlay::-webkit-scrollbar-thumb {
+  background: rgba(14, 142, 221, 0.3);
+  border-radius: 3px;
+}
+
+.historiales-medicos-modal-overlay::-webkit-scrollbar-thumb:hover {
+  background: rgba(14, 142, 221, 0.5);
+}
+
 
 .historiales-medicos-modal-container {
   background: white;

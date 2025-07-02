@@ -252,6 +252,9 @@ function CitaCard({ cita, onView, onEdit, onCancel }) {
 }
 
 // Modal de Nueva Cita con Validaciones
+//... (El resto de tu código de GestionCitas.jsx permanece igual)
+
+// Modal de Nueva Cita con Validaciones y formato de Propietario actualizado
 function NuevaCitaModal({ onClose, onSubmit, propietarios, servicios, veterinarios, fetchMascotasPorPropietario, currentVetId }) {
   const [formData, setFormData] = useState({
     id_pro: "",
@@ -334,7 +337,18 @@ function NuevaCitaModal({ onClose, onSubmit, propietarios, servicios, veterinari
         <div className="vet-modal-header"><h2>Nueva Cita</h2><button className="vet-close-btn" onClick={onClose}><X size={18} /></button></div>
         <div className="vet-modal-body">
           <form onSubmit={handleSubmit}>
-            <div className="vet-form-group"><label htmlFor="id_pro">Propietario:</label><select id="id_pro" value={formData.id_pro} onChange={handleChange} required><option value="">Seleccionar propietario</option>{propietarios.map((prop) => (<option key={prop.id_pro} value={prop.id_pro}>{prop.nombre} {prop.apellido}</option>))}</select></div>
+            <div className="vet-form-group">
+              <label htmlFor="id_pro">Propietario:</label>
+              <select id="id_pro" value={formData.id_pro} onChange={handleChange} required>
+                <option value="">Seleccionar propietario</option>
+                {propietarios.map((prop) => (
+                  // ----- LÍNEA MODIFICADA AQUÍ -----
+                  <option key={prop.id_pro} value={prop.id_pro}>
+                    {`${prop.nombre} ${prop.apellido} - ${prop.id_pro}`}
+                  </option>
+                ))}
+              </select>
+            </div>
             <div className="vet-form-group"><label htmlFor="cod_mas">Mascota:</label><select id="cod_mas" value={formData.cod_mas} onChange={handleChange} required disabled={!formData.id_pro || loadingMascotas}><option value="">{loadingMascotas ? "Cargando..." : "Seleccionar mascota"}</option>{mascotasDisponibles.map((mascota) => (<option key={mascota.cod_mas} value={mascota.cod_mas}>{mascota.nom_mas} ({mascota.raza})</option>))}</select></div>
             <div className="vet-form-group"><label htmlFor="cod_ser">Servicio:</label><select id="cod_ser" value={formData.cod_ser} onChange={handleChange} required><option value="">Seleccionar servicio</option>{servicios.map((s) => <option key={s.cod_ser} value={s.cod_ser}>{s.nom_ser}</option>)}</select></div>
             <div className="vet-form-group"><label htmlFor="id_vet">Veterinario Asignado:</label><select id="id_vet" value={formData.id_vet} onChange={handleChange} required><option value="">Seleccionar veterinario</option>{veterinarios.map((v) => <option key={v.id_usuario} value={v.id_usuario}>Dr. {v.nombre} {v.apellido}</option>)}</select></div>
@@ -350,9 +364,8 @@ function NuevaCitaModal({ onClose, onSubmit, propietarios, servicios, veterinari
     </div>
   );
 }
-
 function VerCitaModal({ cita, onClose }) {
-  return (<div className="vet-modal" onClick={(e) => e.target.classList.contains("vet-modal") && onClose()}><div className="vet-modal-content vet-modal-view"><div className="vet-modal-header"><h2>Detalles de la Cita</h2><button className="vet-close-btn" onClick={onClose}><X size={18} /></button></div><div className="vet-modal-body"><div className="vet-cita-details-view"><div className="vet-detail-group"><h3>Información General</h3><p><strong>Estado:</strong>{" "}<span className={`vet-status-text ${cita.estado.toLowerCase()}`}>{cita.estado}</span></p><p><strong>Fecha:</strong> {new Date(cita.fech_cit).toLocaleDateString()}</p><p><strong>Hora:</strong> {cita.hora ? cita.hora.substring(0, 5) : "Sin hora"}</p></div><div className="vet-detail-group"><h3>Paciente</h3><p><strong>Propietario:</strong> {cita.propietario_nombre || "No especificado"}</p><p><strong>Mascota:</strong> {cita.mascota || "No especificada"}</p></div><div className="vet-detail-group"><h3>Servicio</h3><p>{cita.servicio || "No especificado"}</p></div>{cita.notas && (<div className="vet-detail-group"><h3>Notas</h3><p>{cita.notas}</p></div>)}</div></div><div className="vet-modal-footer"><button className="vet-submit-btn" onClick={onClose}>Cerrar</button></div></div></div>);
+  return (<div className="vet-modal" onClick={(e) => e.target.classList.contains("vet-modal") && onClose()}><div className="vet-modal-content vet-modal-view"><div className="vet-modal-header"><h2>Detalles de la Cita</h2><button className="vet-close-btn" onClick={onClose}><X size={18} /></button></div><div className="vet-modal-body"><div className="vet-cita-details-view"><div className="vet-detail-group"><h3>Información General</h3><p><strong>Estado:</strong>{" "}<span className={`vet-status-text ${cita.est_cit.toLowerCase()}`}>{cita.est_cit}</span></p><p><strong>Fecha:</strong> {new Date(cita.fech_cit).toLocaleDateString()}</p><p><strong>Hora:</strong> {cita.hora ? cita.hora.substring(0, 5) : "Sin hora"}</p></div><div className="vet-detail-group"><h3>Paciente</h3><p><strong>Propietario:</strong> {cita.propietario_nombre || "No especificado"}</p><p><strong>Mascota:</strong> {cita.mascota || "No especificada"}</p></div><div className="vet-detail-group"><h3>Servicio</h3><p>{cita.servicio || "No especificado"}</p></div>{cita.notas && (<div className="vet-detail-group"><h3>Notas</h3><p>{cita.notas}</p></div>)}</div></div><div className="vet-modal-footer"><button className="vet-submit-btn" onClick={onClose}>Cerrar</button></div></div></div>);
 }
 
 function EditarCitaModal({ cita, onClose, onSubmit, servicios, veterinarios }) {

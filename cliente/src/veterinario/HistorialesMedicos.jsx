@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Swal from "sweetalert2";
-import { Plus, Search, Edit, Trash2, Stethoscope, User, Dog, Calendar, FileText, X, Download, Thermometer, Weight, FilePlus, History, Clock, UserCheck } from "lucide-react";
+import { Plus, Search, Edit, Trash2, Stethoscope, User, Dog, Calendar, FileText, X,CircleDollarSign, Download, Thermometer, Weight, FilePlus, History, Clock, UserCheck } from "lucide-react";
 import { apiService } from "../services/api-service";
 import jsPDF from "jspdf";
 import "../stylos/vet/HistorialesMedicos.css";
@@ -315,6 +315,8 @@ function HistorialCard({ historial, onEdit, onDelete, onDownload, onViewLog }) {
 }
 
 // EL RESTO DEL ARCHIVO NO NECESITA CAMBIOS
+//... (El resto de tu código de HistorialesMedicos.jsx permanece igual)
+
 function HistorialModal({ onClose, onSubmit, isEditing, historial, historialesExistentes }) {
   const loggedInUser = JSON.parse(localStorage.getItem("user") || "{}");
 
@@ -436,7 +438,12 @@ function HistorialModal({ onClose, onSubmit, isEditing, historial, historialesEx
                 <label><User size={16} /> Propietario</label>
                 <select value={selectedPropietario} onChange={handlePropietarioChange} required={!isEditing}>
                   <option value="">-- Seleccionar Propietario --</option>
-                  {propietarios.map((p) => (<option key={p.id_pro} value={p.id_pro}>{p.nombre} {p.apellido}</option>))}
+                  {propietarios.map((p) => (
+                    // ----- LÍNEA MODIFICADA AQUÍ -----
+                    <option key={p.id_pro} value={p.id_pro}>
+                      {`${p.nombre} ${p.apellido} - ${p.id_pro}`}
+                    </option>
+                  ))}
                 </select>
               </div>
               <div className="historiales-medicos-form-group">
@@ -450,7 +457,7 @@ function HistorialModal({ onClose, onSubmit, isEditing, historial, historialesEx
           )}
           {isEditing && (
             <div className="historiales-medicos-form-group">
-              <label>Paciente</label>
+              <label><User size={16} />Paciente</label>
               <input type="text" value={`${historial.nombre_mascota} (Propietario: ${historial.nombre_propietario})`} disabled />
             </div>
           )}
@@ -481,16 +488,18 @@ function HistorialModal({ onClose, onSubmit, isEditing, historial, historialesEx
             <label><Stethoscope size={16} /> Tratamiento</label>
             <textarea name="tratamiento" value={formData.tratamiento} onChange={handleChange} required rows="4"></textarea>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+          
             <div className="historiales-medicos-form-group">
               <label><Calendar size={16} /> Próximo Seguimiento Sugerido</label>
               <input type="date" name="proximo_seguimiento" value={formData.proximo_seguimiento} onChange={handleChange} min={minDateStr} max={maxDateStr} />
               <small className="form-helper-text">Solo se puede agendar hasta un mes a futuro.</small>
             </div>
+          
             <div className="historiales-medicos-form-group">
-              <label>Costo Consulta (COP)</label>
+              <label><CircleDollarSign size={16} />Costo Consulta (COP)</label>
               <input type="number" step="1000" name="costo_consulta" value={formData.costo_consulta} onChange={handleChange} />
             </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>  
           </div>
           <div className="historiales-medicos-modal-footer">
             <button type="button" className="historiales-medicos-cancel-button" onClick={onClose}>Cancelar</button>
