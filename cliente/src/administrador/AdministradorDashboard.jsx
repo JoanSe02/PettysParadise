@@ -139,7 +139,7 @@ const AdministradorDashboard = () => {
 
               {/* Grid de Estadísticas Mejorado */}
               <div className="stats-section">
-                <div className="section-header">
+                <div className="section-header5">
                   <h2 className="h21">Resumen del Sistema</h2>
                   <p>Estadísticas principales de tu plataforma</p>
                 </div>
@@ -182,7 +182,7 @@ const AdministradorDashboard = () => {
                   </div>
 
                   <div className="stat-card services-card">
-                    <div className="stat-header">
+                    <div className="stat-header5">
                       <div className="stat-icon">
                         <IconAssignment size={28} />
                       </div>
