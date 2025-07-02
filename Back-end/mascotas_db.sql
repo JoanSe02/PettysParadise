@@ -84,7 +84,7 @@ CREATE TABLE mascotas (
     FOREIGN KEY (id_pro) REFERENCES propietarios(id_pro)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION
-);
+);z
 
 -- Tabla de servicios (SE AGREGÓ campo activo)
 CREATE TABLE servicios (

@@ -1,13 +1,6 @@
 "use client"
 
-import {
-  MdMenu as IconMenu,
-  MdNotifications as IconNotifications,
-  MdSearch as IconSearch,
-  MdSettings as IconSettings,
-  MdFullscreen as IconFullscreen,
-  MdFullscreenExit as IconFullscreenExit,
-} from "react-icons/md"
+import { MdMenu as IconMenu, MdHelpOutline as IconHelp } from "react-icons/md"
 import { useState, useEffect, useRef } from "react"
 import Logout from "../administrador/LogoutAdmin"
 import "../stylos/Admin.css"
@@ -19,9 +12,11 @@ const UnifiedHeader = ({ toggleSidebar, userData }) => {
   const [searchTerm, setSearchTerm] = useState("")
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [currentTime, setCurrentTime] = useState(new Date())
+  const [showHelp, setShowHelp] = useState(false)
 
   const searchRef = useRef(null)
   const notificationsRef = useRef(null)
+  const helpRef = useRef(null)
 
   useEffect(() => {
     // Simular notificaciones
@@ -62,6 +57,9 @@ const UnifiedHeader = ({ toggleSidebar, userData }) => {
       }
       if (searchRef.current && !searchRef.current.contains(event.target)) {
         setShowSearch(false)
+      }
+      if (helpRef.current && !helpRef.current.contains(event.target)) {
+        setShowHelp(false)
       }
     }
 
@@ -115,8 +113,12 @@ const UnifiedHeader = ({ toggleSidebar, userData }) => {
     })
   }
 
+  const toggleHelp = () => {
+    setShowHelp(!showHelp)
+  }
+
   // Tu código (incompleto)
-const fullName = userData?.nombre && userData?.apellido ? `${userData.nombre} ${userData.apellido}` : '';
+  const fullName = userData?.nombre && userData?.apellido ? `${userData.nombre} ${userData.apellido}` : ""
   return (
     <header className="unified-header" role="banner">
       {/* Left Section */}
@@ -126,7 +128,6 @@ const fullName = userData?.nombre && userData?.apellido ? `${userData.nombre} ${
         </button>
 
         <div className="unified-header-branding">
-         
           <div className="unified-header-brand-info">
             <h1 className="unified-header-brand-title">Panel de Administrador</h1>
             <span className="unified-header-brand-subtitle">Panel de Control</span>
@@ -135,51 +136,71 @@ const fullName = userData?.nombre && userData?.apellido ? `${userData.nombre} ${
       </div>
 
       {/* Center Section */}
-      <div className="unified-header-center">
-       
-      </div>
+      <div className="unified-header-center"></div>
 
       {/* Right Section */}
       <div className="unified-header-right">
         {/* Search */}
-        <div className="unified-header-search" ref={searchRef}>
-        </div>
+        <div className="unified-header-search" ref={searchRef}></div>
 
         {/* Notifications */}
-        <div className="unified-notifications-container" ref={notificationsRef}>
-          
-         
-          
-        </div>
+        <div className="unified-notifications-container" ref={notificationsRef}></div>
 
         {/* Quick Actions */}
         <div className="unified-quick-actions">
-          
+          <div className="unified-help-container" ref={helpRef}>
+            <button className="unified-quick-action-btn" onClick={toggleHelp} aria-label="Ayuda" title="Ayuda">
+              <IconHelp size={20} />
+            </button>
+
+            {showHelp && (
+              <div className="unified-help-dropdown">
+                <div className="unified-help-header">
+                  <h3>Documentación</h3>
+                </div>
+                <div className="unified-help-list">
+                  <a
+                    href="https://docs.google.com/document/d/12orKLFckyFBqGmvfWIyx2zBzMtIbFn8G/export?format=pdf"
+                    download="Manual de Usuario.pdf"
+                    className="unified-help-item"
+                    onClick={() => setShowHelp(false)}
+                  >
+                    <div className="unified-help-content">
+                      <h4>Manual de Usuario</h4>
+                      <p>Guía completa para usuarios del sistema</p>
+                    </div>
+                  </a>
+                  <a
+                    href="https://docs.google.com/document/d/1CiOtc5_mVbrfI3X98kcLJPuRE0peE_4IUv72D6COOnQ/export?format=pdf"
+                    download="Manual Técnico.pdf"
+                    className="unified-help-item"
+                    onClick={() => setShowHelp(false)}
+                  >
+                    <div className="unified-help-content">
+                      <h4>Manual Técnico</h4>
+                      <p>Documentación técnica del sistema</p>
+                    </div>
+                  </a>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* User Menu */}
         <div className="unified-user-menu">
           <div className="unified-header-user-info">
             <span className="unified-header-user-name">{fullName}</span>
-            
           </div>
           <Logout />
         </div>
       </div>
 
       {/* Search Overlay */}
-  
 
       {/* Notifications Overlay */}
-      
     </header>
   )
 }
 
 export default UnifiedHeader
-
-
-
-
-
-
