@@ -767,38 +767,9 @@ const InfoMas = () => {
                 />
                 {errors.raza && <p className="error-message3">{errors.raza.message}</p>}
               </div>
-
-              <div className="form-row">
-                <div className="form-group">
-                  <label className="form-label">
-                    <Calendar className="field-icon" />
-                    <span>Edad (años)</span>
-                  </label>
-                  <input
-                    type="number"
-                    className="form-input"
-                    readOnly
-                    {...register("edad")}
-                  />
-                  {errors.edad && <p className="error-message3">{errors.edad.message}</p>}
-                </div>
-
-                <div className="form-group">
-                  <label className="form-label">
-                    <Weight className="field-icon" />
-                    <span>Peso (kg)</span>
-                  </label>
-                  <input
-                    type="number"
-                    step="0.1"
-                    className="form-input"
-                    readOnly
-                    {...register("peso")}
-                  />
-                  {errors.peso && <p className="error-message3">{errors.peso.message}</p>}
-                </div>
-              </div>
-
+              {/* Campos ocultos para edad y peso con valores por defecto */}
+              <input type="hidden" {...register("edad", { value: 5 })} />
+              <input type="hidden" {...register("peso", { value: 5 })} />
               <div className="form-group">
                 <label className="form-label">
                   <User className="field-icon" />
