@@ -1,6 +1,5 @@
 const mysql = require("mysql2/promise");
 
-// Las variables ahora se leen desde process.env
 const pool = mysql.createPool({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
@@ -10,10 +9,10 @@ const pool = mysql.createPool({
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
-  multipleStatements: true // Solo si necesitas ejecutar múltiples queries a la vez
+  multipleStatements: true 
 });
 
-// Verificar conexión a la base de datos al iniciar
+
 pool
   .getConnection()
   .then((connection) => {
@@ -21,7 +20,7 @@ pool
     connection.release();
   })
   .catch((err) => {
-    console.error("❌ Error conectando a MySQL:", err.stack); // err.stack da más detalles
+    console.error("❌ Error conectando a MySQL:", err.stack); 
   });
 
 module.exports = pool;
