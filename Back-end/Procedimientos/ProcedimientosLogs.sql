@@ -44,4 +44,3 @@ BEGIN
 END$$
 
 DELIMITER ;
-CALL mascotas_db.ObtenerLogsPorCita(4);

@@ -57,41 +57,50 @@ router.post("/", authenticateToken, isAdmin, async (req, res) => {
 });
 // ... dentro de admin_citas.js
 
+
 router.put("/:cod_cit/act", authenticateToken, async (req, res) => {
-  let connection;
-  try {
-    const { cod_cit } = req.params;
-    const { id_usuario, id_rol } = req.user; // <-- Obtienes el ID del usuario logueado
-
-    // ... (código de validación de permisos existente)
-
-    const { cod_mas, cod_ser, id_vet, fech_cit, hora, est_cit, notas } = req.body;
-
-    await connection.query(`CALL ActualizarCita(?, ?, ?, ?, ?, ?, ?, ?)`, [
-      cod_cit, fech_cit, hora, cod_ser, id_vet, cod_mas, est_cit, notas,
-    ]);
-
-    // --- INICIO DE LA MODIFICACIÓN ---
-    // 1. Crear una descripción detallada del cambio.
-    const descripcionLog = `El usuario actualizó la cita. Estado: ${est_cit}, Fecha: ${fech_cit}, Hora: ${hora}.`;
-
-    // 2. Llamar al procedimiento para registrar el log con el ID del usuario.
-    await connection.query("CALL RegistrarLogCita(?, ?, ?, ?)", [
-        cod_cit, 
-        'UPDATE', 
-        descripcionLog, 
-        id_usuario // <-- Pasas el ID del usuario de la aplicación
-    ]);
-    // --- FIN DE LA MODIFICACIÓN ---
-
-    res.json({ success: true, message: "Cita actualizada exitosamente" });
-  } catch (error) {
-    // ... (manejo de errores)
-  } finally {
-    if (connection) connection.release();
-  }
-});
-
+    let connection;
+    try {
+      // 1. OBTENER CONEXIÓN DE LA BASE DE DATOS
+      connection = await pool.getConnection();
+      await connection.beginTransaction(); // Iniciar transacción
+  
+      const { cod_cit } = req.params;
+      const { id_usuario } = req.user; // Obtienes el ID del usuario logueado
+  
+      // Obtener los datos del cuerpo de la solicitud
+      const { cod_mas, cod_ser, id_vet, fech_cit, hora, est_cit, notas } = req.body;
+  
+      // 2. LLAMAR AL PROCEDIMIENTO PARA ACTUALIZAR LA CITA
+      await connection.query(`CALL ActualizarCita(?, ?, ?, ?, ?, ?, ?, ?)`, [
+        cod_cit, fech_cit, hora, cod_ser, id_vet, cod_mas, est_cit, notas,
+      ]);
+  
+      // 3. REGISTRAR EL CAMBIO EN EL LOG
+      const descripcionLog = `La cita fue actualizada. Nuevo estado: ${est_cit}, Nueva fecha: ${fech_cit}, Nueva hora: ${hora}.`;
+      await connection.query("CALL RegistrarLogCita(?, ?, ?, ?)", [
+          cod_cit, 
+          'UPDATE', 
+          descripcionLog, 
+          id_usuario 
+      ]);
+  
+      // 4. CONFIRMAR LA TRANSACCIÓN
+      await connection.commit();
+  
+      res.json({ success: true, message: "Cita actualizada exitosamente" });
+  
+    } catch (error) {
+      // Si algo falla, revertir los cambios
+      if (connection) await connection.rollback();
+      console.error("Error al actualizar la cita:", error); // Es buena idea registrar el error
+      res.status(500).json({ success: false, message: "Error en el servidor al actualizar la cita." });
+  
+    } finally {
+      // 5. LIBERAR LA CONEXIÓN
+      if (connection) connection.release();
+    }
+  });
 // Cancelar Cita
 router.put('/:cod_cit/cancelar', authenticateToken, isAdmin, async (req, res) => {
     const { cod_cit } = req.params;
