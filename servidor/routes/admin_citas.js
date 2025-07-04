@@ -55,54 +55,43 @@ router.post("/", authenticateToken, isAdmin, async (req, res) => {
         if (connection) connection.release();
     }
 });
-router.put("/:cod_cit/act", authenticateToken, async (req, res) => { // <-- CORRECCIÓN AQUÍ
+// ... dentro de admin_citas.js
+
+router.put("/:cod_cit/act", authenticateToken, async (req, res) => {
   let connection;
   try {
     const { cod_cit } = req.params;
-    const { id_usuario, id_rol } = req.user; 
+    const { id_usuario, id_rol } = req.user; // <-- Obtienes el ID del usuario logueado
 
-    connection = await pool.getConnection();
+    // ... (código de validación de permisos existente)
 
-    const [citasExistentes] = await connection.query(
-      `SELECT id_pro, id_vet FROM citas WHERE cod_cit = ?`, 
-      [cod_cit]
-    );
-
-    if (citasExistentes.length === 0) {
-      return res.status(404).json({ success: false, message: "La cita no fue encontrada." });
-    }
-
-    const cita = citasExistentes[0];
-    const esPropietario = id_rol === 3 && cita.id_pro === id_usuario;
-    const esVeterinarioAsignado = id_rol === 2 && cita.id_vet === id_usuario;
-    const esAdmin = id_rol === 1;
-
-    if (!esAdmin && !esPropietario && !esVeterinarioAsignado) {
-      return res.status(403).json({ success: false, message: "No tienes permiso para modificar esta cita" });
-    }
-
-    const { cod_mas, cod_ser, id_vet, fech_cit, hora,est_cit, notas } = req.body;
+    const { cod_mas, cod_ser, id_vet, fech_cit, hora, est_cit, notas } = req.body;
 
     await connection.query(`CALL ActualizarCita(?, ?, ?, ?, ?, ?, ?, ?)`, [
-      cod_cit,
-      fech_cit,
-      hora,
-      cod_ser,
-      id_vet,
-      cod_mas,
-      est_cit,
-      notas,
+      cod_cit, fech_cit, hora, cod_ser, id_vet, cod_mas, est_cit, notas,
     ]);
+
+    // --- INICIO DE LA MODIFICACIÓN ---
+    // 1. Crear una descripción detallada del cambio.
+    const descripcionLog = `El usuario actualizó la cita. Estado: ${est_cit}, Fecha: ${fech_cit}, Hora: ${hora}.`;
+
+    // 2. Llamar al procedimiento para registrar el log con el ID del usuario.
+    await connection.query("CALL RegistrarLogCita(?, ?, ?, ?)", [
+        cod_cit, 
+        'UPDATE', 
+        descripcionLog, 
+        id_usuario // <-- Pasas el ID del usuario de la aplicación
+    ]);
+    // --- FIN DE LA MODIFICACIÓN ---
 
     res.json({ success: true, message: "Cita actualizada exitosamente" });
   } catch (error) {
-    console.error("Error al actualizar cita:", error);
-    res.status(500).json({ success: false, message: "Error al actualizar la cita", error: error.message });
+    // ... (manejo de errores)
   } finally {
     if (connection) connection.release();
   }
 });
-// Cancelar Cita
+
 // Cancelar Cita
 router.put('/:cod_cit/cancelar', authenticateToken, isAdmin, async (req, res) => {
     const { cod_cit } = req.params;
