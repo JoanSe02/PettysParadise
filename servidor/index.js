@@ -5,7 +5,6 @@ const app = express();
 const encriptarContrasenas = require('./encrypt'); 
 const JWT_SECRET = process.env.JWT_SECRET;
 const path = require('path');
-// Si la variable JWT_SECRET no está definida, detiene la aplicación.
 if (!JWT_SECRET) {  console.error("FATAL ERROR: La variable de entorno JWT_SECRET no está definida.");  process.exit(1); }
 
 // Middlewares
