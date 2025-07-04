@@ -2,7 +2,7 @@ const express = require("express");
 const cors = require("cors");
 require('dotenv').config();
 const app = express();
-const encriptarContrasenas = require('./encrypt'); // Importamos el script
+const encriptarContrasenas = require('./encrypt'); 
 const JWT_SECRET = process.env.JWT_SECRET;
 const path = require('path');
 // Si la variable JWT_SECRET no está definida, detiene la aplicación.
@@ -86,9 +86,6 @@ async function startServer() {
       console.log("Iniciando proceso de encriptación de contraseñas...");
       await encriptarContrasenas();
       console.log("Proceso de encriptación completado.");
-      
-      // Si solo queremos encriptar y salir, descomenta la siguiente línea:
-      // process.exit(0);
     }
 
     app.listen(PORT, () => {
