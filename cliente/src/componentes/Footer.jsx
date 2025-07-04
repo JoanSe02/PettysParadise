@@ -27,15 +27,12 @@ const Footer = () => {
                 />
               </Link>
             </div>
-            <p>Cuidado veterinario de calidad para tus mascotas con un equipo de profesionales comprometidos.</p>
+            <p>Cuidado veterinario de calidad para tus mascotas con un equipo de profesionales comprometidos, somos Petty's Paradise amor para tu mascota.</p>
 
             {/* Social Media Icons */}
             <div className="social-icons">
               <a href="#" className="social-icon facebook">
                 <FaFacebookF />
-              </a>
-              <a href="#" className="social-icon twitter">
-                <FaTwitter />
               </a>
               <a href="#" className="social-icon instagram">
                 <FaInstagram />
@@ -88,9 +85,6 @@ const Footer = () => {
                 <a href="#">Peluquería Canina</a>
               </li>
               <li>
-                <a href="#">Farmacia Veterinaria</a>
-              </li>
-              <li>
                 <a href="#">Hospitalización</a>
               </li>
             </ul>
@@ -102,21 +96,20 @@ const Footer = () => {
             <ul className="footer-contact">
               <li>
                 <FaMapMarkerAlt />
-                <span>Av. Principal 123, Ciudad</span>
+                <span>Calle 47 # 12-10, Bogotá, Colombia</span>
               </li>
               <li>
                 <FaPhone />
-                <span>+123 456 7890</span>
+                <span>+57 302 250 8786</span>
               </li>
               <li>
                 <FaEnvelope />
-                <span>info@akesoveterinary.com</span>
+                <span>pettysparadiseveterinaryclinic@gmail.com</span>
               </li>
               <li>
                 <FaClock />
                 <div>
-                  <span>Lun-Vie: 9am-7pm</span>
-                  <span>Sáb: 9am-2pm</span>
+                  <span>Lun-Dom: 8am-7pm</span>
                 </div>
               </li>
             </ul>
@@ -125,7 +118,7 @@ const Footer = () => {
 
         {/* Footer bottom */}
         <div className="footer-bottom">
-          <p>© 2024 Petty's Paradise Todos los derechos reservados.</p>
+          <p>© 2025 Petty's Paradise Todos los derechos reservados.</p>
         </div>
       </div>
     </footer>

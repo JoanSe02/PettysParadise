@@ -14,6 +14,10 @@ import {
   FaEyeSlash,
   FaCheck,
   FaTimes,
+  FaIdCard,
+  FaCalendarAlt,
+  FaShieldAlt,
+  FaUserCircle,
 } from "react-icons/fa"
 import "../stylos/Pro/Perfil.css"
 import HeaderSir from "../propietario/HeaderSir"
@@ -178,7 +182,7 @@ const PerfilUsuarioPage = () => {
         <div className="main-content5">
           <div className="loading-container">
             <div className="loading-spinner"></div>
-            <p className="loading-text">Cargando perfil...</p>
+            <p className="loading-text">Cargando información del perfil...</p>
           </div>
         </div>
       </div>
@@ -192,38 +196,46 @@ const PerfilUsuarioPage = () => {
 
       <div className="main-content5">
         <div className="perfil-container">
-          {/* Header */}
+          {/* Header Principal */}
           <div className="page-header">
             <div className="header-title-container">
               <div className="header-icon">
-                <FaUser className="icon-white" />
+                <FaUserCircle className="icon-white" />
               </div>
-              <div>
+              <div className="header-text">
                 <h1 className="header-title">Mi Perfil</h1>
-                <p className="header-subtitle">Gestiona tu información personal de forma segura</p>
+                <p className="header-subtitle">
+                  Gestiona tu información personal de forma segura y mantén tus datos actualizados
+                </p>
               </div>
             </div>
           </div>
 
           {/* Mensaje de estado */}
           {message.text && (
-            <div className={message.type === "success" ? "success-message" : "error-message"}>
-              <div className="message-icon">{message.type === "success" ? <FaCheck /> : <FaTimes />}</div>
-              <span>{message.text}</span>
+            <div className={`alert ${message.type === "success" ? "alert-success" : "alert-error"}`}>
+              <div className="alert-icon">{message.type === "success" ? <FaCheck /> : <FaTimes />}</div>
+              <div className="alert-content">
+                <span className="alert-text">{message.text}</span>
+              </div>
             </div>
           )}
 
-          {/* Card principal */}
-          <div className="perfil-card">
+          {/* Card Principal del Perfil */}
+          <div className="profile-card">
+            {/* Header del Card */}
             <div className="card-header">
               <div className="header-content">
-                <div>
-                  <h2 className="card-title">Información Personal</h2>
-                  <p className="card-description">Mantén tu información actualizada y segura</p>
+                <div className="header-info">
+                  <h2 className="card-title">Información del Propietario</h2>
+                  <p className="card-description">
+                    Mantén tu información actualizada para recibir el mejor servicio veterinario
+                  </p>
                 </div>
                 {!editMode && (
                   <button onClick={() => setEditMode(true)} className="edit-button">
-                    <FaEdit className="button-icon" /> Editar Perfil
+                    <FaEdit className="button-icon" />
+                    Editar Información
                   </button>
                 )}
               </div>
@@ -233,135 +245,184 @@ const PerfilUsuarioPage = () => {
               {loading && (
                 <div className="loading-overlay">
                   <div className="loading-spinner"></div>
+                  <span className="loading-text">Actualizando información...</span>
                 </div>
               )}
 
-              {/* Avatar y nombre */}
-              <div className="avatar-section">
-                <div className="avatar">
-                  <FaUser className="avatar-icon" />
+              {/* Sección de Identificación del Usuario */}
+              <div className="user-identity-section">
+                <div className="avatar-container">
+                  <div className="avatar">
+                    <FaUser className="avatar-icon" />
+                  </div>
+                  <div className="avatar-badge">
+                    <FaShieldAlt />
+                  </div>
                 </div>
-                <div className="user-info">
+                <div className="user-details">
                   <h3 className="user-name">
                     {userProfile.nombre} {userProfile.apellido}
                   </h3>
-                  <p className="user-role">
-                    {userProfile.tipo_doc} {userProfile.id_usuario}
-                  </p>
+                  <div className="user-meta">
+                    <div className="meta-item">
+                      <FaIdCard className="meta-icon" />
+                      <span className="meta-text">
+                        {userProfile.tipo_doc} {userProfile.id_usuario}
+                      </span>
+                    </div>
+                    <div className="meta-item">
+                      <FaCalendarAlt className="meta-icon" />
+                      <span className="meta-text">Miembro desde {formatDate(userProfile.fecha_nacimiento)}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              {/* Información no editable */}
-              <div className="section">
-                <h3 className="section-title">
-                  <FaUser className="section-icon" />
-                  Información Personal
-                </h3>
+              {/* Información Personal No Editable */}
+              <div className="info-section">
+                <div className="section-header">
+                  <div className="section-title">
+                    <FaUser className="section-icon" />
+                    <span>Información Personal</span>
+                  </div>
+                  <div className="section-badge">Verificado</div>
+                </div>
+
+                <div className="info-grid readonly-grid">
+                  <div className="info-field">
+                    <label className="field-label">
+                      <FaCalendarAlt className="label-icon" />
+                      Fecha de Nacimiento
+                    </label>
+                    <div className="field-value readonly-value">{formatDate(userProfile.fecha_nacimiento)}</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Información de Contacto Editable */}
+              <div className="info-section">
+                <div className="section-header">
+                  <div className="section-title">
+                    <FaEnvelope className="section-icon" />
+                    <span>Información de Contacto</span>
+                  </div>
+                  {editMode && <div className="section-badge editing">Editando</div>}
+                </div>
+
                 <div className="info-grid">
-                  <div className="info-item">
-                    <label className="info-label">Fecha de Nacimiento</label>
-                    <div className="info-value">{formatDate(userProfile.fecha_nacimiento)}</div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Información editable */}
-              <div className="section">
-                <h3 className="section-title">
-                  <FaEdit className="section-icon" />
-                  Información de Contacto
-                </h3>
-
-                <div className="info-grid">
-                  <div className="info-item">
-                    <label className="info-label">
-                      <FaEnvelope className="label-icon" /> Correo Electrónico
+                  <div className="info-field">
+                    <label className="field-label">
+                      <FaEnvelope className="label-icon" />
+                      Correo Electrónico
                     </label>
                     {editMode ? (
-                      <input
-                        type="email"
-                        value={formData.email}
-                        onChange={(e) => handleInputChange("email", e.target.value)}
-                        className="edit-input"
-                        placeholder="tu@email.com"
-                      />
+                      <div className="input-container">
+                        <input
+                          type="email"
+                          value={formData.email}
+                          onChange={(e) => handleInputChange("email", e.target.value)}
+                          className="field-input"
+                          placeholder="ejemplo@correo.com"
+                        />
+                      </div>
                     ) : (
-                      <div className="info-value">{userProfile.email}</div>
+                      <div className="field-value">{userProfile.email}</div>
                     )}
                   </div>
 
-                  <div className="info-item">
-                    <label className="info-label">
-                      <FaPhone className="label-icon" /> Teléfono
+                  <div className="info-field">
+                    <label className="field-label">
+                      <FaPhone className="label-icon" />
+                      Número de Teléfono
                     </label>
                     {editMode ? (
-                      <input
-                        type="tel"
-                        value={formData.telefono}
-                        onChange={(e) => handleInputChange("telefono", e.target.value)}
-                        className="edit-input"
-                        placeholder="300 123 4567"
-                      />
+                      <div className="input-container">
+                        <input
+                          type="tel"
+                          value={formData.telefono}
+                          onChange={(e) => handleInputChange("telefono", e.target.value)}
+                          className="field-input"
+                          placeholder="300 123 4567"
+                        />
+                      </div>
                     ) : (
-                      <div className="info-value">{userProfile.telefono}</div>
+                      <div className="field-value">{userProfile.telefono}</div>
                     )}
                   </div>
 
-                  <div className="info-item">
-                    <label className="info-label">
-                      <FaCity className="label-icon" /> Ciudad
+                  <div className="info-field">
+                    <label className="field-label">
+                      <FaCity className="label-icon" />
+                      Ciudad
                     </label>
                     {editMode ? (
-                      <input
-                        type="text"
-                        value={formData.ciudad}
-                        onChange={(e) => handleInputChange("ciudad", e.target.value)}
-                        className="edit-input"
-                        placeholder="Tu ciudad"
-                      />
+                      <div className="input-container">
+                        <input
+                          type="text"
+                          value={formData.ciudad}
+                          onChange={(e) => handleInputChange("ciudad", e.target.value)}
+                          className="field-input"
+                          placeholder="Bogotá, Colombia"
+                        />
+                      </div>
                     ) : (
-                      <div className="info-value">{userProfile.ciudad}</div>
+                      <div className="field-value">{userProfile.ciudad}</div>
                     )}
                   </div>
 
-                  <div className="info-item-full-width">
-                    <label className="info-label">
-                      <FaMapMarkerAlt className="label-icon" /> Dirección
+                  <div className="info-field full-width">
+                    <label className="field-label">
+                      <FaMapMarkerAlt className="label-icon" />
+                      Dirección Completa
                     </label>
                     {editMode ? (
-                      <input
-                        type="text"
-                        value={formData.direccion}
-                        onChange={(e) => handleInputChange("direccion", e.target.value)}
-                        className="edit-input"
-                        placeholder="Calle 123 #45-67"
-                      />
+                      <div className="input-container">
+                        <input
+                          type="text"
+                          value={formData.direccion}
+                          onChange={(e) => handleInputChange("direccion", e.target.value)}
+                          className="field-input"
+                          placeholder="Calle 123 #45-67, Barrio, Ciudad"
+                        />
+                      </div>
                     ) : (
-                      <div className="info-value">{userProfile.direccion}</div>
+                      <div className="field-value">{userProfile.direccion}</div>
                     )}
                   </div>
                 </div>
               </div>
 
-              {/* Sección de contraseña */}
+              {/* Sección de Seguridad */}
               {editMode && (
-                <div className="section">
-                  <h3 className="section-title">
-                    <FaLock className="section-icon" />
-                    Cambiar Contraseña (Opcional)
-                  </h3>
+                <div className="info-section security-section">
+                  <div className="section-header">
+                    <div className="section-title">
+                      <FaLock className="section-icon" />
+                      <span>Seguridad de la Cuenta</span>
+                    </div>
+                    <div className="section-badge optional">Opcional</div>
+                  </div>
+
+                  <div className="security-notice">
+                    <FaShieldAlt className="notice-icon" />
+                    <div className="notice-content">
+                      <h4>Cambio de Contraseña</h4>
+                      <p>Solo completa estos campos si deseas cambiar tu contraseña actual</p>
+                    </div>
+                  </div>
 
                   <div className="info-grid">
-                    <div className="info-item">
-                      <label className="info-label">
-                        <FaLock className="label-icon" /> Nueva Contraseña
+                    <div className="info-field">
+                      <label className="field-label">
+                        <FaLock className="label-icon" />
+                        Nueva Contraseña
                       </label>
                       <div className="password-container">
                         <input
                           type={showPassword ? "text" : "password"}
                           value={formData.password}
                           onChange={(e) => handleInputChange("password", e.target.value)}
-                          className="password-input"
+                          className="field-input password-input"
                           placeholder="Mínimo 6 caracteres"
                         />
                         <button
@@ -374,17 +435,18 @@ const PerfilUsuarioPage = () => {
                       </div>
                     </div>
 
-                    <div className="info-item">
-                      <label className="info-label">
-                        <FaLock className="label-icon" /> Confirmar Contraseña
+                    <div className="info-field">
+                      <label className="field-label">
+                        <FaLock className="label-icon" />
+                        Confirmar Nueva Contraseña
                       </label>
                       <div className="password-container">
                         <input
                           type={showConfirmPassword ? "text" : "password"}
                           value={formData.confirmPassword}
                           onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
-                          className="password-input"
-                          placeholder="Repite la contraseña"
+                          className="field-input password-input"
+                          placeholder="Repite la nueva contraseña"
                         />
                         <button
                           type="button"
@@ -399,17 +461,19 @@ const PerfilUsuarioPage = () => {
                 </div>
               )}
 
-              {/* Botones de acción */}
+              {/* Botones de Acción */}
               {editMode && (
-                <div className="action-buttons">
-                  <button onClick={handleSave} disabled={loading} className="save-button">
-                    <FaSave className="button-icon" />
-                    {loading ? "Guardando..." : "Guardar Cambios"}
-                  </button>
-                  <button onClick={handleCancel} disabled={loading} className="cancel-button">
-                    <FaTimes className="button-icon" />
-                    Cancelar
-                  </button>
+                <div className="action-section">
+                  <div className="action-buttons">
+                    <button onClick={handleSave} disabled={loading} className="save-button primary-button">
+                      <FaSave className="button-icon" />
+                      {loading ? "Guardando..." : "Guardar Cambios"}
+                    </button>
+                    <button onClick={handleCancel} disabled={loading} className="cancel-button secondary-button">
+                      <FaTimes className="button-icon" />
+                      Cancelar
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
@@ -421,7 +485,3 @@ const PerfilUsuarioPage = () => {
 }
 
 export default PerfilUsuarioPage
-
-
-
-

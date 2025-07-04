@@ -206,8 +206,8 @@ const Home = () => {
         {/* Services Section */}
         <section id="servicios" className="services-section">
           <div className="container">
-            <div className="section-header">
-              <div className="section-header-left">
+            <div className="section-headerf">
+              <div className="section-headerf-left">
                 <div className="badge1">
                   <FaShieldAlt />
                   Nuestros Servicios
@@ -305,7 +305,7 @@ const Home = () => {
 
         <section id="nosotros" className="about-section">
           <div className="container">
-            <div className="section-header">
+            <div className="section-headerf">
               <div className="badge">
                 <FaPaw />
                 <span>Sobre Nosotros</span>
@@ -394,7 +394,7 @@ const Home = () => {
         {/* Blog Section */}
         <section id="blog" className="blog-section">
           <div className="container">
-            <div className="section-header-center">
+            <div className="section-headerf-center">
               <div className="badge">
                 <FaBookMedical />
                 Nuestro Blog
@@ -518,8 +518,8 @@ const Home = () => {
         {/* Contact Section - REDISEÑO COMPLETO */}
         <section id="contacto" className="contact-section">
           <div className="container">
-            <div className="section-header">
-              <div className="section-header-left">
+            <div className="section-headerf">
+              <div className="section-headerf-left">
                 <div className="badge">
                   <FaEnvelope />
                   Contacto
@@ -543,7 +543,7 @@ const Home = () => {
                   </div>
                   <div className="contact-text">
                     <h3>Dirección</h3>
-                    <p>Av. Principal 123, Ciudad</p>
+                    <p>Calle 47 # 12-10, Bogotá, Colombia</p>
                   </div>
                 </div>
 
@@ -574,7 +574,7 @@ const Home = () => {
                   </div>
                   <div className="contact-text">
                     <h3>Horarios</h3>
-                    <p>Lunes a Sabados: 9am-7pm</p>
+                    <p>Lunes a Domingos: 8am-7pm</p>
                   </div>
                 </div>
 
