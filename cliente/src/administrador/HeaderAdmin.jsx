@@ -1,62 +1,52 @@
 "use client"
 
-import { MdMenu as IconMenu, MdHelpOutline as IconHelp } from "react-icons/md"
+import { MdMenu as IconMenu, MdHelpOutline as IconHelp, MdNotifications as IconNotifications } from "react-icons/md"
 import { useState, useEffect, useRef } from "react"
 import Logout from "../administrador/LogoutAdmin"
 import "../stylos/Admin.css"
+import axios from "axios"
+import { Link, useNavigate } from "react-router-dom"
+import { Base64 } from "js-base64"
 
 const UnifiedHeader = ({ toggleSidebar, userData }) => {
   const [notifications, setNotifications] = useState([])
   const [showNotifications, setShowNotifications] = useState(false)
   const [showSearch, setShowSearch] = useState(false)
-  const [searchTerm, setSearchTerm] = useState("")
   const [isFullscreen, setIsFullscreen] = useState(false)
-  const [currentTime, setCurrentTime] = useState(new Date())
   const [showHelp, setShowHelp] = useState(false)
 
-  const searchRef = useRef(null)
   const notificationsRef = useRef(null)
   const helpRef = useRef(null)
+  const navigate = useNavigate()
+
+  const fetchNotifications = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    try {
+      const response = await axios.get("http://localhost:5000/api/auth/admin-notifications", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (response.data.success) {
+        // Asignamos solo las notificaciones no leídas al estado
+        setNotifications(response.data.notifications.filter(n => !n.read));
+      }
+    } catch (error) {
+      console.error("Error fetching notifications:", error);
+    }
+  };
 
   useEffect(() => {
-    // Simular notificaciones
-    setNotifications([
-      {
-        id: 1,
-        title: "Nueva cita programada",
-        message: "María García ha programado una cita para mañana",
-        time: "Hace 2 min",
-        read: false,
-        type: "appointment",
-        priority: "high",
-      },
-      {
-        id: 2,
-        title: "Usuario registrado",
-        message: "Juan Pérez se ha registrado en el sistema",
-        time: "Hace 15 min",
-        read: false,
-        type: "user",
-        priority: "medium",
-      },
-    ])
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, 10000); // Poll every 10 seconds
 
-    // Actualizar hora cada minuto
-    const timeInterval = setInterval(() => {
-      setCurrentTime(new Date())
-    }, 60000)
+    return () => clearInterval(interval);
+  }, []);
 
-    return () => clearInterval(timeInterval)
-  }, [])
-
-  // Cerrar dropdowns al hacer click fuera
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (notificationsRef.current && !notificationsRef.current.contains(event.target)) {
         setShowNotifications(false)
-      }
-      if (searchRef.current && !searchRef.current.contains(event.target)) {
-        setShowSearch(false)
       }
       if (helpRef.current && !helpRef.current.contains(event.target)) {
         setShowHelp(false)
@@ -67,58 +57,38 @@ const UnifiedHeader = ({ toggleSidebar, userData }) => {
     return () => document.removeEventListener("mousedown", handleClickOutside)
   }, [])
 
-  const unreadCount = notifications.filter((n) => !n.read).length
+  const unreadCount = notifications.length;
 
-  const toggleNotifications = () => {
-    setShowNotifications(!showNotifications)
-  }
+  const handleMarkAsRead = async (e, notificationId) => {
+    e.preventDefault(); // Previene la navegación del Link padre
+    e.stopPropagation(); // Detiene la propagación del evento
 
-  const toggleSearch = () => {
-    setShowSearch(!showSearch)
-    if (!showSearch) {
-      setTimeout(() => searchRef.current?.querySelector("input")?.focus(), 100)
+    const token = localStorage.getItem("token");
+    if(!token) return;
+
+    try {
+      // Llama al backend para marcarla como leída (en este caso, la elimina)
+      await axios.delete(`http://localhost:5000/api/auth/admin-notifications/${notificationId}`, {
+          headers: { Authorization: `Bearer ${token}` }
+      });
+      // Actualiza el estado local para reflejar el cambio inmediatamente
+      setNotifications(prev => prev.filter(notif => notif.id !== notificationId));
+    } catch (error) {
+        console.error("Error marcando la notificación como leída:", error);
     }
-  }
-
-  const toggleFullscreen = () => {
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen()
-      setIsFullscreen(true)
-    } else {
-      document.exitFullscreen()
-      setIsFullscreen(false)
-    }
-  }
-
-  const markAsRead = (id) => {
-    setNotifications((prev) =>
-      prev.map((notification) => (notification.id === id ? { ...notification, read: true } : notification)),
-    )
-  }
-
-  const formatTime = (date) => {
-    return date.toLocaleTimeString("es-ES", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-    })
-  }
-
-  const formatDate = (date) => {
-    return date.toLocaleDateString("es-ES", {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    })
-  }
+  };
+  
+  const handleNotificationClick = (notification) => {
+      setShowNotifications(false);
+      navigate(`/administrador/${Base64.encode("usuarios")}?highlight=${notification.userEmail}`);
+  };
 
   const toggleHelp = () => {
     setShowHelp(!showHelp)
   }
 
-  // Tu código (incompleto)
   const fullName = userData?.nombre && userData?.apellido ? `${userData.nombre} ${userData.apellido}` : ""
+  
   return (
     <header className="unified-header" role="banner">
       {/* Left Section */}
@@ -126,7 +96,6 @@ const UnifiedHeader = ({ toggleSidebar, userData }) => {
         <button className="unified-menu-toggle" onClick={toggleSidebar} aria-label="Abrir menú lateral" title="Menú">
           <IconMenu size={22} />
         </button>
-
         <div className="unified-header-branding">
           <div className="unified-header-brand-info">
             <h1 className="unified-header-brand-title">Panel de Administrador</h1>
@@ -140,13 +109,56 @@ const UnifiedHeader = ({ toggleSidebar, userData }) => {
 
       {/* Right Section */}
       <div className="unified-header-right">
-        {/* Search */}
-        <div className="unified-header-search" ref={searchRef}></div>
+        <div className="unified-notifications-container" ref={notificationsRef}>
+          <button
+            className="unified-quick-action-btn"
+            onClick={() => setShowNotifications(!showNotifications)}
+            aria-label="Notificaciones"
+            title="Notificaciones"
+          >
+            <IconNotifications size={20} />
+            {unreadCount > 0 && <span className="unified-notification-badge">{unreadCount}</span>}
+          </button>
 
-        {/* Notifications */}
-        <div className="unified-notifications-container" ref={notificationsRef}></div>
-
-        {/* Quick Actions */}
+          {showNotifications && (
+            <div className="unified-notifications-dropdown">
+              <div className="unified-notifications-header">
+                <h3>Notificaciones</h3>
+              </div>
+              <div className="unified-notifications-list">
+                {notifications.length > 0 ? (
+                  notifications.map((notif) => (
+                    <div
+                      key={notif.id}
+                      className="unified-notification-item"
+                      onClick={() => handleNotificationClick(notif)}
+                      role="button"
+                      tabIndex="0"
+                    >
+                      <div className="unified-notification-content">
+                        <h4>{notif.title}</h4>
+                        <p>{notif.message}</p>
+                        <span className="unified-notification-time">
+                          {new Date(notif.time).toLocaleString()}
+                        </span>
+                      </div>
+                      <button 
+                        className="unified-notification-read-btn"
+                        onClick={(e) => handleMarkAsRead(e, notif.id)}
+                      >
+                        Marcar como leído
+                      </button>
+                    </div>
+                  ))
+                ) : (
+                  <div className="unified-no-notifications">
+                    <p>No hay notificaciones nuevas.</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
         <div className="unified-quick-actions">
           <div className="unified-help-container" ref={helpRef}>
             <button className="unified-quick-action-btn" onClick={toggleHelp} aria-label="Ayuda" title="Ayuda">
@@ -186,8 +198,6 @@ const UnifiedHeader = ({ toggleSidebar, userData }) => {
             )}
           </div>
         </div>
-
-        {/* User Menu */}
         <div className="unified-user-menu">
           <div className="unified-header-user-info">
             <span className="unified-header-user-name">{fullName}</span>
@@ -195,12 +205,8 @@ const UnifiedHeader = ({ toggleSidebar, userData }) => {
           <Logout />
         </div>
       </div>
-
-      {/* Search Overlay */}
-
-      {/* Notifications Overlay */}
     </header>
   )
 }
 
-export default UnifiedHeader
+export default UnifiedHeader;

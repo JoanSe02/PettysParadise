@@ -7,14 +7,17 @@ const router = express.Router();
 
 const JWT_SECRET = process.env.JWT_SECRET || "tu_clave_secreta";
 const JWT_EXPIRES_IN = "2h";
-const MINUTOS_BLOQUEO = 5; // Cambiado de HORAS_BLOQUEO a MINUTOS_BLOQUEO
+const SEGUNDOS_BLOQUEO = 20; // Tiempo de bloqueo ajustado a 20 segundos
 const MAX_INTENTOS_FALLIDOS = 3;
 
+// In-memory store for activation requests for demonstration.
+// In a real app, use a database table.
+let activationRequests = [];
+
 // Función para formatear la hora de desbloqueo
-// En auth.js, modifica la función calcularHoraDesbloqueo
 const calcularHoraDesbloqueo = (fechaBloqueo) => {
   const fechaDesbloqueo = new Date(fechaBloqueo);
-  fechaDesbloqueo.setMinutes(fechaDesbloqueo.getMinutes() + MINUTOS_BLOQUEO); // Cambiado setHours a setMinutes
+  fechaDesbloqueo.setSeconds(fechaDesbloqueo.getSeconds() + SEGUNDOS_BLOQUEO); // Ajustado a segundos
   
   return fechaDesbloqueo.toLocaleString('es-ES', {
     timeZone: 'America/Bogota',
@@ -23,19 +26,21 @@ const calcularHoraDesbloqueo = (fechaBloqueo) => {
     day: '2-digit',
     hour: '2-digit',
     minute: '2-digit',
+    second: '2-digit', // Añadido para mayor precisión
     hour12: true
   });
 };
+
 // Función para calcular tiempo restante en formato legible
 const calcularTiempoRestante = (fechaBloqueo) => {
   const ahora = new Date();
   const fechaDesbloqueo = new Date(fechaBloqueo);
-  fechaDesbloqueo.setMinutes(fechaDesbloqueo.getMinutes() + MINUTOS_BLOQUEO); // Cambiado setHours a setMinutes
+  fechaDesbloqueo.setSeconds(fechaDesbloqueo.getSeconds() + SEGUNDOS_BLOQUEO); // Ajustado a segundos
   
   const diferencia = fechaDesbloqueo - ahora;
   
   if (diferencia <= 0) {
-    return { horas: 0, minutos: 0, texto: "Ya puede desbloquearse" };
+    return { minutos: 0, segundos: 0, texto: "Ya puede desbloquearse" };
   }
   
   const minutos = Math.floor(diferencia / (1000 * 60));
@@ -53,7 +58,70 @@ const calcularTiempoRestante = (fechaBloqueo) => {
   
   return { minutos, segundos, texto };
 };
-// Nuevo endpoint para verificar desbloqueo// En auth.js, asegúrate de que el endpoint verifica correctamente
+
+// New endpoint for requesting account activation
+router.post("/solicitar-activacion", (req, res) => {
+  const { email } = req.body;
+  if (!email) {
+    return res.status(400).json({ success: false, message: "Email es requerido" });
+  }
+
+  // Avoid duplicate requests
+  if (!activationRequests.find(req => req.email === email)) {
+    console.log(`Nueva solicitud de activación para: ${email}`);
+    activationRequests.push({ email, timestamp: new Date(), id: Date.now() });
+  }
+
+  res.status(200).json({ success: true, message: "Solicitud de activación recibida." });
+});
+
+// New endpoint for admin to fetch notifications
+router.get("/admin-notifications", (req, res) => {
+  const adminToken = req.headers.authorization?.split(" ")[1];
+
+  if (!adminToken) {
+    return res.status(401).json({
+      success: false,
+      message: "Token de administrador requerido",
+    });
+  }
+
+  try {
+    const decoded = jwt.verify(adminToken, JWT_SECRET);
+    if (decoded.id_rol !== 1) {
+      return res.status(403).json({
+        success: false,
+        message: "Acceso no autorizado",
+      });
+    }
+
+    const notifications = activationRequests.map(req => ({
+      id: req.id,
+      title: "Solicitud de Activación",
+      message: `El usuario ${req.email} solicita la activación de su cuenta.`,
+      time: req.timestamp.toISOString(),
+      read: false, 
+      type: 'activation_request',
+      userEmail: req.email
+    }));
+
+    res.json({ success: true, notifications });
+  } catch (error) {
+     res.status(401).json({
+      success: false,
+      message: "Token inválido o expirado",
+    });
+  }
+});
+
+// Endpoint to clear notifications for demonstration purposes
+router.delete("/admin-notifications/:id", (req, res) => {
+    const { id } = req.params;
+    activationRequests = activationRequests.filter(req => req.id !== parseInt(id));
+    res.status(200).json({ success: true, message: "Notificación eliminada." });
+});
+
+// Nuevo endpoint para verificar desbloqueo
 router.get("/verificar-desbloqueo/:email", async (req, res) => {
   let connection;
   try {
@@ -76,11 +144,10 @@ router.get("/verificar-desbloqueo/:email", async (req, res) => {
     }
     
     const fechaBloqueo = new Date(user.fecha_bloqueo);
-    const fechaDesbloqueo = new Date(fechaBloqueo.getTime() + (MINUTOS_BLOQUEO * 60 * 1000)); // 5 minutos en milisegundos
+    const fechaDesbloqueo = new Date(fechaBloqueo.getTime() + (SEGUNDOS_BLOQUEO * 1000)); // Cálculo con segundos
     const ahora = new Date();
     
     if (ahora >= fechaDesbloqueo) {
-      // IMPORTANTE: Asegúrate de que esta consulta se ejecute
       await connection.query(
         `UPDATE usuarios SET 
          intentos_fallidos = 0, 
@@ -93,7 +160,7 @@ router.get("/verificar-desbloqueo/:email", async (req, res) => {
       return res.json({ 
         success: true, 
         cuenta_bloqueada: false, 
-        auto_desbloqueada: true // Añade este flag
+        auto_desbloqueada: true
       });
     } else {
       const tiempoRestante = calcularTiempoRestante(user.fecha_bloqueo);
@@ -126,7 +193,6 @@ router.post("/login", async (req, res) => {
 
     connection = await pool.getConnection();
     
-    // PRIMERO: Obtener datos del usuario
     const [rows] = await connection.query("SELECT * FROM usuarios WHERE email = ?", [email]);
 
     if (rows.length === 0) {
@@ -138,14 +204,11 @@ router.post("/login", async (req, res) => {
 
     const user = rows[0];
 
-    // SEGUNDO: Verificar si la cuenta está bloqueada ANTES de verificar la contraseña
     if (user.cuenta_bloqueada) {
       const fechaBloqueo = new Date(user.fecha_bloqueo);
-      const fechaDesbloqueo = new Date(fechaBloqueo);
-      fechaDesbloqueo.setHours(fechaDesbloqueo.getHours() + MINUTOS_BLOQUEO);
+      const fechaDesbloqueo = new Date(fechaBloqueo.getTime() + (SEGUNDOS_BLOQUEO * 1000)); // Cálculo correcto con segundos
       const ahora = new Date();
 
-      // Verificar si ya pasó el tiempo de bloqueo
       if (ahora >= fechaDesbloqueo) {
         await connection.query(
           `UPDATE usuarios SET 
@@ -157,15 +220,13 @@ router.post("/login", async (req, res) => {
           [user.id_usuario]
         );
         console.log(`Cuenta auto-desbloqueada: ${email}`);
-        // Continuar con el login normal después del auto-desbloqueo
       } else {
-        // La cuenta sigue bloqueada - calcular información de desbloqueo
         const horaDesbloqueo = calcularHoraDesbloqueo(user.fecha_bloqueo);
         const tiempoRestante = calcularTiempoRestante(user.fecha_bloqueo);
         
         return res.status(403).json({
           success: false,
-          message: `Cuenta bloqueada por demasiados intentos fallidos. Se desbloqueará automáticamente el ${horaDesbloqueo} (en ${tiempoRestante.texto}) o contacte al administrador.`,
+          message: `Cuenta bloqueada. Se desbloqueará el ${horaDesbloqueo} (en ${tiempoRestante.texto}).`,
           cuenta_bloqueada: true,
           tiempo_restante: tiempoRestante,
           hora_desbloqueo: horaDesbloqueo,
@@ -174,15 +235,12 @@ router.post("/login", async (req, res) => {
       }
     }
 
-    // TERCERO: Verificar la contraseña
     const passwordMatch = await bcrypt.compare(contrasena, user.contrasena);
 
     if (!passwordMatch) {
-      // Incrementar intentos fallidos
       const nuevosIntentos = (user.intentos_fallidos || 0) + 1;
 
       if (nuevosIntentos >= MAX_INTENTOS_FALLIDOS) {
-        // Bloquear la cuenta
         await connection.query(
           `UPDATE usuarios SET 
            intentos_fallidos = ?, 
@@ -193,19 +251,17 @@ router.post("/login", async (req, res) => {
           [nuevosIntentos, "Demasiados intentos fallidos de inicio de sesión", user.id_usuario]
         );
 
-        // Calcular hora de desbloqueo para el nuevo bloqueo
         const horaDesbloqueo = calcularHoraDesbloqueo(new Date());
         const tiempoRestante = calcularTiempoRestante(new Date());
 
         return res.status(403).json({
           success: false,
-          message: `Cuenta bloqueada por demasiados intentos fallidos. Se desbloqueará automáticamente el ${horaDesbloqueo} (en ${tiempoRestante.texto}) o contacte al administrador.`,
+          message: `Cuenta bloqueada por ${SEGUNDOS_BLOQUEO} segundos. Se desbloqueará el ${horaDesbloqueo}.`,
           cuenta_bloqueada: true,
           tiempo_restante: tiempoRestante,
           hora_desbloqueo: horaDesbloqueo
         });
       } else {
-        // Actualizar intentos fallidos sin bloquear
         await connection.query("UPDATE usuarios SET intentos_fallidos = ? WHERE id_usuario = ?", [
           nuevosIntentos,
           user.id_usuario,
@@ -219,10 +275,8 @@ router.post("/login", async (req, res) => {
       }
     }
 
-    // CUARTO: Login exitoso - resetear intentos fallidos
     await connection.query("UPDATE usuarios SET intentos_fallidos = 0 WHERE id_usuario = ?", [user.id_usuario]);
 
-    // Crear token con información completa del usuario
     const tokenPayload = {
       id_usuario: user.id_usuario,
       email: user.email,
@@ -231,7 +285,6 @@ router.post("/login", async (req, res) => {
 
     const token = jwt.sign(tokenPayload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
 
-    // Remover datos sensibles antes de enviar respuesta
     delete user.contrasena;
     delete user.intentos_fallidos;
     delete user.cuenta_bloqueada;
@@ -261,11 +314,11 @@ router.post("/login", async (req, res) => {
 
 // Endpoint para verificar estado de bloqueo (actualizado)
 router.get("/estado-cuenta/:email", async (req, res) => {
-  let connection
+  let connection;
   try {
-    const { email } = req.params
+    const { email } = req.params;
 
-    connection = await pool.getConnection()
+    connection = await pool.getConnection();
     const [rows] = await connection.query(
       `SELECT 
         intentos_fallidos, 
@@ -275,16 +328,16 @@ router.get("/estado-cuenta/:email", async (req, res) => {
         estado
       FROM usuarios WHERE email = ?`,
       [email],
-    )
+    );
 
     if (rows.length === 0) {
       return res.status(404).json({
         success: false,
         message: "Usuario no encontrado",
-      })
+      });
     }
 
-    const user = rows[0]
+    const user = rows[0];
     
     let estadoDetallado = {
       intentos_fallidos: user.intentos_fallidos,
@@ -292,58 +345,58 @@ router.get("/estado-cuenta/:email", async (req, res) => {
       fecha_bloqueo: user.fecha_bloqueo,
       razon_bloqueo: user.razon_bloqueo,
       estado: user.estado
-    }
+    };
 
     if (user.cuenta_bloqueada && user.fecha_bloqueo) {
-      const horaDesbloqueo = calcularHoraDesbloqueo(user.fecha_bloqueo)
-      const tiempoRestante = calcularTiempoRestante(user.fecha_bloqueo)
+      const horaDesbloqueo = calcularHoraDesbloqueo(user.fecha_bloqueo);
+      const tiempoRestante = calcularTiempoRestante(user.fecha_bloqueo);
       
       estadoDetallado = {
         ...estadoDetallado,
         hora_desbloqueo: horaDesbloqueo,
         tiempo_restante_detallado: tiempoRestante,
-        puede_desbloquearse: tiempoRestante.horas === 0 && tiempoRestante.minutos === 0
-      }
+        puede_desbloquearse: tiempoRestante.minutos === 0 && tiempoRestante.segundos === 0
+      };
     }
 
     res.json({
       success: true,
       data: estadoDetallado,
-    })
+    });
   } catch (error) {
-    console.error("Error al verificar estado de cuenta:", error)
+    console.error("Error al verificar estado de cuenta:", error);
     res.status(500).json({
       success: false,
       message: "Error al verificar estado de la cuenta",
       error: error.message,
-    })
+    });
   } finally {
-    if (connection) connection.release()
+    if (connection) connection.release();
   }
-})
+});
 
 // Endpoint para obtener todas las cuentas bloqueadas (actualizado)
 router.get("/cuentas-bloqueadas", async (req, res) => {
-  let connection
+  let connection;
   try {
-    const adminToken = req.headers.authorization?.split(" ")[1]
+    const adminToken = req.headers.authorization?.split(" ")[1];
 
     if (!adminToken) {
       return res.status(401).json({
         success: false,
         message: "Token de administrador requerido",
-      })
+      });
     }
 
-    const decoded = jwt.verify(adminToken, JWT_SECRET)
+    const decoded = jwt.verify(adminToken, JWT_SECRET);
     if (decoded.id_rol !== 1) {
       return res.status(403).json({
         success: false,
         message: "Solo los administradores pueden ver las cuentas bloqueadas",
-      })
+      });
     }
 
-    connection = await pool.getConnection()
+    connection = await pool.getConnection();
     const [rows] = await connection.query(
       `SELECT 
         id_usuario,
@@ -356,64 +409,63 @@ router.get("/cuentas-bloqueadas", async (req, res) => {
       FROM usuarios 
       WHERE cuenta_bloqueada = 1
       ORDER BY fecha_bloqueo DESC`
-    )
+    );
 
-    // Agregar información de desbloqueo a cada cuenta
     const cuentasConInfo = rows.map(cuenta => {
-      const horaDesbloqueo = calcularHoraDesbloqueo(cuenta.fecha_bloqueo)
-      const tiempoRestante = calcularTiempoRestante(cuenta.fecha_bloqueo)
+      const horaDesbloqueo = calcularHoraDesbloqueo(cuenta.fecha_bloqueo);
+      const tiempoRestante = calcularTiempoRestante(cuenta.fecha_bloqueo);
       
       return {
         ...cuenta,
         hora_desbloqueo: horaDesbloqueo,
         tiempo_restante_detallado: tiempoRestante,
-        puede_desbloquearse: tiempoRestante.horas === 0 && tiempoRestante.minutos === 0
-      }
-    })
+        puede_desbloquearse: tiempoRestante.minutos === 0 && tiempoRestante.segundos === 0
+      };
+    });
 
     res.json({
       success: true,
       cuentas: cuentasConInfo,
       total: cuentasConInfo.length,
-    })
+    });
   } catch (error) {
-    console.error("Error al obtener cuentas bloqueadas:", error)
+    console.error("Error al obtener cuentas bloqueadas:", error);
     res.status(500).json({
       success: false,
       message: "Error al obtener las cuentas bloqueadas",
       error: error.message,
-    })
+    });
   } finally {
-    if (connection) connection.release()
+    if (connection) connection.release();
   }
-})
+});
 
-// Resto de endpoints sin cambios...
+// Endpoint para desbloquear una cuenta manualmente (rol de administrador)
 router.post("/desbloquear-cuenta", async (req, res) => {
-  let connection
+  let connection;
   try {
-    const { email, id_usuario } = req.body
-    const adminToken = req.headers.authorization?.split(" ")[1]
+    const { email, id_usuario } = req.body;
+    const adminToken = req.headers.authorization?.split(" ")[1];
 
     if (!adminToken) {
       return res.status(401).json({
         success: false,
         message: "Token de administrador requerido",
-      })
+      });
     }
 
-    const decoded = jwt.verify(adminToken, JWT_SECRET)
+    const decoded = jwt.verify(adminToken, JWT_SECRET);
     if (decoded.id_rol !== 1) {
       return res.status(403).json({
         success: false,
         message: "Solo los administradores pueden desbloquear cuentas",
-      })
+      });
     }
 
-    connection = await pool.getConnection()
+    connection = await pool.getConnection();
     
-    const whereClause = email ? "email = ?" : "id_usuario = ?"
-    const whereValue = email || id_usuario
+    const whereClause = email ? "email = ?" : "id_usuario = ?";
+    const whereValue = email || id_usuario;
 
     const [result] = await connection.query(
       `UPDATE usuarios SET 
@@ -423,35 +475,36 @@ router.post("/desbloquear-cuenta", async (req, res) => {
        razon_bloqueo = NULL
        WHERE ${whereClause}`,
       [whereValue]
-    )
+    );
 
     if (result.affectedRows === 0) {
       return res.status(404).json({
         success: false,
         message: "Usuario no encontrado",
-      })
+      });
     }
 
-    console.log(`Admin ${decoded.id_usuario} desbloqueó la cuenta: ${email || id_usuario}`)
+    console.log(`Admin ${decoded.id_usuario} desbloqueó la cuenta: ${email || id_usuario}`);
 
     res.json({
       success: true,
       message: "Cuenta desbloqueada exitosamente",
-    })
+    });
   } catch (error) {
-    console.error("Error al desbloquear cuenta:", error)
+    console.error("Error al desbloquear cuenta:", error);
     res.status(500).json({
       success: false,
       message: "Error al desbloquear la cuenta",
       error: error.message,
-    })
+    });
   } finally {
-    if (connection) connection.release()
+    if (connection) connection.release();
   }
-})
+});
 
+// Endpoint de registro de usuarios
 router.post("/register", async (req, res) => {
-  let connection
+  let connection;
   try {
     const {
       tipo_doc,
@@ -466,19 +519,19 @@ router.post("/register", async (req, res) => {
       contrasena,
       id_tipo = 1,
       id_rol = 3,
-    } = req.body
+    } = req.body;
 
     if (!email || !contrasena || !id_usuario || !nombre || !apellido) {
       return res.status(400).json({
         success: false,
         message: "Campos obligatorios faltantes",
-      })
+      });
     }
 
-    connection = await pool.getConnection()
-    await connection.beginTransaction()
+    connection = await pool.getConnection();
+    await connection.beginTransaction();
 
-    const hashedPassword = await bcrypt.hash(contrasena, 10)
+    const hashedPassword = await bcrypt.hash(contrasena, 10);
     await connection.query("CALL InsertarUsuarioYPropietario(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [
       id_usuario,
       tipo_doc,
@@ -492,28 +545,28 @@ router.post("/register", async (req, res) => {
       hashedPassword,
       id_tipo,
       id_rol,
-    ])
+    ]);
 
-    await connection.commit()
+    await connection.commit();
 
     res.status(201).json({
       success: true,
       message: "Usuario y propietario creados con éxito",
       userId: id_usuario,
-    })
+    });
   } catch (error) {
-    if (connection) await connection.rollback()
-    console.error("Error en registro:", error)
+    if (connection) await connection.rollback();
+    console.error("Error en registro:", error);
     res.status(500).json({
       success: false,
       message: "Error al crear el usuario",
       error: error.message,
-    })
+    });
   } finally {
-    if (connection) connection.release()
+    if (connection) connection.release();
   }
-})
+});
 
-module.exports = router
+module.exports = router;
 
 

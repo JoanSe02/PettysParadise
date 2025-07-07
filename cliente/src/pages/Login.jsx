@@ -43,40 +43,49 @@ export default function Login() {
   const validatePassword = (value) => {
     if (!value) return "La contraseña es obligatoria"
     if (value.length < 8) return "La contraseña debe tener al menos 8 caracteres"
-
     const requirements = []
     if (!/[A-Z]/.test(value)) requirements.push("una mayúscula")
     if (!/[a-z]/.test(value)) requirements.push("una minúscula")
     if (!/[0-9]/.test(value)) requirements.push("un número")
     if (!/[!@#$%^&*(),.?":{}|<>]/.test(value)) requirements.push("un carácter especial")
-
     if (requirements.length > 0) {
       return `La contraseña debe contener ${requirements.join(", ")}`
     }
-
     return true
   }
 
-  // Función mejorada que usa SOLO los datos del servidor
+  const handleRequestActivation = async (email) => {
+    try {
+      await axios.post("http://localhost:5000/api/auth/solicitar-activacion", { email });
+      Swal.fire({
+        icon: "success",
+        title: "Solicitud Enviada",
+        text: "Se ha notificado al administrador tu solicitud de activación.",
+        confirmButtonColor: "#28a745",
+      });
+    } catch (error) {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "No se pudo enviar la solicitud. Por favor, inténtalo de nuevo más tarde.",
+        confirmButtonColor: "#dc3545",
+      });
+    }
+  };
+
   const verificarDesbloqueoAutomatico = async (email) => {
     if (!email) return;
-  
     try {
       const response = await axios.get(`http://localhost:5000/api/auth/verificar-desbloqueo/${email}`);
-  
       if (response.data?.success) {
         if (response.data.auto_desbloqueada || !response.data.cuenta_bloqueada) {
-          // Resetear estado local
           setCuentaBloqueada(false);
           setTiempoRestante(null);
           setHoraDesbloqueo("");
-  
           if (intervalRef.current) {
             clearInterval(intervalRef.current);
             intervalRef.current = null;
           }
-  
-          // Mostrar notificación solo si fue auto-desbloqueada
           if (response.data.auto_desbloqueada) {
             Swal.fire({
               icon: "success",
@@ -86,7 +95,6 @@ export default function Login() {
             });
           }
         } else {
-          // Actualizar datos de bloqueo
           setTiempoRestante(response.data.tiempo_restante);
           setHoraDesbloqueo(response.data.hora_desbloqueo);
         }
@@ -96,16 +104,12 @@ export default function Login() {
     }
   };
 
-  // useEffect con verificación cada 10 segundos para mayor precisión
   useEffect(() => {
     const email = watch("email")
-
     if (cuentaBloqueada && email) {
-      // Verificar cada 10 segundos para mayor precisión
       intervalRef.current = setInterval(() => {
         verificarDesbloqueoAutomatico(email)
-      }, 10000)
-
+      }, 3000); // Intervalo de 3 segundos
       return () => {
         if (intervalRef.current) {
           clearInterval(intervalRef.current)
@@ -115,7 +119,6 @@ export default function Login() {
     }
   }, [cuentaBloqueada, watch("email")])
 
-  // Limpiar intervalo al desmontar componente
   useEffect(() => {
     return () => {
       if (intervalRef.current) {
@@ -136,73 +139,59 @@ export default function Login() {
 
   const onSubmit = async (data) => {
     if (loading) return
-
     setLoading(true)
-
     try {
-
-      // Verificar estado de la cuenta antes del login
       const estadoCuenta = await verificarEstadoCuenta(data.email)
-      console.log("Respuesta del backend:", estadoCuenta); 
-       if (estadoCuenta?.data?.estado === 0) {
+      if (estadoCuenta?.data?.estado === 0) {
         Swal.fire({
           icon: "error",
           title: "🚫 Cuenta Desactivada",
-          text: "Tu cuenta se encuentra desactivada. Por favor, contacta al administrador para más detalles.",
-          confirmButtonColor: "#dc3545",
-          confirmButtonText: "Entendido",
+          text: "Tu cuenta se encuentra desactivada. ¿Deseas solicitar la activación al administrador?",
+          showCancelButton: true,
+          confirmButtonText: "Solicitar Activación",
+          confirmButtonColor: "#28a745",
+          cancelButtonText: "Cancelar",
+        }).then((result) => {
+          if (result.isConfirmed) {
+            handleRequestActivation(data.email);
+          }
         });
         setLoading(false);
-        return; // Detiene la ejecución para no intentar el login
+        return;
       }
-
       if (estadoCuenta?.data?.cuenta_bloqueada) {
-        // Usar SOLO los datos del servidor, no calcular en frontend
-        const tiempoServidor = estadoCuenta.data.tiempo_restante_detallado ||
-          estadoCuenta.data.tiempo_restante || { texto: "5 minutos" }
-
+        const tiempoServidor = estadoCuenta.data.tiempo_restante_detallado || { texto: "20 segundos" }
         setCuentaBloqueada(true)
         setTiempoRestante(tiempoServidor)
         setHoraDesbloqueo(estadoCuenta.data.hora_desbloqueo)
-
         Swal.fire({
           icon: "error",
           title: "🔒 Cuenta Bloqueada",
           html: `
-            <div style="text-align: left; margin: 20px 0;">
-              <p><strong>Tu cuenta está bloqueada por demasiados intentos fallidos.</strong></p>
-              <br>
-              <div style="background-color: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 4px solid #dc3545;">
-                <p><strong>🕐 Se desbloqueará automáticamente:</strong></p>
-                <p style="font-size: 18px; color: #dc3545; font-weight: bold;">${estadoCuenta.data.hora_desbloqueo}</p>
-                <p><strong>⏱️ Tiempo restante:</strong> ${tiempoServidor.texto}</p>
+            <div style="text-align: center; margin: 20px 0;">
+              <p>Tu cuenta está bloqueada por demasiados intentos.</p>
+              <div style="background-color: #f8f9fa; padding: 15px; border-radius: 8px; margin-top: 15px;">
+                <p style="margin: 0;"><strong>⏱️ Tiempo restante para el desbloqueo:</strong></p>
+                <p style="font-size: 24px; color: #dc3545; font-weight: bold; margin-top: 5px;">${tiempoServidor.texto}</p>
               </div>
-              <br>
-              <p style="color: #6c757d;">💡 <em>La página verificará automáticamente cada 10 segundos.</em></p>
             </div>
           `,
           confirmButtonColor: "#dc3545",
           confirmButtonText: "Entendido",
-          width: 500,
         })
         setLoading(false)
         return
       }
-
-      // Intentar login
       const response = await axios.post("http://localhost:5000/api/auth/login", {
         email: data.email,
         contrasena: data.contrasena,
       })
-
       if (response.data?.success) {
         localStorage.setItem("user", JSON.stringify(response.data.user))
         localStorage.setItem("token", response.data.token)
         localStorage.setItem("id_usuario", response.data.user.id_usuario)
-
         setIntentosFallidos(0)
         setCuentaBloqueada(false)
-
         Swal.fire({
           icon: "success",
           title: "¡Bienvenido!",
@@ -210,7 +199,6 @@ export default function Login() {
           timer: 1500,
           showConfirmButton: false,
         })
-
         const userRole = response.data.user.id_rol
         setTimeout(() => {
           if (userRole === 1) navigate("/administrador")
@@ -220,11 +208,9 @@ export default function Login() {
       }
     } catch (error) {
       console.error("Error en login:", error)
-
       if (error.response?.status === 401) {
         const intentosRestantes = error.response.data?.intentos_restantes || 0
         setIntentosFallidos((prev) => prev + 1)
-
         Swal.fire({
           icon: "warning",
           title: "⚠️ Credenciales Incorrectas",
@@ -235,7 +221,7 @@ export default function Login() {
               <div style="background-color: #fff3cd; padding: 15px; border-radius: 8px; border-left: 4px solid #ffc107;">
                 <p><strong>⚠️ Intentos restantes:</strong></p>
                 <p style="font-size: 24px; color: #856404; font-weight: bold;">${intentosRestantes}</p>
-                ${intentosRestantes === 1 ? '<p style="color: #dc3545;"><strong>¡Cuidado! Si fallas una vez más, tu cuenta será bloqueada por 5 minutos.</strong></p>' : ""}
+                ${intentosRestantes === 1 ? '<p style="color: #dc3545;"><strong>¡Cuidado! Si fallas una vez más, tu cuenta será bloqueada por 20 segundos.</strong></p>' : ""}
               </div>
             </div>
           `,
@@ -243,36 +229,27 @@ export default function Login() {
           confirmButtonText: "Intentar de nuevo",
         })
       } else if (error.response?.status === 403 && error.response.data?.cuenta_bloqueada) {
-        // Usar SOLO datos del servidor
-        // En el onSubmit, dentro del catch para error 403
-        const tiempoServidor = error.response.data?.tiempo_restante_detallado ||
-        error.response.data?.tiempo_restante || { texto: "5 minutos" } // Cambiado de 30 a 5 minutos
-
+        const tiempoServidor = error.response.data?.tiempo_restante_detallado || { texto: "20 segundos" }
         setCuentaBloqueada(true)
         setTiempoRestante(tiempoServidor)
         setHoraDesbloqueo(error.response.data?.hora_desbloqueo)
-
         Swal.fire({
           icon: "error",
           title: "🚫 Cuenta Bloqueada",
           html: `
-            <div style="text-align: left; margin: 20px 0;">
-              <p><strong>Tu cuenta ha sido bloqueada temporalmente por 5 minutos.</strong></p>
-              <br>
-              <div style="background-color: #f8d7da; padding: 15px; border-radius: 8px; border-left: 4px solid #dc3545;">
-                <p><strong>🕐 Se desbloqueará automáticamente:</strong></p>
-                <p style="font-size: 18px; color: #721c24; font-weight: bold;">${error.response.data?.hora_desbloqueo}</p>
-                <p><strong>⏱️ Tiempo restante:</strong> ${tiempoServidor.texto}</p>
+            <div style="text-align: center; margin: 20px 0;">
+              <p>Has superado el número de intentos permitidos.</p>
+              <div style="background-color: #f8d7da; padding: 15px; border-radius: 8px; margin-top: 15px;">
+                <p style="margin: 0;"><strong>⏱️ Tu cuenta se desbloqueará en:</strong></p>
+                <p style="font-size: 24px; color: #721c24; font-weight: bold; margin-top: 5px;">${tiempoServidor.texto}</p>
               </div>
             </div>
           `,
           confirmButtonColor: "#dc3545",
           confirmButtonText: "Entendido",
-          width: 550,
         })
       }
     }
-
     setLoading(false)
     reset()
   }
@@ -290,22 +267,14 @@ export default function Login() {
           </Link>
         </div>
       </div>
-
       <div className="der-side">
         <form onSubmit={handleSubmit(onSubmit)} className="login-form">
           <h1>Inicia Sesión</h1>
-
           {cuentaBloqueada && (
             <div className="cuenta-bloqueada-alert">
               <FaLock className="lock-icon" />
               <p>
                 Cuenta bloqueada por demasiados intentos fallidos.
-                {horaDesbloqueo && horaDesbloqueo !== "undefined" && (
-                  <span>
-                    <br />
-                    <strong>Se desbloqueará el: {horaDesbloqueo}</strong>
-                  </span>
-                )}
                 {tiempoRestante && (
                   <span>
                     <br />
@@ -313,48 +282,30 @@ export default function Login() {
                   </span>
                 )}
                 <br />
-                <span>💡 Verificando automáticamente cada 10 segundos...</span>
+                
               </p>
             </div>
           )}
-
           <label>
             <strong>Email</strong>
             <div className="input-icon-container right">
               <input
                 type="email"
-                {...register("email", {
-                  validate: validateEmail,
-                })}
+                {...register("email", { validate: validateEmail })}
                 className={`input-icon-field ${errors.email ? "input-error" : ""}`}
                 placeholder="ejemplo@dominio.com"
                 disabled={loading || cuentaBloqueada}
               />
               <FaAt className="input-icon" />
             </div>
-            {errors.email && (
-              <p className="error-message1">
-                {errors.email.message === "El email es obligatorio" && "Por favor, ingresa tu email"}
-                {errors.email.message === "Falta el símbolo @ en el email" &&
-                  "El email debe contener un @. Ejemplo: usuario@dominio.com"}
-                {errors.email.message === "Falta el dominio después del @" &&
-                  "Falta la parte después del @. Ejemplo: usuario@dominio.com"}
-                {errors.email.message === "Falta el punto (.) en el dominio del email" &&
-                  "El dominio debe contener un punto. Ejemplo: usuario@dominio.com"}
-                {errors.email.message === "El formato del email no es válido" &&
-                  "El formato del email no es válido. Por favor revisa"}
-              </p>
-            )}
+            {errors.email && <p className="error-message1">{errors.email.message}</p>}
           </label>
-
           <label>
             <strong>Contraseña</strong>
             <div className="input-icon-container right">
               <input
                 type={showPassword ? "text" : "password"}
-                {...register("contrasena", {
-                  validate: validatePassword,
-                })}
+                {...register("contrasena", { validate: validatePassword })}
                 className={`input-icon-field ${errors.contrasena ? "input-error" : ""}`}
                 placeholder="Ingresa tu contraseña"
                 onFocus={() => setPasswordFocus(true)}
@@ -365,14 +316,11 @@ export default function Login() {
                 {showPassword ? <FaEye /> : <FaEyeSlash />}
               </span>
             </div>
-           
             {errors.contrasena && <p className="error-message1">{errors.contrasena.message}</p>}
           </label>
-
           <button type="submit" className="login-submit-btn" disabled={cuentaBloqueada || loading}>
             {loading ? "Verificando..." : "Ingresar"}
           </button>
-
           <div className="extras">
             <p className="signup-link">
               ¿No tienes una cuenta? <Link to="/registrar">Regístrate</Link>
@@ -385,6 +333,3 @@ export default function Login() {
     </main>
   )
 }
-
-
-
