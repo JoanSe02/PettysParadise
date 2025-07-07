@@ -275,9 +275,7 @@ const HistorialLogModal = ({ citaId, onClose, citas }) => {
                         </div>
                     ) : logs.length > 0 ? (
                         <div className="citas-table-container">
-                            <div className="citas-log-note">
-                                <strong>Nota:</strong> "Realizado por" muestra el usuario de la BD por la configuración del Trigger.
-                            </div>
+                        
                             <table className="citas-table">
                                 <thead>
                                     <tr>

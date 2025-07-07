@@ -136,57 +136,59 @@ router.post("/", authenticateToken, async (req, res) => {
 });
 
 // Actualizar cita (MODIFICADO con lógica de permisos mejorada)
+// Actualizar cita (MODIFICADO con lógica de permisos y LOGS TRANSACCIONALES)
 router.put("/:cod_cit", authenticateToken, async (req, res) => {
   let connection;
   try {
     const { cod_cit } = req.params;
-    const { id_usuario, id_rol } = req.user; // Obtenemos el rol del usuario logueado
+    const { id_usuario, id_rol } = req.user; 
+    const { est_cit, fech_cit, hora, cod_ser, id_vet, cod_mas, notas } = req.body; // Obtenemos los datos del body
 
     connection = await pool.getConnection();
+    await connection.beginTransaction(); // <-- 1. INICIAMOS LA TRANSACCIÓN
 
-    // 1. Primero, obtenemos la cita para verificar los permisos
-    const [citasExistentes] = await connection.query(
-      `SELECT id_pro, id_vet FROM citas WHERE cod_cit = ?`, 
-      [cod_cit]
-    );
-
+    // Verificamos permisos (esta parte ya la tenías y está bien)
+    const [citasExistentes] = await connection.query(`SELECT id_pro, id_vet FROM citas WHERE cod_cit = ?`, [cod_cit]);
     if (citasExistentes.length === 0) {
+      await connection.rollback(); // Revertimos si la cita no existe
       return res.status(404).json({ success: false, message: "La cita no fue encontrada." });
     }
-
     const cita = citasExistentes[0];
     const esPropietario = id_rol === 3 && cita.id_pro === id_usuario;
     const esVeterinarioAsignado = id_rol === 2 && cita.id_vet === id_usuario;
     const esAdmin = id_rol === 1;
 
-    // 2. Si no es Propietario, ni el Veterinario asignado, ni un Admin, denegar acceso.
     if (!esPropietario && !esVeterinarioAsignado && !esAdmin) {
+      await connection.rollback(); // Revertimos por falta de permisos
       return res.status(403).json({ success: false, message: "No tienes permiso para modificar esta cita" });
     }
 
-    // 3. Si tiene permiso, proceder con la actualización
-    const { cod_mas, cod_ser, id_vet, fech_cit, hora, est_cit, notas } = req.body;
-
+    // 2. ACTUALIZAMOS LA CITA
     await connection.query(`CALL ActualizarCita(?, ?, ?, ?, ?, ?, ?, ?)`, [
-      cod_cit,
-      fech_cit,
-      hora,
-      cod_ser,
-      id_vet,
-      cod_mas,
-      est_cit,
-      notas,
+      cod_cit, fech_cit, hora, cod_ser, id_vet, cod_mas, est_cit, notas,
     ]);
 
-    res.json({ success: true, message: "Cita actualizada exitosamente" });
+    // 3. REGISTRAMOS EL CAMBIO EN EL LOG
+    const descripcionLog = `La cita fue actualizada. Nuevo estado: ${est_cit}.`;
+    await connection.query("CALL RegistrarLogCita(?, ?, ?, ?)", [
+        cod_cit, 
+        'UPDATE', 
+        descripcionLog, 
+        id_usuario
+    ]);
+
+    await connection.commit(); // <-- 4. CONFIRMAMOS LA TRANSACCIÓN (todo salió bien)
+
+    res.json({ success: true, message: "Cita actualizada y registrada en el log exitosamente" });
+
   } catch (error) {
+    if (connection) await connection.rollback(); // <-- 5. REVERTIMOS LA TRANSACCIÓN si hay un error
     console.error("Error al actualizar cita:", error);
     res.status(500).json({ success: false, message: "Error al actualizar la cita", error: error.message });
   } finally {
     if (connection) connection.release();
   }
 });
-
 // Cancelar cita (usando procedimiento)
 router.put("/:cod_cit/cancelar", authenticateToken, async (req, res) => {
   let connection;

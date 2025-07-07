@@ -424,7 +424,17 @@ function EditarCitaModal({ cita, onClose, onSubmit, servicios, veterinarios }) {
               <div className="vet-form-group"><label htmlFor="fech_cit">Fecha:</label><input type="date" id="fech_cit" value={formData.fech_cit} onChange={handleChange} min={minDateStr} max={maxDateStr} required />{errors.fech_cit && <p className="vet-error-message">{errors.fech_cit}</p>}</div>
               <div className="vet-form-group"><label htmlFor="hora">Hora:</label><input type="time" id="hora" value={formData.hora} onChange={handleChange} min="08:00" max="19:00" required />{errors.hora && <p className="vet-error-message">{errors.hora}</p>}</div>
             </div>
-            <div className="vet-form-group"><label htmlFor="estado">Estado:</label><select id="estado" value={formData.est_cit} onChange={handleChange}><option value="PENDIENTE">Pendiente</option><option value="CONFIRMADA">Confirmada</option><option value="REALIZADA">Realizada</option><option value="CANCELADA">Cancelada</option><option value="NO_ASISTIDA">No Asistida</option></select></div>
+            
+          <div className="vet-form-group">
+            <label htmlFor="est_cit">Estado:</label> {/* También puedes cambiar el 'htmlFor' por consistencia */}
+            <select id="est_cit" value={formData.est_cit} onChange={handleChange}>
+              <option value="PENDIENTE">Pendiente</option>
+              <option value="CONFIRMADA">Confirmada</option>
+              <option value="REALIZADA">Realizada</option>
+              <option value="CANCELADA">Cancelada</option>
+              <option value="NO_ASISTIDA">No Asistida</option>
+            </select>
+          </div>
             <div className="vet-form-group"><label htmlFor="notas">Notas:</label><textarea id="notas" rows={3} value={formData.notas} onChange={handleChange}></textarea></div>
           </form>
         </div>

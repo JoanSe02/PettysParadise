@@ -463,6 +463,17 @@
   border-radius: var(--radius-md);
   margin-bottom: 2rem;
 }
+.security-notice1 {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.5rem;
+  margin-top: 20px;
+  padding: 1.25rem;
+  background: var(--warning-light);
+  border: 1px solid var(--warning-color);
+  border-radius: var(--radius-md);
+  margin-bottom: 2rem;
+}
 
 .notice-icon {
   color: var(--warning-color);

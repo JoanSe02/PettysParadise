@@ -9,11 +9,23 @@ CREATE PROCEDURE `RegistrarLogCita`(
     IN p_id_usuario INT
 )
 BEGIN
-    INSERT INTO logs_citas (id_cita_afectada, accion, descripcion, id_usuario_accion)
-    VALUES (p_cod_cit, p_accion, p_descripcion, p_id_usuario);
+    -- Se añade la columna 'usuario_db' y se le asigna el valor con USER()
+    INSERT INTO logs_citas (
+        id_cita_afectada, 
+        accion, 
+        descripcion, 
+        id_usuario_accion, 
+        usuario_db 
+    )
+    VALUES (
+        p_cod_cit, 
+        p_accion, 
+        p_descripcion, 
+        p_id_usuario, 
+        USER() -- Esta función obtiene el usuario actual de la BD
+    );
 END$$
 DELIMITER ;
-DELIMITER $$
 
 DROP PROCEDURE IF EXISTS `ObtenerLogsPorCita`$$
 

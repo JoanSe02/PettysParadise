@@ -2,22 +2,9 @@
 
 import { useState, useEffect } from "react"
 import {
-  FaUser,
-  FaEnvelope,
-  FaPhone,
-  FaSave,
-  FaEdit,
-  FaMapMarkerAlt,
-  FaCity,
-  FaLock,
-  FaEye,
-  FaEyeSlash,
-  FaCheck,
-  FaTimes,
-  FaIdCard,
-  FaCalendarAlt,
-  FaShieldAlt,
-  FaUserCircle,
+  FaUser, FaEnvelope, FaPhone, FaSave, FaEdit, FaMapMarkerAlt, FaCity,
+  FaLock, FaEye, FaEyeSlash, FaCheck, FaTimes, FaIdCard, FaCalendarAlt,
+  FaShieldAlt, FaUserCircle, FaKey
 } from "react-icons/fa"
 import "../stylos/Pro/Perfil.css"
 import HeaderSir from "../propietario/HeaderSir"
@@ -30,83 +17,77 @@ const PerfilUsuarioPage = () => {
     telefono: "",
     direccion: "",
     ciudad: "",
-    password: "",
+    password: "", // Nueva contraseña
     confirmPassword: "",
+    currentPassword: "", // Contraseña actual para verificación
   })
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [editMode, setEditMode] = useState(false)
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false)
   const [message, setMessage] = useState({ type: "", text: "" })
   const id_usuario = localStorage.getItem("id_usuario")
 
   useEffect(() => {
     const fetchUserProfile = async () => {
+      if (!id_usuario) {
+        console.warn("No se encontró id_usuario en localStorage")
+        setMessage({ type: "error", text: "No se encontró información de usuario" })
+        return;
+      }
       try {
-        console.log("Obteniendo perfil para ID:", id_usuario)
-
         const res = await fetch(`http://localhost:5000/api/perfil/${id_usuario}`)
-        console.log("Respuesta del servidor:", res)
-
-        if (!res.ok) throw new Error("Error al obtener el perfil")
-
+        if (!res.ok) throw new Error("Error al obtener el perfil del servidor")
         const data = await res.json()
-        console.log("Datos recibidos:", data)
-
         setUserProfile(data)
         setFormData({
-          email: data.email,
-          telefono: data.telefono,
-          direccion: data.direccion,
-          ciudad: data.ciudad,
+          email: data.email || "",
+          telefono: data.telefono || "",
+          direccion: data.direccion || "",
+          ciudad: data.ciudad || "",
           password: "",
           confirmPassword: "",
+          currentPassword: "",
         })
       } catch (error) {
-        console.error("Error:", error.message)
-        setMessage({ type: "error", text: "Error al cargar el perfil" })
+        console.error("Error al cargar el perfil:", error.message)
+        setMessage({ type: "error", text: "Error al cargar el perfil." })
       }
     }
-
-    if (id_usuario) {
-      fetchUserProfile()
-    } else {
-      console.warn("No se encontró id_usuario en localStorage")
-      setMessage({ type: "error", text: "No se encontró información de usuario" })
-    }
+    fetchUserProfile()
   }, [id_usuario])
 
   const handleInputChange = (field, value) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }))
-    if (message.text) {
-      setMessage({ type: "", text: "" })
-    }
+    setFormData((prev) => ({ ...prev, [field]: value }))
+    if (message.text) setMessage({ type: "", text: "" })
   }
 
-  const toggleSidebar = () => {
-    setSidebarOpen(!sidebarOpen)
-  }
+  const toggleSidebar = () => setSidebarOpen(!sidebarOpen)
 
   const validateForm = () => {
-    if (!formData.email || !formData.telefono || !formData.direccion || !formData.ciudad) {
-      setMessage({ type: "error", text: "Todos los campos son obligatorios" })
+    const { email, telefono, direccion, ciudad, password, confirmPassword, currentPassword } = formData;
+    if (!email || !telefono || !direccion || !ciudad) {
+      setMessage({ type: "error", text: "Los campos de contacto son obligatorios" })
       return false
     }
 
-    if (formData.password && formData.password !== formData.confirmPassword) {
-      setMessage({ type: "error", text: "Las contraseñas no coinciden" })
-      return false
+    if (password) { // Si el usuario está cambiando la contraseña
+      if (password.length < 6) {
+        setMessage({ type: "error", text: "La nueva contraseña debe tener al menos 6 caracteres" })
+        return false
+      }
+      if (password !== confirmPassword) {
+        setMessage({ type: "error", text: "Las nuevas contraseñas no coinciden" })
+        return false
+      }
+    } else { // Si no está cambiando la contraseña, la actual es obligatoria para guardar
+      if (!currentPassword) {
+        setMessage({ type: "error", text: "Ingresa tu contraseña actual para confirmar los cambios" })
+        return false
+      }
     }
-
-    if (formData.password && formData.password.length < 6) {
-      setMessage({ type: "error", text: "La contraseña debe tener al menos 6 caracteres" })
-      return false
-    }
-
     return true
   }
 
@@ -121,9 +102,11 @@ const PerfilUsuarioPage = () => {
         direccion: formData.direccion,
         ciudad: formData.ciudad,
       }
-
+      
       if (formData.password) {
         updateData.password = formData.password
+      } else {
+        updateData.currentPassword = formData.currentPassword
       }
 
       const res = await fetch(`http://localhost:5000/api/perfil/actualizar/${userProfile.id_usuario}`, {
@@ -135,19 +118,13 @@ const PerfilUsuarioPage = () => {
       const data = await res.json()
       if (!res.ok) throw new Error(data.message)
 
-      setUserProfile((prev) => ({
-        ...prev,
-        email: formData.email,
-        telefono: formData.telefono,
-        direccion: formData.direccion,
-        ciudad: formData.ciudad,
-      }))
-
+      setUserProfile((prev) => ({ ...prev, ...updateData }))
       setMessage({ type: "success", text: "Perfil actualizado correctamente" })
       setEditMode(false)
-      setFormData((prev) => ({ ...prev, password: "", confirmPassword: "" }))
+      setFormData((prev) => ({ ...prev, password: "", confirmPassword: "", currentPassword: "" }))
+
     } catch (error) {
-      setMessage({ type: "error", text: "Error al actualizar: " + error.message })
+      setMessage({ type: "error", text: error.message || "Error al actualizar" })
     } finally {
       setLoading(false)
     }
@@ -161,17 +138,15 @@ const PerfilUsuarioPage = () => {
       ciudad: userProfile.ciudad,
       password: "",
       confirmPassword: "",
+      currentPassword: "",
     })
     setEditMode(false)
     setMessage({ type: "", text: "" })
   }
 
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString("es-ES", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    })
+    if (!dateString) return "N/A";
+    return new Date(dateString).toLocaleDateString("es-ES", { year: "numeric", month: "long", day: "numeric" })
   }
 
   if (!userProfile) {
@@ -272,7 +247,7 @@ const PerfilUsuarioPage = () => {
                     </div>
                     <div className="meta-item">
                       <FaCalendarAlt className="meta-icon" />
-                      <span className="meta-text">Miembro desde {formatDate(userProfile.fecha_nacimiento)}</span>
+                      <span className="meta-text">Miembro desde {formatDate(userProfile.fecha_registro)}</span>
                     </div>
                   </div>
                 </div>
@@ -302,92 +277,25 @@ const PerfilUsuarioPage = () => {
               {/* Información de Contacto Editable */}
               <div className="info-section">
                 <div className="section-header">
-                  <div className="section-title">
-                    <FaEnvelope className="section-icon" />
-                    <span>Información de Contacto</span>
-                  </div>
+                  <div className="section-title"><FaEnvelope className="section-icon" /><span>Información de Contacto</span></div>
                   {editMode && <div className="section-badge editing">Editando</div>}
                 </div>
-
                 <div className="info-grid">
                   <div className="info-field">
-                    <label className="field-label">
-                      <FaEnvelope className="label-icon" />
-                      Correo Electrónico
-                    </label>
-                    {editMode ? (
-                      <div className="input-container">
-                        <input
-                          type="email"
-                          value={formData.email}
-                          onChange={(e) => handleInputChange("email", e.target.value)}
-                          className="field-input"
-                          placeholder="ejemplo@correo.com"
-                        />
-                      </div>
-                    ) : (
-                      <div className="field-value">{userProfile.email}</div>
-                    )}
+                    <label className="field-label"><FaEnvelope className="label-icon" />Correo Electrónico</label>
+                    {editMode ? (<input type="email" value={formData.email} onChange={(e) => handleInputChange("email", e.target.value)} className="field-input" />) : (<div className="field-value">{userProfile.email}</div>)}
                   </div>
-
                   <div className="info-field">
-                    <label className="field-label">
-                      <FaPhone className="label-icon" />
-                      Número de Teléfono
-                    </label>
-                    {editMode ? (
-                      <div className="input-container">
-                        <input
-                          type="tel"
-                          value={formData.telefono}
-                          onChange={(e) => handleInputChange("telefono", e.target.value)}
-                          className="field-input"
-                          placeholder="300 123 4567"
-                        />
-                      </div>
-                    ) : (
-                      <div className="field-value">{userProfile.telefono}</div>
-                    )}
+                    <label className="field-label"><FaPhone className="label-icon" />Número de Teléfono</label>
+                    {editMode ? (<input type="tel" value={formData.telefono} onChange={(e) => handleInputChange("telefono", e.target.value)} className="field-input" />) : (<div className="field-value">{userProfile.telefono}</div>)}
                   </div>
-
                   <div className="info-field">
-                    <label className="field-label">
-                      <FaCity className="label-icon" />
-                      Ciudad
-                    </label>
-                    {editMode ? (
-                      <div className="input-container">
-                        <input
-                          type="text"
-                          value={formData.ciudad}
-                          onChange={(e) => handleInputChange("ciudad", e.target.value)}
-                          className="field-input"
-                          placeholder="Bogotá, Colombia"
-                        />
-                      </div>
-                    ) : (
-                      <div className="field-value">{userProfile.ciudad}</div>
-                    )}
+                    <label className="field-label"><FaCity className="label-icon" />Ciudad</label>
+                    {editMode ? (<input type="text" value={formData.ciudad} onChange={(e) => handleInputChange("ciudad", e.target.value)} className="field-input" />) : (<div className="field-value">{userProfile.ciudad}</div>)}
                   </div>
-
                   <div className="info-field full-width">
-                    <label className="field-label">
-                      <FaMapMarkerAlt className="label-icon" />
-                      Dirección Completa
-                    </label>
-                    {editMode ? (
-                      <div className="input-container">
-                        <input
-                          type="text"
-                          value={formData.direccion}
-                          onChange={(e) => handleInputChange("direccion", e.target.value)}
-                          className="field-input"
-                          placeholder="Calle 123 #45-67, Barrio, Ciudad"
-                        />
-                      </div>
-                    ) : (
-                      <div className="field-value">{userProfile.direccion}</div>
-                    )}
+                    <label className="field-label"><FaMapMarkerAlt className="label-icon" />Dirección Completa</label>
+                    {editMode ? (<input type="text" value={formData.direccion} onChange={(e) => handleInputChange("direccion", e.target.value)} className="field-input" />) : (<div className="field-value">{userProfile.direccion}</div>)}
                   </div>
                 </div>
               </div>
@@ -396,21 +304,12 @@ const PerfilUsuarioPage = () => {
               {editMode && (
                 <div className="info-section security-section">
                   <div className="section-header">
-                    <div className="section-title">
-                      <FaLock className="section-icon" />
-                      <span>Seguridad de la Cuenta</span>
-                    </div>
-                    <div className="section-badge optional">Opcional</div>
+                    <div className="section-title"><FaLock className="section-icon" /><span>Seguridad de la Cuenta</span></div>
                   </div>
-
                   <div className="security-notice">
                     <FaShieldAlt className="notice-icon" />
-                    <div className="notice-content">
-                      <h4>Cambio de Contraseña</h4>
-                      <p>Solo completa estos campos si deseas cambiar tu contraseña actual</p>
-                    </div>
+                    <div className="notice-content"><h4>Cambio de Contraseña (Opcional)</h4><p>Solo completa estos campos si deseas cambiar tu contraseña.</p></div>
                   </div>
-
                   <div className="info-grid">
                     <div className="info-field">
                       <label className="field-label">
@@ -434,7 +333,6 @@ const PerfilUsuarioPage = () => {
                         </button>
                       </div>
                     </div>
-
                     <div className="info-field">
                       <label className="field-label">
                         <FaLock className="label-icon" />
@@ -454,6 +352,29 @@ const PerfilUsuarioPage = () => {
                           onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                         >
                           {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="security-notice1">
+                    <FaKey className="notice-icon" />
+                    <div className="notice-content"><h4>Confirmar Cambios</h4><p>Si no estás cambiando tu contraseña, ingresa tu clave actual para guardar los cambios.</p></div>
+                  </div>
+                  <div className="info-grid">
+                    <div className="info-field">
+                      <label className="field-label"><FaKey className="label-icon" />Contraseña Actual</label>
+                      <div className="password-container">
+                        <input
+                          type={showCurrentPassword ? "text" : "password"}
+                          value={formData.currentPassword}
+                          onChange={(e) => handleInputChange("currentPassword", e.target.value)}
+                          className="field-input password-input"
+                          placeholder="Ingresa tu contraseña actual"
+                          disabled={!!formData.password}
+                        />
+                        <button type="button" className="password-toggle" onClick={() => setShowCurrentPassword(!showCurrentPassword)}>
+                          {showCurrentPassword ? <FaEyeSlash /> : <FaEye />}
                         </button>
                       </div>
                     </div>
