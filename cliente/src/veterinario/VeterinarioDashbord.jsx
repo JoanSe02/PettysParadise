@@ -40,6 +40,11 @@ const VeterinarioDashboard = () => {
     setSidebarOpen(false)
   }, [location.pathname])
 
+  useEffect(() => {
+    document.title = 'Panel Veterinario - Petty\'s Paradise'; // Título para la página de inicio
+  });
+
+
   // useEffect para cargar los datos del dashboard
   useEffect(() => {
     try {
@@ -86,6 +91,7 @@ const VeterinarioDashboard = () => {
     fetchDashboardStats()
   }, [isMainDashboard])
 
+
   if (loading && isMainDashboard) {
     return (
       <div className="vet-dashboard">
@@ -96,6 +102,8 @@ const VeterinarioDashboard = () => {
       </div>
     )
   }
+
+  
 
   return (
     <div className="vet-dashboard">

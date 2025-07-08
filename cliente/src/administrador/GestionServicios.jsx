@@ -24,6 +24,10 @@ const GestionServicios = () => {
     fetchServicios()
   }, [])
 
+  useEffect(() => {
+    document.title = 'Gestion Servicios - Petty\'s Paradise'; // Título para la página de inicio
+  });
+
   const fetchServicios = async () => {
     try {
       setLoading(true)

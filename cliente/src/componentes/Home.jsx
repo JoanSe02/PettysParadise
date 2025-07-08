@@ -48,6 +48,10 @@ const Home = () => {
     }
   }, [location])
 
+  useEffect(() => {
+    document.title = 'Inicio - Petty\'s Paradise'; // Título para la página de inicio
+  }, []);
+
   // Estado para los contadores
   const [counters, setCounters] = useState({
     specialists: 0,

@@ -29,6 +29,10 @@ export default function HistorialesMedicos() {
     fetchHistoriales();
   }, []);
 
+  useEffect(() => {
+    document.title = 'Historiales Médicos - Petty\'s Paradise'; // Título para la página de inicio
+  });
+
   const showNotification = (message, type = "success") => {
     const icon = type === "success" ? "success" : "error";
     Swal.fire({ icon, title: message, timer: 2500, showConfirmButton: false, toast: true, position: "top-end" });

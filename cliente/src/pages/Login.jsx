@@ -29,6 +29,10 @@ export default function Login() {
     mode: "onChange",
   })
 
+  useEffect(() => {
+    document.title = 'Iniciar Sesión - Petty\'s Paradise'; // Título para la página de inicio
+  }, []);
+
   const validateEmail = (value) => {
     if (!value) return "El email es obligatorio"
     if (!value.includes("@")) return "Falta el símbolo @ en el email"

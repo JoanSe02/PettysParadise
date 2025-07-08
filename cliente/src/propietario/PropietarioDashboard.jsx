@@ -43,6 +43,7 @@ const PropietarioDashboard = () => {
     setSidebarOpen(!sidebarOpen);
   };
 
+
   useEffect(() => {
     const loadDashboardData = async () => {
       try {
@@ -104,6 +105,10 @@ const PropietarioDashboard = () => {
 
     loadDashboardData();
   }, []);
+
+  useEffect(() => {
+    document.title = 'Panel Propietario - Petty\'s Paradise'; // Título para la página de inicio
+  });
 
   const getTitleByGender = () => {
     return userData.genero === "femenino" 

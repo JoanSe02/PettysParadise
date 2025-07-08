@@ -38,6 +38,10 @@ const GestionUsuarios = () => {
     fetchUsuarios();
   }, []);
 
+  useEffect(() => {
+    document.title = 'Gestión Usuarios - Petty\'s Paradise'; // Título para la página de inicio
+  });
+
   const fetchUsuarios = async () => {
     try {
       setLoading(true);

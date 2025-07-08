@@ -41,6 +41,10 @@ function RecuperarContraseña() {
     }
   }, [emailValue])
 
+  useEffect(() => {
+    document.title = 'Recuperar Contraseña - Petty\'s Paradise'; // Título para la página de inicio
+  }, []);
+
   // Efecto para el cooldown del reenvío
   useEffect(() => {
     let interval

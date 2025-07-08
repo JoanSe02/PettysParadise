@@ -135,8 +135,7 @@ router.post("/", authenticateToken, async (req, res) => {
   }
 });
 
-// Actualizar cita (MODIFICADO con lógica de permisos mejorada)
-// Actualizar cita (MODIFICADO con lógica de permisos y LOGS TRANSACCIONALES)
+// Actualizar cita 
 router.put("/:cod_cit", authenticateToken, async (req, res) => {
   let connection;
   try {

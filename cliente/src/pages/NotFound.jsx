@@ -1,5 +1,6 @@
 "use client"
 import { Link } from "react-router-dom"
+import { useEffect } from "react"
 import { FaPaw, FaHome, FaArrowLeft } from "react-icons/fa"
 import Header from "../componentes/Header"
 import Footer from "../componentes/Footer"
@@ -8,6 +9,9 @@ import "../stylos/Base.css"
 import "../stylos/NotFound.css"
 
 const NotFound = () => {
+  useEffect(() => {
+    document.title = 'Página no encontrada - Petty\'s Paradise'; // Título para la página de inicio
+  });
   return (
     <div className="not-found-page">
       <Header />

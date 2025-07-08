@@ -50,6 +50,10 @@ export default function Registrar() {
     return () => clearInterval(interval)
   }, [resendCooldown])
 
+  useEffect(() => {
+    document.title = 'Registro - Petty\'s Paradise'; // Título para la página de inicio
+  }, []);
+
   // Genera un código de verificación aleatorio
   const generateVerificationCode = () => {
     const length = 6

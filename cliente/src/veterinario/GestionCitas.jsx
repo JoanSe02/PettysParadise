@@ -51,6 +51,11 @@ export default function GestionCitas() {
     fetchPropietarios();
   }, []);
 
+  useEffect(() => {
+    document.title = 'Gestión Citas - Petty\'s Paradise'; // Título para la página de inicio
+  });
+
+
   const showNotification = (message, type = "success") => {
     Swal.fire({
       icon: type,

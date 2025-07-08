@@ -30,6 +30,10 @@ export default function MisPacientes() {
     fetchMascotas();
   }, []);
 
+  useEffect(() => {
+    document.title = 'Mascotas - Petty\'s Paradise'; // Título para la página de inicio
+  });
+
   const showNotification = (message, type = "success") => {
     const icon = type === 'success' ? 'success' : 'error';
     Swal.fire({

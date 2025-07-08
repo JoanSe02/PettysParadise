@@ -45,6 +45,10 @@ export default function GestionCitas() {
     fetchServicios()
     fetchVeterinarios()
   }, [])
+
+  useEffect(() => {
+    document.title = 'Agendar Cita - Petty\'s Paradise'; // Título para la página de inicio
+  });
   
   // <-- AÑADIDO: Función de notificación consistente
   const showNotification = (message, type = "success") => {
@@ -90,7 +94,6 @@ export default function GestionCitas() {
     }
   }
 
-  // Función para obtener mascotas del propietario
   const fetchMascotas = async () => {
     try {
       const data = await apiService.get("/api/vermas/mascotas")
@@ -100,7 +103,6 @@ export default function GestionCitas() {
     }
   }
 
-  // Función para obtener servicios
   const fetchServicios = async () => {
     try {
       const data = await apiService.get("/api/servicios/servicios")
@@ -110,7 +112,6 @@ export default function GestionCitas() {
     }
   }
 
-  // Función para obtener veterinarios
   const fetchVeterinarios = async () => {
     try {
       const data = await apiService.get("/api/servicios/veterinarios")
@@ -120,7 +121,6 @@ export default function GestionCitas() {
     }
   }
 
-  //Función para crear una nueva cita CON envío de correo
   const crearCita = async (citaData) => {
     try {
       const backendData = {
@@ -133,12 +133,20 @@ export default function GestionCitas() {
         id_pro: userId 
       };
 
-      // Capturamos la respuesta del backend
       const response = await apiService.post("/api/citas", backendData);
 
-      // Verificamos si la respuesta contiene los detalles para el email
       if (response && response.emailDetails) {
         const details = response.emailDetails;
+
+
+        const fechaFormateadaParaCorreo = new Date(citaData.fecha.replace(/-/g, '/'))
+          .toLocaleDateString('es-ES', {
+              weekday: 'long',
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
+          });
+
         const templateParams = {
           email: details.owner_email,     
           to_name: details.owner_name,     
@@ -146,11 +154,10 @@ export default function GestionCitas() {
           service_name: details.service_name,
           costo_servicio: parseFloat(details.service_cost).toFixed(2),
           vet_name: details.vet_name,
-          appointment_date: new Date(citaData.fech_cit).toLocaleDateString('es-ES', { timeZone: 'UTC' }),
+          appointment_date: fechaFormateadaParaCorreo, // <- Usamos la fecha ya formateada
           appointment_time: citaData.hora,
         };
 
-        // Lógica de envío de correo
         emailjs.send(
           'service_ay01elm',      
           'template_77182qs',      

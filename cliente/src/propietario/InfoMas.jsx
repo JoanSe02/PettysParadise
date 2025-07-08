@@ -3,6 +3,8 @@ import { useForm } from "react-hook-form"
 import {
   Search,
   Eye,
+  IdCard,
+  CircleUserRound,
   PawPrint,
   Weight,
   Cake,
@@ -51,6 +53,7 @@ const InfoMas = () => {
     ciudad: "",
     direccion: "",
     id: null,
+    id_usuario: "",
   })
 
   const {
@@ -108,6 +111,11 @@ const InfoMas = () => {
     })
     fetchMascotas()
   }, [])
+
+  useEffect(() => {
+    document.title = 'Mis Mascotas - Petty\'s Paradise'; // Título para la página de inicio
+  });
+
 
   // --- CAMBIO 1: Función para abrir el modal y resetear el formulario ---
   const handleOpenAddModal = () => {
@@ -664,7 +672,7 @@ const InfoMas = () => {
                     ) : (
                       <div className="upload-placeholder">
                         <Upload className="upload-icon" />
-                        <span>Subir foto (opcional)</span>
+                        <span>Subir foto</span>
                       </div>
                     )}
                   </div>
@@ -931,7 +939,7 @@ const InfoMas = () => {
             {/* Contenido del modal */}
             <div style={{ padding: "1.5rem" }}>
               <div
-                style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: "1.5rem" }}
+                style={{ display: "flex", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: "1.5rem" }}
               >
                 {/* Información básica */}
                 <div style={{ background: "#f9fafb", padding: "1rem", borderRadius: "0.5rem" }}>
@@ -1001,7 +1009,7 @@ const InfoMas = () => {
                       gap: "0.5rem",
                     }}
                   >
-                    <User size={18} />
+                    <CircleUserRound size={18} />
                     Propietario
                   </h3>
                   <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
@@ -1012,7 +1020,13 @@ const InfoMas = () => {
                       </span>
                     </div>
                     <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                      <Mail size={16} color="#6b7280" />
+                      <IdCard size={17} color="#6b7280" />
+                      <span>
+                        <strong>Documento:</strong> {userData.id}
+                      </span>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                      <Mail size={17} color="#6b7280" />
                       <span>
                         <strong>Email:</strong> {userData.email}
                       </span>
@@ -1040,13 +1054,6 @@ const InfoMas = () => {
                   <p style={{ color: "#6b7280", lineHeight: "1.5" }}>{selectedMascota.descripcion}</p>
                 </div>
               )}
-
-              {/* Botones de acción */}
-              <div style={{ marginTop: "1.5rem", display: "flex", gap: "1rem", justifyContent: "flex-end" }}>
-                <button onClick={() => setShowDetailsModal(false)} className="btn-secondary">
-                  Cerrar
-                </button>
-              </div>
             </div>
           </div>
         </div>

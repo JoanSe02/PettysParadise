@@ -35,6 +35,10 @@ const CitaModalAdmin = ({ isOpen, onClose, cita, onSave, propietarios, mascotas,
     }, [isOpen, cita]);
 
     useEffect(() => {
+        document.title = 'Gestión Citas - Petty\'s Paradise'; // Título para la página de inicio
+      });
+
+    useEffect(() => {
         if (formData.id_pro && Array.isArray(mascotas)) {
             const mascotasDelPropietario = mascotas.filter(m => m.id_pro === parseInt(formData.id_pro));
             setMascotasFiltradas(mascotasDelPropietario);

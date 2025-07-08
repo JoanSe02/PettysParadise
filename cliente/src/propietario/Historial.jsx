@@ -24,6 +24,9 @@ import jsPDF from "jspdf"
 import logoUrl from "../img/logo.png"
 import Swal from "sweetalert2"
 
+
+
+
 // Componente para una tarjeta individual de historial
 function HistorialCard({ registro, onDownload, onViewDetails }) {
   const formatDate = (dateString) => {
@@ -42,6 +45,8 @@ function HistorialCard({ registro, onDownload, onViewDetails }) {
       currency: "COP",
     }).format(amount)
   }
+
+  
 
   return (
     <div className="historial-card">
@@ -274,6 +279,10 @@ const HistorialMedicoPage = () => {
     }
     setFilteredData(filtered)
   }, [searchTerm, selectedMascota, historialData])
+
+  useEffect(() => {
+    document.title = 'Historial Médico - Petty\'s Paradise'; // Título para la página de inicio
+  });
 
   const mascotas = Array.from(new Set(historialData.map((item) => item.nombre_mascota)))
 

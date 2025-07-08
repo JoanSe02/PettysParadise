@@ -59,6 +59,10 @@ const PerfilUsuarioPage = () => {
     fetchUserProfile()
   }, [id_usuario])
 
+  useEffect(() => {
+    document.title = 'Perfil - Petty\'s Paradise'; // Título para la página de inicio
+  });
+
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
     if (message.text) setMessage({ type: "", text: "" })

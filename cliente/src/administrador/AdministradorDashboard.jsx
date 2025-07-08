@@ -49,6 +49,10 @@ const AdministradorDashboard = () => {
   }, [location.pathname])
 
   useEffect(() => {
+    document.title = 'Panel Administrador - Petty\'s Paradise'; // Título para la página de inicio
+  });
+
+  useEffect(() => {
     const loadDashboardData = async () => {
       try {
         setLoading(true)

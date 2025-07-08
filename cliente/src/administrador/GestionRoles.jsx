@@ -20,6 +20,10 @@ const GestionRoles = () => {
     fetchRoles()
   }, [])
 
+  useEffect(() => {
+    document.title = 'Roles - Petty\'s Paradise'; // Título para la página de inicio
+  });
+
   const fetchRoles = async () => {
     try {
       setLoading(true)
