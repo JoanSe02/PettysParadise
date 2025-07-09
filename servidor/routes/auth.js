@@ -195,10 +195,14 @@ router.post("/login", async (req, res) => {
     
     const [rows] = await connection.query("SELECT * FROM usuarios WHERE email = ?", [email]);
 
+    // **MODIFICACIÓN CLAVE**
+    // Manejo específico para usuario no encontrado.
     if (rows.length === 0) {
-      return res.status(401).json({
+      // Usamos 404 Not Found, que es más semántico para este caso.
+      return res.status(404).json({
         success: false,
-        message: "Credenciales incorrectas",
+        message: "El usuario no está registrado. Por favor, regístrese primero.",
+        code: "USER_NOT_FOUND",
       });
     }
 
@@ -568,5 +572,3 @@ router.post("/register", async (req, res) => {
 });
 
 module.exports = router;
-
-

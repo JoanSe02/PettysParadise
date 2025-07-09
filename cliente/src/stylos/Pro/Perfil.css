@@ -42,7 +42,7 @@
 
 .main-content5 {
   margin-left: 0;
-  margin-top: 70px;
+  margin-top: 40px;
   padding: 2rem;
   background: transparent;
   min-height: calc(100vh - 70px);
@@ -65,7 +65,7 @@
   margin-bottom: 1rem;
 }
 
-.header-icon {
+.header-icon1 {
   width: 4rem;
   height: 4rem;
   background: var(--primary-gradient);

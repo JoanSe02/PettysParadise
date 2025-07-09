@@ -433,7 +433,152 @@
   background: var(--unified-success);
   box-shadow: 0 0 8px rgba(16, 185, 129, 0.5);
 }
+/* Estilos para el botón "Marcar como leído" (Versión minimalista) */
+/* Estilos mejorados para el botón "Marcar como leído" */
+.unified-notification-read-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transform: scale(0.8) rotate(-10deg);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  color: #495057;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+  font-size: 14px;
+  font-weight: 600;
+}
 
+/* Aparece cuando se hace hover en el item de notificación */
+.unified-notification-item:hover .unified-notification-read-btn {
+  opacity: 1;
+  transform: scale(1) rotate(0deg);
+}
+
+/* Estados de hover y focus del botón */
+.unified-notification-read-btn:hover {
+  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+  color: white;
+  border-color: #28a745;
+  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+  transform: scale(1.1) rotate(0deg);
+}
+
+.unified-notification-read-btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.25);
+}
+
+.unified-notification-read-btn:active {
+  transform: scale(0.95);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Ícono del checkmark con mejor estilo */
+.unified-notification-read-btn::before {
+  content: '✓';
+  font-size: 16px;
+  font-weight: bold;
+  line-height: 1;
+  transition: all 0.2s ease;
+}
+
+.unified-notification-read-btn:hover::before {
+  transform: scale(1.1);
+}
+
+/* Animación cuando se marca como leída */
+.unified-notification-item.marking-as-read {
+  opacity: 0.6;
+  transform: translateX(10px);
+  transition: all 0.3s ease;
+}
+
+.unified-notification-item.marking-as-read .unified-notification-read-btn {
+  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+  color: white;
+  opacity: 1;
+  transform: scale(1) rotate(360deg);
+}
+
+/* Tooltip mejorado */
+.unified-notification-read-btn::after {
+  content: attr(title);
+  position: absolute;
+  bottom: -35px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  z-index: 1000;
+}
+
+.unified-notification-read-btn:hover::after {
+  opacity: 1;
+}
+
+/* Responsive - En pantallas pequeñas */
+@media (max-width: 768px) {
+  .unified-notification-read-btn {
+    width: 28px;
+    height: 28px;
+    top: 6px;
+    right: 6px;
+    opacity: 1; /* Siempre visible en móviles */
+    transform: scale(1);
+  }
+  
+  .unified-notification-read-btn::before {
+    font-size: 14px;
+  }
+}
+
+/* Variante alternativa con ícono de X para "cerrar" */
+.unified-notification-read-btn.close-style::before {
+  content: '×';
+  font-size: 18px;
+  font-weight: normal;
+}
+
+/* Efecto de pulso sutil para llamar la atención */
+@keyframes subtle-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+.unified-notification-item:hover .unified-notification-read-btn {
+  animation: subtle-pulse 2s infinite;
+}
+
+.unified-notification-read-btn:hover {
+  animation: none; /* Detiene la animación en hover */
+}
+
+/* Estilo para notificaciones importantes */
+.unified-notification-item.important .unified-notification-read-btn {
+  border-color: #dc3545;
+  background: linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%);
+}
+
+.unified-notification-item.important .unified-notification-read-btn:hover {
+  background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+}
 .unified-version-info {
   text-align: center;
   font-size: 10px;

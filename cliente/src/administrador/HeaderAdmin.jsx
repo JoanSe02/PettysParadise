@@ -142,12 +142,14 @@ const UnifiedHeader = ({ toggleSidebar, userData }) => {
                           {new Date(notif.time).toLocaleString()}
                         </span>
                       </div>
-                      <button 
-                        className="unified-notification-read-btn"
-                        onClick={(e) => handleMarkAsRead(e, notif.id)}
-                      >
-                        Marcar como leído
-                      </button>
+                      
+                    <button 
+                      className="unified-notification-read-btn"
+                      onClick={(e) => handleMarkAsRead(e, notif.id)}
+                      title="Marcar como leído" // Tooltip que aparece al pasar el mouse
+                    >
+                      {/* El texto se elimina, el ícono se maneja con CSS */}
+                    </button>
                     </div>
                   ))
                 ) : (

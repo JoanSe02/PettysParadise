@@ -212,7 +212,26 @@ export default function Login() {
       }
     } catch (error) {
       console.error("Error en login:", error)
-      if (error.response?.status === 401) {
+
+      // **MODIFICACIÓN CLAVE**
+      // Manejo para el error 404 (Usuario no encontrado)
+      if (error.response?.status === 404) {
+        Swal.fire({
+          icon: "question",
+          title: "🤔 Usuario no Registrado",
+          text: "El correo que ingresaste no existe en nuestra base de datos. ¿Te gustaría crear una cuenta?",
+          showCancelButton: true,
+          confirmButtonText: "Sí, ¡Registrarme!",
+          confirmButtonColor: "#28a745",
+          cancelButtonText: "Cancelar",
+          cancelButtonColor: "#6c757d",
+        }).then((result) => {
+          if (result.isConfirmed) {
+            // Redirige al usuario a la página de registro
+            navigate("/registrar");
+          }
+        });
+      } else if (error.response?.status === 401) {
         const intentosRestantes = error.response.data?.intentos_restantes || 0
         setIntentosFallidos((prev) => prev + 1)
         Swal.fire({
@@ -225,7 +244,7 @@ export default function Login() {
               <div style="background-color: #fff3cd; padding: 15px; border-radius: 8px; border-left: 4px solid #ffc107;">
                 <p><strong>⚠️ Intentos restantes:</strong></p>
                 <p style="font-size: 24px; color: #856404; font-weight: bold;">${intentosRestantes}</p>
-                ${intentosRestantes === 1 ? '<p style="color: #dc3545;"><strong>¡Cuidado! Si fallas una vez más, tu cuenta será bloqueada por 20 segundos.</strong></p>' : ""}
+                ${intentosRestantes === 1 ? '<p style="color: #dc3545;"><strong>¡Cuidado! Si fallas una vez más, tu cuenta será bloqueada.</strong></p>' : ""}
               </div>
             </div>
           `,

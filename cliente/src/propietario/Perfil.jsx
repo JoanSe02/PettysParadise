@@ -3,12 +3,27 @@
 import { useState, useEffect } from "react"
 import {
   FaUser, FaEnvelope, FaPhone, FaSave, FaEdit, FaMapMarkerAlt, FaCity,
-  FaLock, FaEye, FaEyeSlash, FaCheck, FaTimes, FaIdCard, FaCalendarAlt,
+  FaLock, FaEye, FaEyeSlash, FaIdCard, FaCalendarAlt,FaTimes,
   FaShieldAlt, FaUserCircle, FaKey
 } from "react-icons/fa"
+import Swal from 'sweetalert2'
+
 import "../stylos/Pro/Perfil.css"
 import HeaderSir from "../propietario/HeaderSir"
 import Dashbord from "../propietario/Dashbord"
+
+// 1. CONFIGURACIÓN DEL TOAST REUTILIZABLE
+const Toast = Swal.mixin({
+  toast: true,
+  position: 'top-end',
+  showConfirmButton: false,
+  timer: 3500,
+  timerProgressBar: true,
+  didOpen: (toast) => {
+    toast.onmouseenter = Swal.stopTimer
+    toast.onmouseleave = Swal.resumeTimer
+  }
+});
 
 const PerfilUsuarioPage = () => {
   const [userProfile, setUserProfile] = useState(null)
@@ -17,24 +32,24 @@ const PerfilUsuarioPage = () => {
     telefono: "",
     direccion: "",
     ciudad: "",
-    password: "", // Nueva contraseña
+    password: "",
     confirmPassword: "",
-    currentPassword: "", // Contraseña actual para verificación
+    currentPassword: "",
   })
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [editMode, setEditMode] = useState(false)
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [showConfirmButton, setShowConfirmButton] = useState(false)
   const [showCurrentPassword, setShowCurrentPassword] = useState(false)
-  const [message, setMessage] = useState({ type: "", text: "" })
+  // El estado 'message' ya no es necesario para mostrar notificaciones
   const id_usuario = localStorage.getItem("id_usuario")
 
   useEffect(() => {
     const fetchUserProfile = async () => {
       if (!id_usuario) {
         console.warn("No se encontró id_usuario en localStorage")
-        setMessage({ type: "error", text: "No se encontró información de usuario" })
+        Toast.fire({ icon: 'error', title: 'No se encontró información de usuario' });
         return;
       }
       try {
@@ -53,19 +68,18 @@ const PerfilUsuarioPage = () => {
         })
       } catch (error) {
         console.error("Error al cargar el perfil:", error.message)
-        setMessage({ type: "error", text: "Error al cargar el perfil." })
+        Toast.fire({ icon: 'error', title: 'Error al cargar el perfil.' });
       }
     }
     fetchUserProfile()
   }, [id_usuario])
 
   useEffect(() => {
-    document.title = 'Perfil - Petty\'s Paradise'; // Título para la página de inicio
+    document.title = 'Perfil - Petty\'s Paradise';
   });
 
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
-    if (message.text) setMessage({ type: "", text: "" })
   }
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen)
@@ -73,22 +87,22 @@ const PerfilUsuarioPage = () => {
   const validateForm = () => {
     const { email, telefono, direccion, ciudad, password, confirmPassword, currentPassword } = formData;
     if (!email || !telefono || !direccion || !ciudad) {
-      setMessage({ type: "error", text: "Los campos de contacto son obligatorios" })
+      Toast.fire({ icon: 'warning', title: 'Los campos de contacto son obligatorios' });
       return false
     }
 
-    if (password) { // Si el usuario está cambiando la contraseña
+    if (password) {
       if (password.length < 6) {
-        setMessage({ type: "error", text: "La nueva contraseña debe tener al menos 6 caracteres" })
+        Toast.fire({ icon: 'warning', title: 'La nueva contraseña debe tener al menos 6 caracteres' });
         return false
       }
       if (password !== confirmPassword) {
-        setMessage({ type: "error", text: "Las nuevas contraseñas no coinciden" })
+        Toast.fire({ icon: 'warning', title: 'Las nuevas contraseñas no coinciden' });
         return false
       }
-    } else { // Si no está cambiando la contraseña, la actual es obligatoria para guardar
+    } else {
       if (!currentPassword) {
-        setMessage({ type: "error", text: "Ingresa tu contraseña actual para confirmar los cambios" })
+        Toast.fire({ icon: 'warning', title: 'Ingresa tu contraseña actual para confirmar los cambios' });
         return false
       }
     }
@@ -123,12 +137,22 @@ const PerfilUsuarioPage = () => {
       if (!res.ok) throw new Error(data.message)
 
       setUserProfile((prev) => ({ ...prev, ...updateData }))
-      setMessage({ type: "success", text: "Perfil actualizado correctamente" })
+
+      // 2. MOSTRAR TOAST DE ÉXITO
+      Toast.fire({
+        icon: 'success',
+        title: 'Perfil actualizado correctamente'
+      });
+
       setEditMode(false)
       setFormData((prev) => ({ ...prev, password: "", confirmPassword: "", currentPassword: "" }))
 
     } catch (error) {
-      setMessage({ type: "error", text: error.message || "Error al actualizar" })
+      // 3. MOSTRAR TOAST DE ERROR
+      Toast.fire({
+        icon: 'error',
+        title: error.message || "Error al actualizar el perfil"
+      });
     } finally {
       setLoading(false)
     }
@@ -145,7 +169,6 @@ const PerfilUsuarioPage = () => {
       currentPassword: "",
     })
     setEditMode(false)
-    setMessage({ type: "", text: "" })
   }
 
   const formatDate = (dateString) => {
@@ -175,10 +198,9 @@ const PerfilUsuarioPage = () => {
 
       <div className="main-content5">
         <div className="perfil-container">
-          {/* Header Principal */}
           <div className="page-header">
             <div className="header-title-container">
-              <div className="header-icon">
+              <div className="header-icon1">
                 <FaUserCircle className="icon-white" />
               </div>
               <div className="header-text">
@@ -190,19 +212,9 @@ const PerfilUsuarioPage = () => {
             </div>
           </div>
 
-          {/* Mensaje de estado */}
-          {message.text && (
-            <div className={`alert ${message.type === "success" ? "alert-success" : "alert-error"}`}>
-              <div className="alert-icon">{message.type === "success" ? <FaCheck /> : <FaTimes />}</div>
-              <div className="alert-content">
-                <span className="alert-text">{message.text}</span>
-              </div>
-            </div>
-          )}
+          {/* 4. El bloque de mensaje de estado ha sido eliminado */}
 
-          {/* Card Principal del Perfil */}
           <div className="profile-card">
-            {/* Header del Card */}
             <div className="card-header">
               <div className="header-content">
                 <div className="header-info">
@@ -228,7 +240,7 @@ const PerfilUsuarioPage = () => {
                 </div>
               )}
 
-              {/* Sección de Identificación del Usuario */}
+              {/* ... El resto del JSX permanece igual ... */}
               <div className="user-identity-section">
                 <div className="avatar-container">
                   <div className="avatar">
@@ -257,7 +269,6 @@ const PerfilUsuarioPage = () => {
                 </div>
               </div>
 
-              {/* Información Personal No Editable */}
               <div className="info-section">
                 <div className="section-header">
                   <div className="section-title">
@@ -266,7 +277,6 @@ const PerfilUsuarioPage = () => {
                   </div>
                   <div className="section-badge">Verificado</div>
                 </div>
-
                 <div className="info-grid readonly-grid">
                   <div className="info-field">
                     <label className="field-label">
@@ -278,7 +288,6 @@ const PerfilUsuarioPage = () => {
                 </div>
               </div>
 
-              {/* Información de Contacto Editable */}
               <div className="info-section">
                 <div className="section-header">
                   <div className="section-title"><FaEnvelope className="section-icon" /><span>Información de Contacto</span></div>
@@ -303,8 +312,7 @@ const PerfilUsuarioPage = () => {
                   </div>
                 </div>
               </div>
-
-              {/* Sección de Seguridad */}
+              
               {editMode && (
                 <div className="info-section security-section">
                   <div className="section-header">
@@ -316,51 +324,24 @@ const PerfilUsuarioPage = () => {
                   </div>
                   <div className="info-grid">
                     <div className="info-field">
-                      <label className="field-label">
-                        <FaLock className="label-icon" />
-                        Nueva Contraseña
-                      </label>
+                      <label className="field-label"><FaLock className="label-icon" />Nueva Contraseña</label>
                       <div className="password-container">
-                        <input
-                          type={showPassword ? "text" : "password"}
-                          value={formData.password}
-                          onChange={(e) => handleInputChange("password", e.target.value)}
-                          className="field-input password-input"
-                          placeholder="Mínimo 6 caracteres"
-                        />
-                        <button
-                          type="button"
-                          className="password-toggle"
-                          onClick={() => setShowPassword(!showPassword)}
-                        >
+                        <input type={showPassword ? "text" : "password"} value={formData.password} onChange={(e) => handleInputChange("password", e.target.value)} className="field-input password-input" placeholder="Mínimo 6 caracteres"/>
+                        <button type="button" className="password-toggle" onClick={() => setShowPassword(!showPassword)}>
                           {showPassword ? <FaEyeSlash /> : <FaEye />}
                         </button>
                       </div>
                     </div>
                     <div className="info-field">
-                      <label className="field-label">
-                        <FaLock className="label-icon" />
-                        Confirmar Nueva Contraseña
-                      </label>
+                      <label className="field-label"><FaLock className="label-icon" />Confirmar Nueva Contraseña</label>
                       <div className="password-container">
-                        <input
-                          type={showConfirmPassword ? "text" : "password"}
-                          value={formData.confirmPassword}
-                          onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
-                          className="field-input password-input"
-                          placeholder="Repite la nueva contraseña"
-                        />
-                        <button
-                          type="button"
-                          className="password-toggle"
-                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        >
-                          {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+                        <input type={showConfirmButton ? "text" : "password"} value={formData.confirmPassword} onChange={(e) => handleInputChange("confirmPassword", e.target.value)} className="field-input password-input" placeholder="Repite la nueva contraseña"/>
+                        <button type="button" className="password-toggle" onClick={() => setShowConfirmButton(!showConfirmButton)}>
+                          {showConfirmButton ? <FaEyeSlash /> : <FaEye />}
                         </button>
                       </div>
                     </div>
                   </div>
-
                   <div className="security-notice1">
                     <FaKey className="notice-icon" />
                     <div className="notice-content"><h4>Confirmar Cambios</h4><p>Si no estás cambiando tu contraseña, ingresa tu clave actual para guardar los cambios.</p></div>
@@ -369,14 +350,7 @@ const PerfilUsuarioPage = () => {
                     <div className="info-field">
                       <label className="field-label"><FaKey className="label-icon" />Contraseña Actual</label>
                       <div className="password-container">
-                        <input
-                          type={showCurrentPassword ? "text" : "password"}
-                          value={formData.currentPassword}
-                          onChange={(e) => handleInputChange("currentPassword", e.target.value)}
-                          className="field-input password-input"
-                          placeholder="Ingresa tu contraseña actual"
-                          disabled={!!formData.password}
-                        />
+                        <input type={showCurrentPassword ? "text" : "password"} value={formData.currentPassword} onChange={(e) => handleInputChange("currentPassword", e.target.value)} className="field-input password-input" placeholder="Ingresa tu contraseña actual" disabled={!!formData.password}/>
                         <button type="button" className="password-toggle" onClick={() => setShowCurrentPassword(!showCurrentPassword)}>
                           {showCurrentPassword ? <FaEyeSlash /> : <FaEye />}
                         </button>
@@ -386,7 +360,6 @@ const PerfilUsuarioPage = () => {
                 </div>
               )}
 
-              {/* Botones de Acción */}
               {editMode && (
                 <div className="action-section">
                   <div className="action-buttons">
